@@ -1,6 +1,6 @@
 -- ============================================================================================= --
 -- PROGRAMMER(S):	Curtis Wentzlaff (7274749)
--- FILE NAME:		DatabaseReset.sql
+-- FILE NAME:		ResetDatabase.sql
 -- ASSIGNMENT:		PROG3221 - Capstone
 -- DESCRIPTION:		Creates and runs the stored procedure for setting up the user and universal
 --					card tables.
@@ -76,7 +76,7 @@ BEGIN
 
 	CREATE TABLE CardLanguage (
 		LanguageID INT IDENTITY(1,1) PRIMARY KEY,
-		LanguageName VARCHAR (20),
+		LanguageName VARCHAR (30),
 		LanguageCode VARCHAR (3)
 	);
 
