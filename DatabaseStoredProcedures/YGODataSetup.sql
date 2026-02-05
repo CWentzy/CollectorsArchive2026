@@ -37,6 +37,16 @@ BEGIN
 
 -- =====================================DROP EXISTING TABLES==================================== --
 
+	IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CardMonsterClassification'))
+	BEGIN
+		DROP TABLE CardMonsterClassification;
+	END
+
+	IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MonsterClassification'))
+	BEGIN
+		DROP TABLE MonsterClassification;
+	END
+
     IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'YGOCard'))
 	BEGIN
 		DROP TABLE YGOCard;
@@ -73,17 +83,26 @@ BEGIN
 		SuperType INT FOREIGN KEY REFERENCES CardSuperType(SuperTypeID),
 		SubType INT FOREIGN KEY REFERENCES CardSubType(SubTypeID),
 
-		-- Monster Classifications are still a WORK IN PROGRESS --
-		-- Yu-Gi-Oh Monster can include one or more of each of these classification:
-		--		Effect, Non-Effect, Toon, Spirit, Union, Gemini, Tuner, Flip, Ritual, Fusion,
-		--		Synchro, Xyz, Pendulum, Link
+		-- Monster Classifications is done through a separate table --
 
 		-- Monster Specific Card Traits --
 		PendulumScale TINYINT,		-- Values range from 0 - 13
 		CardLevel TINYINT,			-- Values range from 0 - 12
 		AttackValue SMALLINT,		-- Values range from 0 - 9999
 		DefenseValue SMALLINT,		-- Values range from 0 - 9999
-		LinkArrows TINYINT
+		
+		-- The method for recording Monster Link Arrows is still being decided --
+	);
+
+	CREATE TABLE MonsterClassification (
+		ClassificationID INT IDENTITY(1,1) PRIMARY KEY,
+		ClassificationName VARCHAR (20)
+	);
+
+	CREATE TABLE CardMonsterClassification (
+		CardClassificationID INT IDENTITY(1,1) PRIMARY KEY,
+		CardID INT FOREIGN KEY REFERENCES YGOCard(CardID),
+		ClassificationID INT FOREIGN KEY REFERENCES MonsterClassification(ClassificationID)
 	);
 
 
@@ -93,6 +112,7 @@ BEGIN
 		('MONSTER'),
 		('SPELL'),
 		('TRAP');
+
 
 	INSERT INTO CardSubType (SubTypeName) VALUES
 
@@ -110,6 +130,11 @@ BEGIN
 
 		-- Index 32 - __: Trap Specific SubTypes --
 		('Counter');
+
+
+	INSERT INTO MonsterClassification (ClassificationName) VALUES
+		('Normal'), ('Effect'), ('Ritual'), ('Fusion'), ('Synchro'), ('Xyz'), ('Toon'), ('Flip'),
+		('Spirit'), ('Union'), ('Gemini'), ('Tuner'), ('Pendulum'), ('Link');
 
 
 END
