@@ -1,13 +1,23 @@
-import { MantineProvider } from '@mantine/core';
-
+import { createTheme, MantineProvider, MantineThemeProvider, type CSSVariablesResolver } from '@mantine/core';
 import '@mantine/core/styles.css';
 import './App.css';
 
+const theme = createTheme({
+});
+
+const resolver: CSSVariablesResolver = (theme) => ({
+	variables: {},
+	light: {},
+	dark: {},
+})
+
 function App() {
   return (
-    <MantineProvider>
-      Collector's Archive
-    </MantineProvider>
+		<MantineThemeProvider theme={theme}>
+      <MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
+        Collector's Archive
+      </MantineProvider>
+    </MantineThemeProvider>
   )
 }
 
