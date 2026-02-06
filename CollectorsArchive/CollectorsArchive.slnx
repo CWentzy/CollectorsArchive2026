@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="collectorsarchive.client/collectorsarchive.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="CollectorsArchive.Server/CollectorsArchive.Server.csproj" />
+</Solution>
