@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom"
 import "./App.css"
 import { Layout } from "./Layout"
 import Home from "./pages/Home"
+import Login from "./pages/Login"
 import NotFound from "./pages/NotFound"
 
 const theme = createTheme({})
@@ -21,6 +22,7 @@ function App() {
 				<Routes>
 					<Route element={<Layout />}>
 						<Route path="/" element={<Home />} />
+						<Route path="/login" element={<Login />} />
 
 						{/* Should be the last route */}
 						<Route path="*" element={<NotFound />} />
