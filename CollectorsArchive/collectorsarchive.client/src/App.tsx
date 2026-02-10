@@ -2,6 +2,7 @@ import { createTheme, MantineProvider, MantineThemeProvider, type CSSVariablesRe
 import "@mantine/core/styles.css"
 import { Route, Routes } from "react-router-dom"
 import "./App.css"
+import { Layout } from "./Layout"
 import Home from "./pages/Home"
 import NotFound from "./pages/NotFound"
 
@@ -18,10 +19,12 @@ function App() {
 		<MantineThemeProvider theme={theme}>
 			<MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
 				<Routes>
-					<Route path="/" element={<Home />} />
+					<Route element={<Layout />}>
+						<Route path="/" element={<Home />} />
 
-					{/* Should be the last route */}
-					<Route path="*" element={<NotFound />} />
+						{/* Should be the last route */}
+						<Route path="*" element={<NotFound />} />
+					</Route>
 				</Routes>
 			</MantineProvider>
 		</MantineThemeProvider>
