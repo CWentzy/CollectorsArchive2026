@@ -1,9 +1,7 @@
 import { useState } from "react";
 
 // importing the images 
-import homePageIcon from "../assets/homePageIcon.png";
 import logoIcon from "../assets/logoIcon.png";
-import messagesIcon from "../assets/messagesIcon.png";
 import profileIcon from "../assets/profileIcon.png";
 import scanIcon from "../assets/scanIcon.png";
 import searchIcon from "../assets/searchIcon.png";
@@ -16,7 +14,6 @@ import {
   Stack,
   Button,
   Container,
-  Avatar
 } from "@mantine/core";
 
 import { IconHome2 } from "@tabler/icons-react";
@@ -27,29 +24,55 @@ export default function HomePage() {
 
   return (
     <>
-      <Box bg="#073763" c="white" mih="100vh">
+      <Box bg="#073763" c="white" mih="100vh" w="100%">
+
+        {/* TOP NAVIGATION BAR */}
+		<Group
+			justify="flex-end"
+			bg="#0A4A7A"
+			p="xl"
+			gap="xl"
+			style={{
+				position: "sticky",
+				top: 10,
+				zIndex: 20,
+			}}
+			>
+			<Stack align="center" gap={2}>
+				<IconHome2 size={50} stroke={1} color="white" />
+				<Text fz="lg" fw={600}>Home</Text>
+			</Stack>
+
+			<Stack align="center" gap={3}>
+				<Image src={scanIcon} width={45} height={45} />
+				<Text fz="lg" fw={600}>Scan</Text>
+			</Stack>
+
+			{/* profile stack and icon */}
+			<Stack align="center" gap={3}>
+				<Image src={profileIcon} width={45} height={45} />
+				<Text fz="lg" fw={600}>Profile</Text>
+			</Stack>
+			</Group>
+
+        
 
         {/* this box is for header part  */}
         <Box component="header" p="md" bg="#0A4A7A">
-          
-          {/* the name and logo goes here */}
-          <Group justify="space-between">
-            <Text fw={700} fz={28} ff="Georgia">
-              Collector's Archive
-            </Text>
 
-            {/* the logo need to be changed in future */}
-            <Image src={logoIcon} w={50} />
-          </Group>
+          {/* the name and logo goes here */}
+		  {/* I have deleted the logo and text from here */}
+		  
+  
 
           {/* this is for welcome text and user name is a place holder variable  */}
-          <Text mt="sm" fz="lg">
+          <Text fz="xl"fw={900}>
             Welcome, {userName}
           </Text>
 
           {/* Search bar */}
-          <Group mt="md" align="center">
-            <Image src={searchIcon} w={24} />
+          <Group mt="lg" align="center">
+            <Image src={searchIcon} w={45} />
 
             <Box
               component="input"
@@ -101,34 +124,6 @@ export default function HomePage() {
             ))}
           </Box>
         </Container>
-
-        <Group
-          justify="space-around"
-          bg="#0A4A7A"
-          p="md"
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        >
-          <Stack align="center" gap={2}>
-            <IconHome2 size={24} stroke={1.7} color="white" />
-            <Text fz="xs" fw={600} c="white">Home</Text>
-          </Stack>
-
-          <Stack align="center" gap={2}>
-            <Image src={scanIcon} width={26} height={26} />
-            <Text fz="xs" fw={600} c="white">Scan</Text>
-          </Stack>
-
-          {/* profile stack and icon */}
-          <Stack align="center" gap={2}>
-            <Avatar radius="xl" />
-            <Text fz="xs" fw={600} c="white">Profile</Text>
-          </Stack>
-        </Group>
 
         <Text fz={18} fw={500} ta="right" mt="xl" c="white">
           © 2026 Collector's Archive. All rights reserved.
