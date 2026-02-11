@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 // importing the images 
-import logoIcon from "../assets/logoIcon.png";
 import profileIcon from "../assets/profileIcon.png";
 import scanIcon from "../assets/scanIcon.png";
 import searchIcon from "../assets/searchIcon.png";
@@ -14,6 +13,10 @@ import {
   Stack,
   Button,
   Container,
+  Input, 
+  InputBase, 
+  Combobox, 
+  useCombobox 
 } from "@mantine/core";
 
 import { IconHome2 } from "@tabler/icons-react";
@@ -25,48 +28,42 @@ export default function HomePage() {
   return (
     <>
       <Box bg="#073763" c="white" mih="100vh" w="100%">
-
         {/* TOP NAVIGATION BAR */}
-		<Group
-			justify="flex-end"
-			bg="#0A4A7A"
-			p="xl"
-			gap="xl"
-			style={{
-				position: "sticky",
-				top: 10,
-				zIndex: 20,
-			}}
-			>
-			<Stack align="center" gap={2}>
-				<IconHome2 size={50} stroke={1} color="white" />
-				<Text fz="lg" fw={600}>Home</Text>
-			</Stack>
+        <Group
+          justify="flex-end"
+          bg="#0A4A7A"
+          p="xl"
+          gap="xl"
+          style={{
+            position: "sticky",
+            top: 10,
+            zIndex: 20,
+          }}
+        >
+          <Stack align="center" gap={2}>
+            <IconHome2 size={50} stroke={1} color="white" />
+            <Text fz="lg" fw={600}>Home</Text>
+          </Stack>
 
-			<Stack align="center" gap={3}>
-				<Image src={scanIcon} width={45} height={45} />
-				<Text fz="lg" fw={600}>Scan</Text>
-			</Stack>
+          <Stack align="center" gap={3}>
+            <Image src={scanIcon} width={45} height={45} />
+            <Text fz="lg" fw={600}>Scan</Text>
+          </Stack>
 
-			{/* profile stack and icon */}
-			<Stack align="center" gap={3}>
-				<Image src={profileIcon} width={45} height={45} />
-				<Text fz="lg" fw={600}>Profile</Text>
-			</Stack>
-			</Group>
-
-        
+          {/* profile stack and icon */}
+          <Stack align="center" gap={3}>
+            <Image src={profileIcon} width={45} height={45} />
+            <Text fz="lg" fw={600}>Profile</Text>
+          </Stack>
+        </Group>
 
         {/* this box is for header part  */}
         <Box component="header" p="md" bg="#0A4A7A">
-
           {/* the name and logo goes here */}
-		  {/* I have deleted the logo and text from here */}
-		  
-  
+          {/* I have deleted the logo and text from here */}
 
           {/* this is for welcome text and user name is a place holder variable  */}
-          <Text fz="xl"fw={900}>
+          <Text fz="xl" fw={900}>
             Welcome, {userName}
           </Text>
 
@@ -87,8 +84,21 @@ export default function HomePage() {
                 color: "white",
               }}
             />
+
+            {/* Search button */} 
+            <Button
+              color="green"
+              radius="sm"
+              style={{ height: 40 }}
+            >
+              Search
+            </Button>
+
+            <Text> CLear</Text>
           </Group>
         </Box>
+		<DropDownListForSearching />
+
 
         {/* quick access buttons */}
         <Container mt="xl">
@@ -128,8 +138,64 @@ export default function HomePage() {
         <Text fz={18} fw={500} ta="right" mt="xl" c="white">
           © 2026 Collector's Archive. All rights reserved.
         </Text>
-
       </Box>
     </>
   );
 }
+
+
+
+const GameTypes = ['Yu‑Gi‑Oh', 'Pokémon', 'Magic'];
+
+// I am importing this function for user to search game easly, can be with the rarity or alphabets or any other criteria, this can be
+// modified later inspiredd by mantine lool 
+function DropDownListForSearching() {
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+
+  const [value, setValue] = useState<string | null>(null);
+
+  const options = GameTypes.map((item) => (
+    <Combobox.Option value={item} key={item}>
+      {item}
+    </Combobox.Option>
+  ));
+
+  return (
+    <Combobox
+      store={combobox}
+      onOptionSubmit={(val) => {
+        setValue(val);
+        combobox.closeDropdown();
+      }}
+    >
+      <Combobox.Target>
+        <InputBase
+          component="button"
+          type="button"
+          pointer
+          rightSection={<Combobox.Chevron />}
+          rightSectionPointerEvents="none"
+          onClick={() => combobox.toggleDropdown()}
+          style={{
+            width: 200,
+            textAlign: "left",
+            background: "rgba(255,255,255,0.1)",
+            color: "white",
+            border: "1px solid rgba(255,255,255,0.25)",
+            padding: "10px 12px",
+            borderRadius: 6,
+          }}
+        >
+          {value || <Input.Placeholder> Display Games</Input.Placeholder>}
+        </InputBase>
+      </Combobox.Target>
+
+      <Combobox.Dropdown>
+        <Combobox.Options>{options}</Combobox.Options>
+      </Combobox.Dropdown>
+    </Combobox>
+  );
+}
+
