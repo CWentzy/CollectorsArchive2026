@@ -32,7 +32,7 @@ GO
 -- NOTE:	Tables are dropped in reverse order to how they are created to prevent errors with	 --
 --			Forign Key dependencies.															 --
 
-CREATE OR ALTER PROCEDURE ResetDatabase
+CREATE OR ALTER PROCEDURE ResetUserData
 AS
 BEGIN
 
@@ -108,5 +108,5 @@ CREATE TABLE UserCard(
 END
 GO
 
-EXEC ResetDatabase;
+EXEC ResetUserData;
 GO
