@@ -75,6 +75,11 @@ BEGIN
 		SubTypeName VARCHAR (50)
 	);
 
+	CREATE TABLE MonsterAttribute (
+		AttributeID INT IDENTITY(1,1) PRIMARY KEY,
+		AttributeName VARCHAR(8)
+	);
+
 	CREATE TABLE YGOCard (
 		CardID INT IDENTITY(1,1) PRIMARY KEY,
 		CardName VARCHAR (50),
@@ -87,11 +92,11 @@ BEGIN
 
 		-- Monster Specific Card Traits --
 		PendulumScale TINYINT,		-- Values range from 0 - 13
+		Attribute INT FOREIGN KEY REFERENCES MonsterAttribute(AttributeID),
 		CardLevel TINYINT,			-- Values range from 0 - 12
 		AttackValue SMALLINT,		-- Values range from 0 - 9999
 		DefenseValue SMALLINT,		-- Values range from 0 - 9999
-		
-		-- The method for recording Monster Link Arrows is still being decided --
+		LinkRating TINYINT			-- Values range from 0 - 8
 	);
 
 	CREATE TABLE MonsterClassification (
@@ -130,6 +135,10 @@ BEGIN
 
 		-- Index 32 - __: Trap Specific SubTypes --
 		('Counter');
+
+
+	INSERT INTO MonsterAttribute (AttributeName) VALUES
+		('EARTH'), ('WIND'), ('FIRE'), ('WATER'), ('LIGHT'), ('DARK'), ('DIVINE');
 
 
 	INSERT INTO MonsterClassification (ClassificationName) VALUES
