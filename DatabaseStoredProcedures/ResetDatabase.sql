@@ -89,7 +89,7 @@ BEGIN
 	CREATE TABLE CardSet (
 		CardSetID INT IDENTITY(1,1) PRIMARY KEY,
 		GameID INT FOREIGN KEY REFERENCES CardGame(GameID),
-		SetName VARCHAR (50),
+		SetName VARCHAR (100),
 		SetCode VARCHAR (8),
 		ReleaseDate DATE
 	);
