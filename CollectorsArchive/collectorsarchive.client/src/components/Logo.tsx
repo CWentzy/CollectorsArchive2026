@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6e769257ae28b9364f10401c44b6858e9eba7bba
 import { Anchor, Text } from "@mantine/core"
 
 export default function Logo() {
@@ -9,4 +12,8 @@ export default function Logo() {
 			</Text>
 		</Anchor>
 	)
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 6e769257ae28b9364f10401c44b6858e9eba7bba
