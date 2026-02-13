@@ -96,10 +96,21 @@ export default function LandingPage() {
           </Button>
         </Stack>
       </Container>
+      
+      {/* this will make the text to be on the bottom right corner */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 20,
+          right: 20,
+          color: "white",
+        }}
+      >
+        <Text fz={16} fw={400}>
+          © 2026 Collector's Archive. All rights reserved.
+        </Text>
+      </div>
 
-      <Text fz={16} fw={400} ta="center" mt="xl" opacity={0.6}>
-        © 2026 Collector's Archive. All rights reserved.
-      </Text>
     </Box>
   );
 }
