@@ -13,6 +13,7 @@ import {
 	InputBase,
 	Combobox,
 	useCombobox,
+	Flex
 } from "@mantine/core"
 
 import { IconHome2 } from "@tabler/icons-react"
@@ -81,7 +82,7 @@ export default function HomePage() {
 						<InputBase
 							leftSection={
 								// I added div here bcos i wanted tge icon to have tab space from start
-								<div style={{ paddingLeft: 5 }}>
+								<div style={{ paddingLeft: 10 }}>
 									<Image src="https://img.icons8.com/ios/30/FFFFFF/search-more.png" width={50} />
 								</div>
 							}
@@ -113,8 +114,13 @@ export default function HomePage() {
 					</Group>
 				</Box>
 
-				<DropDownListForSearching />
-
+				{/* flex( from mantine) will  push the dropbox into far corner   */}				
+				<Flex mt="xl" align="center">
+					<div style={{ marginLeft: "auto", marginTop: 10 }}>
+						<DropDownListForSearching />
+					</div>
+				</Flex>
+				
 				{/* quick access buttons */}
 				<Container mt="xl">
 					<Text fz={24} fw={600} mb="md">
@@ -145,11 +151,14 @@ export default function HomePage() {
 					<Box
 						display="grid"
 						style={{
+
+							// the first parametr of repeat can change the columns 
 							gridTemplateColumns: "repeat(3, 2fr)",
 							gap: "20px",
 							paddingBottom: "100px",
 						}}
 					>
+						{/* here i created array of 12 and map through them  */}
 						{Array.from({ length: 12 }).map((_, i) => (
 							<Box
 								key={i}

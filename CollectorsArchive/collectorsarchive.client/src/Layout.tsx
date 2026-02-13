@@ -1,19 +1,33 @@
-import { AppShell, Group, Text } from "@mantine/core"
-import { Outlet } from "react-router-dom"
+import { AppShell, Group, Text, Image } from "@mantine/core";
+import { Outlet } from "react-router-dom";
+
+import ourIcon from "./assets/ourLogo.png";
 
 export function Layout() {
-	return (
-		<AppShell header={{ height: 60 }} padding="md">
-			<AppShell.Header>
-				<Group justify="center" align="center" h="100%">
-					<Text>Collector's Archive</Text>
-				</Group>
-			</AppShell.Header>
+  return (
+    <AppShell header={{ height: 60 }} padding="md">
+      <AppShell.Header>
+        <Group 
+          justify="center"
+          align="center" gap={12} p="md" bg="#073763">
+          <Image
+              src={ourIcon}
+              style={{
+                width: "50px",
+                height: "50px",
+                objectFit: "contain", 
+              }}
+            />
 
-			<AppShell.Main>
-				{/* Renders the children of <Route element={<Layout />}> in App.tsx */}
-				<Outlet />
-			</AppShell.Main>
-		</AppShell>
-	)
+          <Text size="xl" c="white">Collector's Archive</Text>
+        </Group>
+      </AppShell.Header>
+
+      <AppShell.Main bg="#073763">
+        <Outlet />
+      </AppShell.Main>
+    </AppShell>
+  );
 }
+
+
