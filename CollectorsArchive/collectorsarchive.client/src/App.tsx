@@ -6,6 +6,7 @@ import { Layout } from "./Layout"
 import LandingPage from "./pages/LandingPage"
 import NotFound from "./pages/NotFound"
 import HomePage from "./pages/Home"
+import LoginPage from "./pages/LoginPage"
 
 const theme = createTheme({})
 
@@ -24,7 +25,8 @@ function App() {
 						<Route path="/" element={<LandingPage/>} />
 
 						{/* to go to home page */}
-						<Route path="/home" element={<HomePage/>} />
+						<Route path="/HomePage" element={<HomePage/>} />
+						<Route path="/LoginPage"element={<LoginPage/>} />
 
 
 						{/* Should be the last route */}

@@ -172,17 +172,14 @@ export default function HomePage() {
 						))}
 					</Box>
 				</Container>
-				
-						
+		
 				<Flex mt="xl" align="center">
 					<div style={{ marginLeft: "auto", marginTop: 10 }}>
 						<Text fz={16} fw={400}>
 							© 2026 Collector's Archive. All rights reserved.
 						</Text>
 					</div>
-				</Flex>
-
-				 
+				</Flex> 
 			</Box>
 		</>
 	)

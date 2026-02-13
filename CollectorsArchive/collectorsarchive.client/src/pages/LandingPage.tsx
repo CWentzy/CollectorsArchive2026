@@ -29,7 +29,7 @@ export default function LandingPage() {
         }}
       >
         <Link
-          to="/Home"
+          to="/HomePage"
           style={{ textDecoration: "none" }} 
         >
           <Stack align="center" gap={2}>
@@ -53,6 +53,10 @@ export default function LandingPage() {
           <Text fz="lg" fw={600}>Create Account</Text>
         </Stack>
 
+         <Link
+          to="/LoginPage"
+          style={{ textDecoration: "none" }} 
+        >
         <Stack align="center" gap={3}>
           <Image
             src="https://img.icons8.com/ios/50/FFFFFF/login-rounded.png"
@@ -61,6 +65,10 @@ export default function LandingPage() {
           />
           <Text fz="lg" fw={600}>Login</Text>
         </Stack>
+
+        </Link>
+
+     
       </Group>
 
       {/* MAIN CONTENT */}
