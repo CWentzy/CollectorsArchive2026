@@ -3,8 +3,9 @@ import "@mantine/core/styles.css"
 import { Route, Routes } from "react-router-dom"
 import "./App.css"
 import { Layout } from "./Layout"
-import Home from "./pages/Home"
+import LandingPage from "./pages/LandingPage"
 import NotFound from "./pages/NotFound"
+import HomePage from "./pages/Home"
 
 const theme = createTheme({})
 
@@ -20,7 +21,11 @@ function App() {
 			<MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
 				<Routes>
 					<Route element={<Layout />}>
-						<Route path="/" element={<Home />} />
+						<Route path="/" element={<LandingPage/>} />
+
+						{/* to go to home page */}
+						<Route path="/home" element={<HomePage/>} />
+
 
 						{/* Should be the last route */}
 						<Route path="*" element={<NotFound />} />
