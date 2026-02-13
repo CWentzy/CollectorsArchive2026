@@ -13,7 +13,7 @@ import {
 	InputBase,
 	Combobox,
 	useCombobox,
-	Flex
+	Flex,
 } from "@mantine/core"
 
 import { IconHome2 } from "@tabler/icons-react"
@@ -87,16 +87,16 @@ export default function HomePage() {
 								</div>
 							}
 							// this will make the search icon bigger or smaller
-							leftSectionWidth={60}
+							leftSectionWidth={50}
 							placeholder="Search games..."
 							styles={{
 								input: {
 									width: "500px", // this is the search box width can be extended as needed
 									flex: 1,
 									/* this padding is for the icon to the search text space in between */
-									paddingLeft: 60,
+									paddingLeft: 50,
 									height: "50px",
-									padding: "10px",
+									padding: "25px",
 									borderRadius: "6px",
 									border: "2px solid rgba(255,255,255,0.25)",
 									background: "rgba(255,255,255,0.1)",
@@ -114,13 +114,13 @@ export default function HomePage() {
 					</Group>
 				</Box>
 
-				{/* flex( from mantine) will  push the dropbox into far corner   */}				
+				{/* flex( from mantine) will  push the dropbox into far corner   */}
 				<Flex mt="xl" align="center">
 					<div style={{ marginLeft: "auto", marginTop: 10 }}>
 						<DropDownListForSearching />
 					</div>
 				</Flex>
-				
+
 				{/* quick access buttons */}
 				<Container mt="xl">
 					<Text fz={24} fw={600} mb="md">
@@ -151,8 +151,7 @@ export default function HomePage() {
 					<Box
 						display="grid"
 						style={{
-
-							// the first parametr of repeat can change the columns 
+							// the first parametr of repeat can change the columns
 							gridTemplateColumns: "repeat(3, 2fr)",
 							gap: "20px",
 							paddingBottom: "100px",
