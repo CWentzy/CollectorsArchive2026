@@ -52,6 +52,11 @@ BEGIN
 		DROP TABLE YGOCard;
 	END
 
+	IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MonsterAttribute'))
+	BEGIN
+		DROP TABLE MonsterAttribute;
+	END
+
 	IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CardSuperType'))
 	BEGIN
 		DROP TABLE CardSuperType;
@@ -82,9 +87,9 @@ BEGIN
 
 	CREATE TABLE YGOCard (
 		CardID INT IDENTITY(1,1) PRIMARY KEY,
-		CardName VARCHAR (50),
+		CardName VARCHAR (100),
 		CardCode VARCHAR (8),
-		CardText VARCHAR (1000),
+		CardText VARCHAR (1500),
 		SuperType INT FOREIGN KEY REFERENCES CardSuperType(SuperTypeID),
 		SubType INT FOREIGN KEY REFERENCES CardSubType(SubTypeID),
 
@@ -116,7 +121,9 @@ BEGIN
 	INSERT INTO CardSuperType (SuperTypeName) VALUES
 		('MONSTER'),
 		('SPELL'),
-		('TRAP');
+		('TRAP'),
+		('TOKEN'),
+		('SKILL');
 
 
 	INSERT INTO CardSubType (SubTypeName) VALUES

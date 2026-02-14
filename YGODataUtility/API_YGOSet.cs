@@ -2,9 +2,8 @@
  * PROGRAMMER:      Curtis Wentzlaff (7274749)
  * FILENAME:        API_YGOSet.cs
  * ASSIGNMENT:      PROG3221 - Capstone
- * DESCRIPTION:     Models the de-serialized data from the YGOPRODECK set list API. The API
- *                  currently includes values that we are not using and cannot be removed from the
- *                  returning data.
+ * DESCRIPTION:     Models the de-serialized data from the YGOPRODECK set list API. Includes
+ *                  functions creating SQL statements for INSERT operations.
  */
 
 using System;
@@ -15,6 +14,8 @@ namespace YGODataUtility
     public class API_YGOSet
     {
 
+        // ------------------------------------- PROPERTIES ------------------------------------ //
+
         // ----- Yu-Gi-Oh SetID in the Database -----
         static private readonly int SetID = 1;
 
@@ -23,6 +24,8 @@ namespace YGODataUtility
         public string tcg_date { get; set; }
         public string set_image { get; set; }       // Not currently being used by our database
 
+
+        // ------------------------------------- FUNCTIONS ------------------------------------- //
 
         /// <summary>
         /// Creates and returns the SQL command used to insert into the database.

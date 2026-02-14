@@ -1,10 +1,9 @@
 ﻿/*
  * PROGRAMMER:      Curtis Wentzlaff (7274749)
- * FILENAME:        API_YGOSet.cs
+ * FILENAME:        API_YGO.cs
  * ASSIGNMENT:      PROG3221 - Capstone
- * DESCRIPTION:     Models the de-serialized data from the YGOPRODECK set list API. The API
- *                  currently includes values that we are not using and cannot be removed from the
- *                  returning data.
+ * DESCRIPTION:     Static utility class for accessing the Yu-Gi-Oh API used to fill the database.
+ *                  API documentation here: https://ygoprodeck.com/api-guide/
  */
 
 using System;
@@ -15,27 +14,33 @@ using System.Net.Http;
 
 namespace YGODataUtility
 {
+
     public static class API_YGO
     {
+        // ------------------------------------- CONSTANTS ------------------------------------- //
+
         // ----- API String -----
         const string _APISetEndpoint = "https://db.ygoprodeck.com/api/v7/cardsets.php";
         const string _APICardEndpoint = "https://db.ygoprodeck.com/api/v7/cardinfo.php";
 
-        const string _APIExtensionSetSearch = "cardset=";
+
+        // ----- API Data Modifiers -----
+        const string _APIExtensionSetSearch = "cardset=";   // Specifiy single card set by name
         const string _APISpaceEscape = "%20";               // Used to escape spaces in set names
+
 
         // ----- Here for testing. Please move at a later time. -----
         const string _connectionString = "Data Source=localhost;" +
-                         "Initial Catalog=CollectorsArchive;" +
-                         "Integrated Security=true;";
+                                            "Initial Catalog=CollectorsArchive;" +
+                                            "Integrated Security=true;";
 
 
-        // --------------------------------- API DATA RETRIEVAL -------------------------------- //
+        // --------------------------- API DATA RETRIEVAL - CARD SET --------------------------- //
 
         /// <summary>
         /// Performs a call to the API and returns a list of de-serialized set objects.
         /// </summary>
-        /// <param name="data">List of set objects to store the de-serialized data</param>
+        /// <param name="data">Reference to list of set objects</param>
         /// <returns>Operation Success Status</returns>
         public static bool RetrieveSetData(ref List<API_YGOSet> data)
         {
@@ -46,9 +51,10 @@ namespace YGODataUtility
                 HttpClient client = new HttpClient();
                 var response = client.GetAsync(_APISetEndpoint).Result;
 
+                string responsedata = response.Content.ReadAsStringAsync().Result;
                 // ----- Should add an additional check for valid JSON -----
 
-                data = JsonSerializer.Deserialize<List<API_YGOSet>>(response.Content.ReadAsStringAsync().Result);
+                data = JsonSerializer.Deserialize<List<API_YGOSet>>(responsedata);
             }
             catch (Exception)
             {
@@ -62,18 +68,76 @@ namespace YGODataUtility
         /// <summary>
         /// Retrieves API data from a local file and returns a list of de-serialized set objects.
         /// </summary>
-        /// <param name="data">List of set objects to store the de-serialized data</param>
+        /// <param name="data">Reference to list of set objects</param>
         /// <param name="filename">Local filename</param>
         /// <returns>Operation Success Status</returns>
         public static bool RetreiveSetDataFromFile(ref List<API_YGOSet> data, string filename = "")
         {
             if (!File.Exists(filename)) { return false; }
 
+            string filedata = File.ReadAllText(filename);
             // ----- Should add an additional check for valid JSON -----
 
-            data = JsonSerializer.Deserialize<List<API_YGOSet>>(File.ReadAllText(filename));
+            data = JsonSerializer.Deserialize<List<API_YGOSet>>(filedata);
             
             return true;
         }
+
+
+        // --------------------------- API DATA RETRIEVAL - CARD DATA -------------------------- //
+
+        /// <summary>
+        /// Performs a call to the API and returns a list of de-serialized card objects.
+        /// </summary>
+        /// <param name="data">Reference to card holder object</param>
+        /// <returns></returns>
+        public static bool RetrieveCardDataAll(ref API_YGOCardDataHolder data)
+        {
+            bool result = true;
+
+            try
+            {
+                HttpClient client = new HttpClient();
+                var response = client.GetAsync(_APICardEndpoint).Result;
+
+                string responsedata = response.Content.ReadAsStringAsync().Result;
+                // ----- Should add an additional check for valid JSON -----
+
+                data = JsonSerializer.Deserialize<API_YGOCardDataHolder>(responsedata);
+            }
+            catch (Exception)
+            {
+                result = false;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Retrieves API data from a local file and returns a list of de-serialized set objects.
+        /// </summary>
+        /// <param name="data">Reference to card holder object</param>
+        /// <param name="filename">Local filename</param>
+        /// <returns>Operation Success Status</returns>
+        public static bool RetreiveCardDataAllFromFile(ref API_YGOCardDataHolder data, string filename = "")
+        {
+            if (!File.Exists(filename)) { return false; }
+
+            string filedata = File.ReadAllText(filename);
+            // ----- Should add an additional check for valid JSON -----
+
+            data = JsonSerializer.Deserialize<API_YGOCardDataHolder>(filedata);
+
+            return true;
+        }
+
+
+        // -------------------------- DATABASE INSERT - CARD SET DATA -------------------------- //
+
+
+
+
+        // ---------------------------- DATABASE INSERT - CARD DATA ---------------------------- //
     }
 }

@@ -74,6 +74,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API_YGO.cs" />
+    <Compile Include="API_YGOCard.cs" />
+    <Compile Include="API_YGOCardPrinitng.cs" />
     <Compile Include="API_YGOSet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
