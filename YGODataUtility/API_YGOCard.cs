@@ -43,6 +43,7 @@ namespace YGODataUtility
         // ------------------------------------- PROPERTIES ------------------------------------ //
 
         public int id { get; set; }
+        public string idString { get { return id.ToString("D8"); } }
         public string name { get; set; }
         public string humanReadableCardType { get; set; }
         public string desc { get; set; }
@@ -74,7 +75,7 @@ namespace YGODataUtility
         /// 
         /// </summary>
         /// <returns></returns>
-        public SqlCommand GetCardInsertCommand()
+        public SqlCommand GetInsertCommand()
         {
             SqlCommand cmd = new SqlCommand();
             
@@ -86,21 +87,21 @@ namespace YGODataUtility
             {
                 case "SPELL":
                 case "TRAP":
-                    cmd.CommandText = "INSERT INTO YGOCard (CardName, CardCode, CardText, SuperType, SubType) VALUES " +
+                    cmd.CommandText = "INSERT INTO YGOCard (CardName, CardID, CardText, SuperType, SubType) VALUES " +
                                         "(@cardName, @cardCode, @cardText, " +
                                         "(SELECT SuperTypeID FROM CardSuperType WHERE SuperTypeName = @superType), " +
                                         "(SELECT SubTypeID FROM CardSubType WHERE SubTypeName = @subType));";
                     break;
                 case "SKILL":
                 case "TOKEN":
-                    cmd.CommandText = "INSERT INTO YGOCard (CardName, CardCode, CardText, SuperType) VALUES " +
+                    cmd.CommandText = "INSERT INTO YGOCard (CardName, CardID, CardText, SuperType) VALUES " +
                                         "(@cardName, @cardCode, @cardText, " +
                                         "(SELECT SuperTypeID FROM CardSuperType WHERE SuperTypeName = @superType));";
                     break;
                 default:
                     if (cardTypes.Contains("Pendulum"))
                     {
-                        cmd.CommandText = "INSERT INTO YGOCard (CardName, CardCode, CardText, SuperType, SubType, Attribute, CardLevel, " +
+                        cmd.CommandText = "INSERT INTO YGOCard (CardName, CardID, CardText, SuperType, SubType, Attribute, CardLevel, " +
                                             "AttackValue, DefenseValue, PendulumScale) VALUES " +
                                             "(@cardName, @cardCode, @cardText, " +
                                             "(SELECT SuperTypeID FROM CardSuperType WHERE SuperTypeName = @superType), " +
@@ -110,7 +111,7 @@ namespace YGODataUtility
                     }
                     else if (cardTypes.Contains("Link"))
                     {
-                        cmd.CommandText = "INSERT INTO YGOCard (CardName, CardCode, CardText, SuperType, SubType, Attribute, " +
+                        cmd.CommandText = "INSERT INTO YGOCard (CardName, CardID, CardText, SuperType, SubType, Attribute, " +
                                             "AttackValue, LinkRating) VALUES " +
                                             "(@cardName, @cardCode, @cardText, " +
                                             "(SELECT SuperTypeID FROM CardSuperType WHERE SuperTypeName = @superType), " +
@@ -120,7 +121,7 @@ namespace YGODataUtility
                     }
                     else
                     {
-                        cmd.CommandText = "INSERT INTO YGOCard (CardName, CardCode, CardText, SuperType, SubType, Attribute, CardLevel, " +
+                        cmd.CommandText = "INSERT INTO YGOCard (CardName, CardID, CardText, SuperType, SubType, Attribute, CardLevel, " +
                                             "AttackValue, DefenseValue) VALUES " +
                                             "(@cardName, @cardCode, @cardText, " +
                                             "(SELECT SuperTypeID FROM CardSuperType WHERE SuperTypeName = @superType), " +
@@ -134,7 +135,7 @@ namespace YGODataUtility
             if (level == 0 && cardTypes.Contains("Link")) { level = null; }
 
             cmd.Parameters.AddWithValue("@cardName", name);
-            cmd.Parameters.AddWithValue("@cardCode", id);
+            cmd.Parameters.AddWithValue("@cardCode", idString);
             cmd.Parameters.AddWithValue("@cardText", desc);
             cmd.Parameters.AddWithValue("@superType", superType);
 

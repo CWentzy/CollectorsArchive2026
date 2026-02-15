@@ -96,11 +96,12 @@ BEGIN
 
 	CREATE TABLE CardPrinting (
 		PrintID INT IDENTITY(1,1) PRIMARY KEY,
-		CardID INT, 
+		CardID VARCHAR (10), 
 		GameID INT FOREIGN KEY REFERENCES CardGame(GameID),
 		LanguageID INT FOREIGN KEY REFERENCES CardLanguage(LanguageID),
 		CardSetID INT FOREIGN KEY REFERENCES CardSet(CardSetID),
-		CardSetIndex VARCHAR (5)
+		CardSetIndex VARCHAR (5),
+		CardRarity VARCHAR (50)
 	);
 
 	

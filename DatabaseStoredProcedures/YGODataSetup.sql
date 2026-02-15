@@ -86,9 +86,10 @@ BEGIN
 	);
 
 	CREATE TABLE YGOCard (
-		CardID INT IDENTITY(1,1) PRIMARY KEY,
+		-- CardID INT IDENTITY(1,1) PRIMARY KEY,
+		CardID VARCHAR(10) PRIMARY KEY,
 		CardName VARCHAR (100),
-		CardCode VARCHAR (8),
+		-- CardCode VARCHAR (8),
 		CardText VARCHAR (1500),
 		SuperType INT FOREIGN KEY REFERENCES CardSuperType(SuperTypeID),
 		SubType INT FOREIGN KEY REFERENCES CardSubType(SubTypeID),
@@ -111,7 +112,7 @@ BEGIN
 
 	CREATE TABLE CardMonsterClassification (
 		CardClassificationID INT IDENTITY(1,1) PRIMARY KEY,
-		CardID INT FOREIGN KEY REFERENCES YGOCard(CardID),
+		CardID VARCHAR (10) FOREIGN KEY REFERENCES YGOCard(CardID),
 		ClassificationID INT FOREIGN KEY REFERENCES MonsterClassification(ClassificationID)
 	);
 

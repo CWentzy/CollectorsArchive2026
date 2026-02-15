@@ -2,7 +2,8 @@
  * PROGRAMMER:      Curtis Wentzlaff (7274749)
  * FILENAME:        API_YGO.cs
  * ASSIGNMENT:      PROG3221 - Capstone
- * DESCRIPTION:     Static utility class for accessing the Yu-Gi-Oh API used to fill the database.
+ * DESCRIPTION:     Static utility class for accessing the Yu-Gi-Oh API used to fill the database
+ *                  and to Reset and INSERT data from the API into the database.
  *                  API documentation here: https://ygoprodeck.com/api-guide/
  */
 
@@ -11,6 +12,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Net.Http;
+using System.Data.SqlClient;
 
 namespace YGODataUtility
 {
@@ -27,12 +29,6 @@ namespace YGODataUtility
         // ----- API Data Modifiers -----
         const string _APIExtensionSetSearch = "cardset=";   // Specifiy single card set by name
         const string _APISpaceEscape = "%20";               // Used to escape spaces in set names
-
-
-        // ----- Here for testing. Please move at a later time. -----
-        const string _connectionString = "Data Source=localhost;" +
-                                            "Initial Catalog=CollectorsArchive;" +
-                                            "Integrated Security=true;";
 
 
         // --------------------------- API DATA RETRIEVAL - CARD SET --------------------------- //
@@ -133,11 +129,41 @@ namespace YGODataUtility
         }
 
 
-        // -------------------------- DATABASE INSERT - CARD SET DATA -------------------------- //
+        // ----------------------------------- DATABASE RESET ---------------------------------- //
+
+        /// <summary>
+        /// ----- MADE FOR TESTING -----
+        /// Removes ALL records from the Yu-Gi-Oh 
+        /// </summary>
+        public static void YGODataReset()
+        {
+
+        }
 
 
+        // ---------------------------------- DATABASE INSERT ---------------------------------- //
+
+        public static bool InsertSetData(SqlConnection conn, List<API_YGOSet> data)
+        {
+            bool result = true;
+
+            return result;
+        }
 
 
-        // ---------------------------- DATABASE INSERT - CARD DATA ---------------------------- //
+        public static bool InsertCardData(SqlConnection conn, List<API_YGOCard> data)
+        {
+            bool result = true;
+
+            return result;
+        }
+
+
+        public static bool InsertPrintingData(SqlConnection conn, List<API_YGOCardPrinitng> data)
+        {
+            bool result = true;
+
+            return result;
+        }
     }
 }
