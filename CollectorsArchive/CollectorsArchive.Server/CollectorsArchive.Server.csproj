@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.4338480">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>

@@ -22,7 +22,9 @@ export default function HomePage() {
 	{
 		/* this is a place holder for the user  */
 	}
-	const [userName] = useState("...")
+
+	// since we got users info from the login page we can now use it here
+	const user = JSON.parse(localStorage.getItem("user") || "{}")
 
 	return (
 		<>
@@ -74,7 +76,8 @@ export default function HomePage() {
 
 					{/* this is for welcome text and user name is a place holder variable  */}
 					<Text fz="xl" fw={900}>
-						Welcome, {userName}
+						Welcome, {user.name}
+						<p>This is user Email if we need to use it later: {user.email}</p>
 					</Text>
 
 					{/* Search bar */}
@@ -171,14 +174,14 @@ export default function HomePage() {
 						))}
 					</Box>
 				</Container>
-		
+
 				<Flex mt="xl" align="center">
 					<div style={{ marginLeft: "auto", marginTop: 10 }}>
 						<Text fz={16} fw={400}>
 							© 2026 Collector's Archive. All rights reserved.
 						</Text>
 					</div>
-				</Flex> 
+				</Flex>
 			</Box>
 		</>
 	)

@@ -15,8 +15,14 @@ import {
 import { useForm } from "@mantine/form"
 import { upperFirst, useToggle } from "@mantine/hooks"
 
+// here we i need to import Google Aoth to wire my login page so users can login using their google account
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google"
+import { jwtDecode } from "jwt-decode"
+import { useNavigate } from "react-router-dom"
+
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])
+	const navigate = useNavigate()
 
 	const form = useForm({
 		initialValues: {
@@ -41,8 +47,46 @@ export default function LoginPage(props: PaperProps) {
 				</Center>
 
 				<Group grow mb="md" mt="md">
-					<Button>Placeholder</Button>
-					<Button>Placeholder</Button>
+					{/* when user clicks google login, i wanna auto-fill their info and redirect them if they exist */}
+					<GoogleLogin
+						onSuccess={(credentialResponse: CredentialResponse) => {
+							if (credentialResponse.credential) {
+								const user = jwtDecode<GoogleUser>(credentialResponse.credential)
+
+								// filling the form with google data so user doesn't type anything manually
+								form.setFieldValue("email", user.email!)
+								form.setFieldValue("name", user.name!)
+								form.setFieldValue("password", user.sub!) // google doesn't give password so i use their unique id
+
+								// here i check if the email exists in my system (backend call later)
+
+								// this is a place holder till the backend its readddyy
+								const emailExists = true
+
+								if (emailExists) {
+									// if email is recognized then i redirect them to homepage
+									navigate("/HomePage")
+								} else {
+									// if email is not recognized i let them know and ask if they wanna register
+									const wantsToRegister = confirm("This email is not recognized. Do you want to register?")
+
+									if (wantsToRegister) {
+										// here i will create the account using google info (backend call maybe????)
+										console.log("Creating new Google account:", user)
+
+										// after creating account i redirect them to homepage
+										navigate("/HomePage")
+									} else {
+										// if they say no, i stay on login page
+										console.log("User chose not to register")
+									}
+								}
+							}
+						}}
+						onError={() => {
+							console.log("Google Login Failed")
+						}}
+					/>
 				</Group>
 
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
@@ -84,4 +128,12 @@ export default function LoginPage(props: PaperProps) {
 			</Paper>
 		</Container>
 	)
+}
+
+// this class will be holding user email , password that google gives ( temporary unique identifier and user name )
+interface GoogleUser {
+	email: string
+	name: string
+	picture: string
+	sub: string
 }
