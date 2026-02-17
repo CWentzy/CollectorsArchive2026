@@ -37,6 +37,60 @@ export default function LoginPage(props: PaperProps) {
 		},
 	})
 
+	// Handle Google login: call the backend to check if user exists
+	const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+		if (!credentialResponse.credential) return
+
+		const user = jwtDecode<GoogleUser>(credentialResponse.credential)
+
+		// Fill the form with Google data
+		form.setFieldValue("email", user.email!)
+		form.setFieldValue("name", user.name!)
+		form.setFieldValue("password", user.sub!)
+
+		try {
+			// Try to log in with the Google subject
+			const loginResponse = await fetch("/api/auth/google-login", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					email: user.email,
+					name: user.name,
+					googleSubject: user.sub,
+				}),
+			})
+
+			if (loginResponse.ok) {
+				// User found, redirect to homepage
+				navigate("/HomePage")
+			} else if (loginResponse.status === 404) {
+				// User not found, auto-register them with their Google info
+				const registerResponse = await fetch("/api/auth/register", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						email: user.email,
+						name: user.name,
+						googleSubject: user.sub,
+					}),
+				})
+
+				if (registerResponse.ok) {
+					navigate("/HomePage")
+				} else {
+					const errorData = await registerResponse.json()
+					alert(errorData.message || "Registration failed.")
+				}
+			} else {
+				const errorData = await loginResponse.json()
+				alert(errorData.message || "Login failed.")
+			}
+		} catch (error) {
+			console.error("Auth error:", error)
+			alert("An error occurred. Please try again.")
+		}
+	}
+
 	return (
 		<Container size="xs">
 			<Paper p="lg" {...props}>
@@ -49,7 +103,7 @@ export default function LoginPage(props: PaperProps) {
 				<Group grow mb="md" mt="md">
 					{/* when user clicks google login, i wanna auto-fill their info and redirect them if they exist */}
 					<GoogleLogin
-						onSuccess={(credentialResponse: CredentialResponse) => {
+						/*onSuccess={(credentialResponse: CredentialResponse) => {
 							if (credentialResponse.credential) {
 								const user = jwtDecode<GoogleUser>(credentialResponse.credential)
 
@@ -82,7 +136,8 @@ export default function LoginPage(props: PaperProps) {
 									}
 								}
 							}
-						}}
+						}}*/
+						onSuccess={handleGoogleSuccess}
 						onError={() => {
 							console.log("Google Login Failed")
 						}}
@@ -91,7 +146,7 @@ export default function LoginPage(props: PaperProps) {
 
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
 
-				<form onSubmit={form.onSubmit(() => {})}>
+				<form onSubmit={form.onSubmit(() => { })}>
 					<Stack>
 						{type === "register" && (
 							<TextInput

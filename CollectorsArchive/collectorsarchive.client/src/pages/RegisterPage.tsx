@@ -14,15 +14,28 @@ export default function RegisterPage(props: PaperProps) {
 		},
 	})
 
-	// when user submits the form i wanna register them then redirect to homepage
-	const handleRegister = () => {
-		console.log("Registering user:", form.values)
+	// When user submits the form, send data to the backend
+	const handleRegister = async () => {
+		try {
+			const response = await fetch("/api/auth/register", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					email: form.values.email,
+					name: form.values.name,
+					googleSubject: form.values.password, // Using password field as Google subject placeholder
+				}),
+			})
 
-		// later i will replace this with backend call
-		const registrationSuccess = true
-
-		if (registrationSuccess) {
-			navigate("/HomePage")
+			if (response.ok) {
+				navigate("/HomePage")
+			} else {
+				const errorData = await response.json()
+				alert(errorData.message || "Registration failed.")
+			}
+		} catch (error) {
+			console.error("Registration error:", error)
+			alert("An error occurred. Please try again.")
 		}
 	}
 

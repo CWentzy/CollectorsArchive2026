@@ -1,16 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CollectorsArchive.Server.Models
 {
-    // Models/User.cs this file is for the user model, which will be used to store user information in the database. It will also be used to authenticate users when they log in. The password field will be used to store the user's password, but for google authentication,
-    // I will store the sub (subject) field from the google token in this field instead of a password.
+    [Table("User")]
     public class UserInformation
     {
-        public int UserId { get; set; }// database id
-        public string Email { get; set; } = string.Empty;
-        public string UserName { get; set; } = string.Empty;
-    }
+        [Key]
+        [Column("UserID")]
+        public int UserId { get; set; }
 
+        [Required]
+        [MaxLength(255)]
+        [Column("email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(100)]
+        [Column("username")]
+        public string UserName { get; set; } = string.Empty;
+
+        [MaxLength(255)]
+        [Column("GoogleSubject")]
+        public string? GoogleSubject { get; set; }
+    }
 }
