@@ -1,30 +1,58 @@
-import { AppShell, Group, Text, Image } from "@mantine/core"
+import { AppShell, Button, Container, Grid, Group, Modal } from "@mantine/core"
+import { useDisclosure } from "@mantine/hooks"
 import { Outlet } from "react-router-dom"
-
-import ourIcon from "./assets/ourLogo.png"
+import { CardScanButton } from "./components/CardScan/CardScanButton"
+import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
+import Logo from "./components/Logo"
 
 export function Layout() {
+	const [scanOpened, { open, close }] = useDisclosure(false)
+
 	return (
 		<AppShell header={{ height: 60 }} padding="md">
 			<AppShell.Header>
-				<Group justify="center" align="center" gap={12} p="md" bg="#073763">
-					<Image
-						src={ourIcon}
-						style={{
-							width: "50px",
-							height: "50px",
-							objectFit: "contain",
-						}}
-					/>
+				<Container size="xl" py="xs">
+					<Grid justify="space-between" align="center">
+						<Grid.Col span={{ base: "content", sm: 4, md: "auto" }}>
+							<Group wrap="nowrap">
+								<Logo />
+							</Group>
+						</Grid.Col>
 
-					<Text size="xl" c="white">
-						Collector's Archive
-					</Text>
-				</Group>
+						{/* Mobile Scan Button */}
+						<Grid.Col span="content" visibleFrom="sm">
+							<Group justify="center" align="center">
+								<CardScanButton onClick={open} />
+							</Group>
+						</Grid.Col>
+
+						<Grid.Col span={{ base: "auto", xs: 3, sm: 4, md: "auto" }}>
+							{/* Desktop navigation */}
+							<Group visibleFrom="sm" gap="xs" justify="flex-end">
+								<Button component="a" href="/login" variant="default" size="sm">
+									Login
+								</Button>
+							</Group>
+							<Group hiddenFrom="sm" gap="xs" justify="flex-end">
+								<CardScanButton onClick={open} iconOnly />
+								<Button component="a" href="/login" variant="default" size="sm">
+									Login
+								</Button>
+							</Group>
+						</Grid.Col>
+					</Grid>
+				</Container>
 			</AppShell.Header>
 
-			<AppShell.Main bg="#073763">
-				<Outlet />
+			<AppShell.Main>
+				{/* Renders the children of <Route element={<Layout />}> in App.tsx */}
+				<Container size="xl">
+					<Outlet />
+				</Container>
+
+				<Modal opened={scanOpened} onClose={close} fullScreen withCloseButton={false} keepMounted={false} padding={0}>
+					<CardScanOverlay onClose={close} />
+				</Modal>
 			</AppShell.Main>
 		</AppShell>
 	)
