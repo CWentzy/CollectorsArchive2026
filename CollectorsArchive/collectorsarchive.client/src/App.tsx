@@ -7,7 +7,7 @@ import LandingPage from "./pages/LandingPage"
 import NotFound from "./pages/NotFound"
 import HomePage from "./pages/Home"
 import LoginPage from "./pages/LoginPage"
-//import RegisterPage from "./pages/RegisterPage"
+import RegisterPage from "./pages/RegisterPage"
 import { GoogleOAuthProvider } from "@react-oauth/google" // importing this To add Google sign-in to our code
 
 const theme = createTheme({})
@@ -31,7 +31,7 @@ function App() {
 							{/* to go to home page */}
 							<Route path="/HomePage" element={<HomePage />} />
 							<Route path="/LoginPage" element={<LoginPage />} />
-							{/*<Route path="/RegisterPage" element={<RegisterPage />} />*/}
+							<Route path="/RegisterPage" element={<RegisterPage />} />
 
 							{/* Should be the last route */}
 							<Route path="*" element={<NotFound />} />
