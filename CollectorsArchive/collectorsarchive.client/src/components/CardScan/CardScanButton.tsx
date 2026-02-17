@@ -8,7 +8,7 @@ interface CardScanButtonProps {
 
 export function CardScanButton({ iconOnly = false, onClick }: CardScanButtonProps) {
 	return iconOnly ? (
-		<ActionIcon size="lg" variant="gradient" color="blue" onClick={onClick}>
+		<ActionIcon size="lg" variant="gradient" onClick={onClick}>
 			<ScanSearchIcon />
 		</ActionIcon>
 	) : (

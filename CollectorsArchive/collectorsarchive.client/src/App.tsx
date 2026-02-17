@@ -1,18 +1,46 @@
-import { createTheme, MantineProvider, MantineThemeProvider, type CSSVariablesResolver } from "@mantine/core"
+import {
+	createTheme,
+	lighten,
+	MantineProvider,
+	MantineThemeProvider,
+	type CSSVariablesResolver,
+	type MantineColorsTuple,
+} from "@mantine/core"
 import "@mantine/core/styles.css"
 import { Route, Routes } from "react-router-dom"
-import "./App.css"
 import { Layout } from "./Layout"
+import HomePage from "./pages/HomePage"
 import LandingPage from "./pages/LandingPage"
-import NotFound from "./pages/NotFound"
-import HomePage from "./pages/Home"
 import LoginPage from "./pages/LoginPage"
+import NotFound from "./pages/NotFound"
 
-const theme = createTheme({})
+const accentColor: MantineColorsTuple = [
+	"#e8fcf5",
+	"#daf2ea",
+	"#b8e2d5",
+	"#93d2bd",
+	"#74c4aa",
+	"#5fbb9d",
+	"#53b797",
+	"#47ad8c",
+	"#368f73",
+	"#237c62",
+]
+
+const theme = createTheme({
+	colors: {
+		"spell-green": accentColor,
+	},
+
+	primaryColor: "spell-green",
+	defaultGradient: { from: "green", to: "spell-green", deg: 45 },
+})
 
 const resolver: CSSVariablesResolver = () => ({
 	variables: {},
-	light: {},
+	light: {
+		"--mantine-color-body": lighten(accentColor[0], 0.75), // tiny hint of the color
+	},
 	dark: {},
 })
 
@@ -22,11 +50,11 @@ function App() {
 			<MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
 				<Routes>
 					<Route element={<Layout />}>
+						{/* TODO: landing and home page should be the same path: / rendered depending on session state */}
 						<Route path="/" element={<LandingPage />} />
+						<Route path="/home" element={<HomePage />} />
 
-						{/* to go to home page */}
-						<Route path="/HomePage" element={<HomePage />} />
-						<Route path="/LoginPage" element={<LoginPage />} />
+						<Route path="/login" element={<LoginPage />} />
 
 						{/* Should be the last route */}
 						<Route path="*" element={<NotFound />} />
