@@ -111,3 +111,8 @@ GO
 
 EXEC ResetUserData;
 GO
+
+
+
+SELECT * FROM [User];
+GO
