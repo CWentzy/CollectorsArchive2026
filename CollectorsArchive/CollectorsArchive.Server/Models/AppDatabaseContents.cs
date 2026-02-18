@@ -5,7 +5,6 @@ namespace CollectorsArchive.Server
 {
     public class AppDatabaseContents : DbContext
     {
-    
 
         // this entity will be our table in the database, it will store user information .
         // The UserID field will be the primary key that we specify in sql, and the email and username
@@ -23,11 +22,11 @@ namespace CollectorsArchive.Server
         {
             modelBuilder.Entity<UserInformation>(entity =>
             {
-                entity.ToTable("UserInformation"); 
+                entity.ToTable("UserInformation");
 
-                entity.HasKey(e => e.UserID);
+                entity.HasKey(e => e.UserId);
 
-                entity.Property(e => e.UserID)
+                entity.Property(e => e.UserId)
                       .HasColumnName("UserID");
 
                 entity.Property(e => e.Email)
@@ -35,6 +34,9 @@ namespace CollectorsArchive.Server
 
                 entity.Property(e => e.UserName)
                       .HasColumnName("username");
+
+                entity.Property(e => e.GoogleSubject)
+                      .HasColumnName("GoogleSubject");
             });
         }
     }

@@ -1,6 +1,6 @@
+using CollectorsArchive.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CollectorsArchive.Server.Models;
 
 namespace CollectorsArchive.Server.Controllers
 {

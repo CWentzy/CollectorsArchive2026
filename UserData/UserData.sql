@@ -56,14 +56,13 @@ IF OBJECT_ID('CardListType', 'U') IS NOT NULL
     DROP TABLE CardListType;
 
 IF OBJECT_ID('User', 'U') IS NOT NULL
-    DROP TABLE [User];
+    DROP TABLE UserInformation;
 
 
-CREATE TABLE [User](
+CREATE TABLE UserInformation(
     UserID INT IDENTITY(1,1) PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
     username VARCHAR(100) NOT NULL,
-    GoogleSubject VARCHAR(255) NOT NULL,
     UNIQUE(email, username) -- NEED TO BE UNIQUE FOR EVERY USER
     );
     
@@ -81,7 +80,7 @@ CREATE TABLE CardList(
     CardListID INT IDENTITY(1,1) PRIMARY KEY,
     UserID INT NOT NULL,
     TypeID INT NOT NULL,
-    FOREIGN KEY (UserID) REFERENCES [User](UserID),
+    FOREIGN KEY (UserID) REFERENCES UserInformation(UserID),
     FOREIGN KEY (TypeID) REFERENCES CardListType(ListTypeID)
     );
 
@@ -100,7 +99,7 @@ CREATE TABLE UserCard(
     PrintID INT NOT NULL,
     Quantity INT NOT NULL,
     CardEditionID INT NOT NULL,
-    FOREIGN KEY (UserID) REFERENCES [User](UserID),
+    FOREIGN KEY (UserID) REFERENCES UserInformation(UserID),
     FOREIGN KEY (PrintID) REFERENCES CardPrinting(PrintID),
     FOREIGN KEY (CardEditionID) REFERENCES CardEdition(CardEditionID)
     );
@@ -114,5 +113,5 @@ GO
 
 
 
-SELECT * FROM [User];
+SELECT * FROM UserInformation;
 GO
