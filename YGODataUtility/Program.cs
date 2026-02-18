@@ -1,18 +1,37 @@
-﻿using System;
+﻿/*
+ * PROGRAMMER:      Curtis Wentzlaff (7274749)
+ * FILENAME:        Program.cs
+ * ASSIGNMENT:      PROG3221 - Capstone
+ * DESCRIPTION:     Console tool for creating/updating the Yu-Gi-Oh card listings in the database.
+ * 
+ *                  Currently adds all sets, card, and printings WITHOUT CHECKING FOR DUPLICATES.
+ *                  functionality for updating the database coming soon.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace YGODataUtility
 {
     internal class Program
     {
+        const string _folderImages = "\\images";
+        const string _folderImagesLarge = "\\images\\large";
+        const string _folderImagesSmall = "\\images\\small";
         const string _connectionString = "Data Source=localhost;" +
                                             "Initial Catalog=CollectorsArchive;" +
                                             "Integrated Security=true;";
 
         static void Main(string[] args)
         {
+            Directory.CreateDirectory(Directory.GetCurrentDirectory() + _folderImages);
+            Directory.CreateDirectory(Directory.GetCurrentDirectory() + _folderImagesLarge);
+            Directory.CreateDirectory(Directory.GetCurrentDirectory() + _folderImagesSmall);
+
             SqlConnection conn = new SqlConnection(_connectionString);
 
             // ----- Retrieve all sets -----
@@ -50,7 +69,7 @@ namespace YGODataUtility
 
 
             // ----- Retrieve all cards -----
-            Console.Write("Retrieving Set Data...");
+            Console.Write("Retrieving Card Data...");
             API_YGOCardDataHolder allCards = new API_YGOCardDataHolder();
             if (!API_YGO.RetrieveCardDataAll(ref allCards))
             {
@@ -85,6 +104,18 @@ namespace YGODataUtility
                     }
                 }
             }
+
+            // ----- DO NOT USE -----
+            // ----- THE API WILL BLACKLIST YOU BEFORE FINISHING -----
+            //foreach (API_YGOCard card in allCards.data)
+            //{
+            //    Console.WriteLine(card.name);
+            //    for (int i = 0; i < card.card_images.Count; i++)
+            //    {
+            //        card.card_images[i].RetrieveImages(card.idString + "_" + (i + 1));
+            //        Thread.Sleep(250);
+            //    }
+            //}
         }
     }
 }

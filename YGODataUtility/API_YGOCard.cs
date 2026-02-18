@@ -69,6 +69,11 @@ namespace YGODataUtility
         public List<API_YGOCardPrinitng> card_sets { get; set; }
 
 
+        // ----- Card Images -----
+
+        public List<API_YGOCardImage> card_images { get; set; }
+
+
         // ------------------------------------- FUNCTIONS ------------------------------------- //
 
         /// <summary>
