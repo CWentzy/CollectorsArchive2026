@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using CollectorsArchive.Server;
 
 namespace CollectorsArchive.Server
 {
@@ -10,23 +12,29 @@ namespace CollectorsArchive.Server
             // Add services to the container.
             builder.Services.AddAuthorization();
 
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            // ADD THIS TO REGISTER CONTROLLERS this does is it tells the application to look for controllers in the project and to use them to handle incoming requests.
+            // Without this line the application will not be able to find the controllers and will
+            // return a 404 error for any requests that are meant to be handled by a controller.
+            builder.Services.AddControllers();
+
+            // Register EF Core DbContext will be used to interact with the database. It is configured to use SQL Server and the connection string is retrieved
+            // from the application's configuration settings.
+            builder.Services.AddDbContext<AppDatabaseContents>(options =>
+                options.UseSqlServer("Server=Ermiyas\\ERMIYASDBSERVER;Database=CollectorsArchive;Trusted_Connection=True;TrustServerCertificate=True;"));
 
             var app = builder.Build();
 
             app.UseDefaultFiles();
-            app.MapStaticAssets();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
+
+            // ADD THIS
+            app.MapControllers();
 
             var summaries = new[]
             {
