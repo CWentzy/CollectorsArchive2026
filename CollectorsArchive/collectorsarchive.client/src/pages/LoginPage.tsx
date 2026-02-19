@@ -14,6 +14,7 @@ import {
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { upperFirst, useToggle } from "@mantine/hooks"
+import { GoogleLogin } from "@react-oauth/google" // added for google login
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])
@@ -41,7 +42,18 @@ export default function LoginPage(props: PaperProps) {
 				</Center>
 
 				<Group grow mb="md" mt="md">
-					<Button>Placeholder</Button>
+					{/* Google login button */}
+					<GoogleLogin
+						onSuccess={(credentialResponse) => {
+							console.log("Google login success:", credentialResponse)
+							// TODO: send credentialResponse.credential to your backend for verification
+						}}
+						onError={() => {
+							console.log("Google login failed")
+						}}
+					/>
+
+					{/* You can replace this placeholder with GitHub login later */}
 					<Button>Placeholder</Button>
 				</Group>
 
@@ -63,14 +75,6 @@ export default function LoginPage(props: PaperProps) {
 							value={form.values.email}
 							onChange={(event) => form.setFieldValue("email", event.currentTarget.value)}
 							error={form.errors.email && "Invalid email"}
-						/>
-
-						<PasswordInput
-							required
-							label="Password"
-							value={form.values.password}
-							onChange={(event) => form.setFieldValue("password", event.currentTarget.value)}
-							error={form.errors.password && "Password should include at least 6 characters"}
 						/>
 					</Stack>
 

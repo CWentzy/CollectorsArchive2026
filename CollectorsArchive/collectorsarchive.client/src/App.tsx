@@ -1,3 +1,5 @@
+import { GoogleOAuthProvider } from "@react-oauth/google" // this is for using google Aoth
+
 import {
 	createTheme,
 	lighten,
@@ -46,22 +48,26 @@ const resolver: CSSVariablesResolver = () => ({
 
 function App() {
 	return (
-		<MantineThemeProvider theme={theme}>
-			<MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
-				<Routes>
-					<Route element={<Layout />}>
-						{/* TODO: landing and home page should be the same path: / rendered depending on session state */}
-						<Route path="/" element={<LandingPage />} />
-						<Route path="/home" element={<HomePage />} />
+		<GoogleOAuthProvider clientId="887271318818-l8omtrnmumbkr0tc4ssu031qkbii4t8i.apps.googleusercontent.com">
+			{/* wrapping the whole app with GoogleOAuthProvider so google login works everywhere */}
 
-						<Route path="/login" element={<LoginPage />} />
+			<MantineThemeProvider theme={theme}>
+				<MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
+					<Routes>
+						<Route element={<Layout />}>
+							{/* TODO: landing and home page should be the same path: / rendered depending on session state */}
+							<Route path="/" element={<LandingPage />} />
+							<Route path="/home" element={<HomePage />} />
 
-						{/* Should be the last route */}
-						<Route path="*" element={<NotFound />} />
-					</Route>
-				</Routes>
-			</MantineProvider>
-		</MantineThemeProvider>
+							<Route path="/login" element={<LoginPage />} />
+
+							{/* Should be the last route */}
+							<Route path="*" element={<NotFound />} />
+						</Route>
+					</Routes>
+				</MantineProvider>
+			</MantineThemeProvider>
+		</GoogleOAuthProvider>
 	)
 }
 
