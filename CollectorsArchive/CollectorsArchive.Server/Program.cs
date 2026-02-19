@@ -1,5 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using CollectorsArchive.Server;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace CollectorsArchive.Server
 {
@@ -9,18 +12,35 @@ namespace CollectorsArchive.Server
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddAuthorization();
+            // JWT settings from appsettings.json
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var jwtSecret = jwtSection["Secret"]!; // I generated it with: openssl rand -base64 32
 
-            // ADD THIS TO REGISTER CONTROLLERS this does is it tells the application to look for controllers in the project and to use them to handle incoming requests.
-            // Without this line the application will not be able to find the controllers and will
-            // return a 404 error for any requests that are meant to be handled by a controller.
+            // Authentication: validate incoming JWTs issued by this server
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtSection["Issuer"],
+                        ValidAudience = jwtSection["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+                    };
+                });
+
+            builder.Services.AddAuthorization();
             builder.Services.AddControllers();
 
-            // Register EF Core DbContext will be used to interact with the database. It is configured to use SQL Server and the connection string is retrieved
-            // from the application's configuration settings.
-            builder.Services.AddDbContext<AppDatabaseContents>(options =>
-                options.UseSqlServer("Server=Ermiyas\\ERMIYASDBSERVER;Database=CollectorsArchive;Trusted_Connection=True;TrustServerCertificate=True;"));
+            // HttpClient used by AuthController to verify Google access tokens
+            builder.Services.AddHttpClient();
+
+            // EF Core — reads connection string from appsettings.json
+            var connectionString = builder.Configuration.GetConnectionString("CollectorsArchiveDb");
+            builder.Services.AddSqlServer<AppDatabaseContents>(connectionString);
 
             var app = builder.Build();
 
@@ -31,9 +51,9 @@ namespace CollectorsArchive.Server
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            // ADD THIS
             app.MapControllers();
 
             var summaries = new[]

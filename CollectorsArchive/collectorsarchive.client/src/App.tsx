@@ -10,10 +10,11 @@ import {
 } from "@mantine/core"
 import "@mantine/core/styles.css"
 import { Route, Routes } from "react-router-dom"
+import { AuthProvider } from "./auth/AuthContext"
+import { ProtectedRoute } from "./auth/ProtectedRoute"
 import { Layout } from "./Layout"
 import HomePage from "./pages/HomePage"
 import LandingPage from "./pages/LandingPage"
-import LoginPage from "./pages/LoginPage"
 import NotFound from "./pages/NotFound"
 
 const accentColor: MantineColorsTuple = [
@@ -52,18 +53,21 @@ function App() {
 		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
 			<MantineThemeProvider theme={theme}>
 				<MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
-					<Routes>
-						<Route element={<Layout />}>
-							{/* TODO: landing and home page should be the same path: / rendered depending on session state */}
-							<Route path="/" element={<LandingPage />} />
-							<Route path="/home" element={<HomePage />} />
+					<AuthProvider>
+						<Routes>
+							<Route element={<Layout />}>
+								<Route path="/" element={<LandingPage />} />
 
-							<Route path="/login" element={<LoginPage />} />
+								{/* Protected routes. Redirects to / if not authenticated */}
+								<Route element={<ProtectedRoute />}>
+									<Route path="/home" element={<HomePage />} />
+								</Route>
 
-							{/* Should be the last route */}
-							<Route path="*" element={<NotFound />} />
-						</Route>
-					</Routes>
+								{/* Should be the last route */}
+								<Route path="*" element={<NotFound />} />
+							</Route>
+						</Routes>
+					</AuthProvider>
 				</MantineProvider>
 			</MantineThemeProvider>
 		</GoogleOAuthProvider>

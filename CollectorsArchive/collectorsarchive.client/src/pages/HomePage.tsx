@@ -14,14 +14,11 @@ import {
 } from "@mantine/core"
 import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from "lucide-react"
 import { useState } from "react"
-import { useLocation } from "react-router-dom"
+import { useAuth } from "../auth/useAuth"
 
 export default function HomePage() {
-	// grabbing the data I passed from the login page (username + email).
-	// react-router stores that info in "location.state", so this lets me pull it out
-	// when the user lands on the homepage.
-	const location = useLocation()
-	const userName = location.state?.userName
+	const { user } = useAuth()
+	const userName = user?.userName
 
 	return (
 		<Box mih="100vh" w="100%" py="md">

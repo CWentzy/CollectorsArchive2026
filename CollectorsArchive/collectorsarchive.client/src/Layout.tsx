@@ -1,6 +1,7 @@
-import { AppShell, Button, Container, Grid, Group, Modal } from "@mantine/core"
+import { AppShell, Container, Grid, Group, Modal } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { Outlet } from "react-router-dom"
+import UserButton from "./components/Auth/UserButton"
 import { CardScanButton } from "./components/CardScan/CardScanButton"
 import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
 import Logo from "./components/Logo"
@@ -29,15 +30,11 @@ export function Layout() {
 						<Grid.Col span={{ base: "auto", xs: 3, sm: 4, md: "auto" }}>
 							{/* Desktop navigation */}
 							<Group visibleFrom="sm" gap="xs" justify="flex-end">
-								<Button component="a" href="/login" variant="default" size="sm">
-									Login
-								</Button>
+								<UserButton />
 							</Group>
 							<Group hiddenFrom="sm" gap="xs" justify="flex-end">
 								<CardScanButton onClick={open} iconOnly />
-								<Button component="a" href="/login" variant="default" size="sm">
-									Login
-								</Button>
+								<UserButton />
 							</Group>
 						</Grid.Col>
 					</Grid>

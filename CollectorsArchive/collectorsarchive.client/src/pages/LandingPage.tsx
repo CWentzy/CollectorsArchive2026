@@ -1,7 +1,20 @@
 import { Button, Center, Stack, Text, Title } from "@mantine/core"
 import { SearchIcon } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../auth/useAuth"
 
 export default function LandingPage() {
+	const { isAuthenticated, openLoginPopover } = useAuth()
+	const navigate = useNavigate()
+
+	const handleButtonClick = () => {
+		if (isAuthenticated) {
+			navigate("/home")
+		} else {
+			openLoginPopover()
+		}
+	}
+
 	return (
 		<Center h="85vh">
 			<Stack align="center" gap="xl">
@@ -17,18 +30,17 @@ export default function LandingPage() {
 				<Stack align="center" gap="md" w={250}>
 					{/* Search Button */}
 					<Button
-						component="a"
-						href="/home"
 						size="lg"
 						variant="filled"
 						leftSection={<SearchIcon size={24} />}
 						fullWidth
+						onClick={handleButtonClick}
 					>
 						Search Cards
 					</Button>
 
 					{/* Collect Button */}
-					<Button component="a" href="/home" size="lg" variant="light" fullWidth>
+					<Button size="lg" variant="light" fullWidth onClick={handleButtonClick}>
 						Start Collecting
 					</Button>
 				</Stack>
