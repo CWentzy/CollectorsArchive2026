@@ -15,9 +15,13 @@ import {
 import { useForm } from "@mantine/form"
 import { upperFirst, useToggle } from "@mantine/hooks"
 import { GoogleLogin } from "@react-oauth/google" // added for google login
+import { jwtDecode } from "jwt-decode" // this is for storing or getting users credentials from google
+import { useNavigate } from "react-router-dom"
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])
+
+	const navigate = useNavigate()
 
 	const form = useForm({
 		initialValues: {
@@ -46,7 +50,27 @@ export default function LoginPage(props: PaperProps) {
 					<GoogleLogin
 						onSuccess={(credentialResponse) => {
 							console.log("Google login success:", credentialResponse)
-							// TODO: send credentialResponse.credential to your backend for verification
+
+							// this will  have a credential ID token
+							if (credentialResponse.credential) {
+								// Decode the Google ID token to extract user info
+								const decoded: any = jwtDecode(credentialResponse.credential)
+
+								// Extract email
+								const email = decoded.email
+								console.log("Google email:", email)
+
+								// Store email in form
+								form.setFieldValue("email", email)
+
+								// Extract username before "@"
+								const userName = parseEmailUsername(email)
+								console.log("Google username:", userName)
+								console.log("Full credentialResponse:", credentialResponse)
+
+								// Navigate to home page with user data
+								navigate("/home", { state: { userName, email } })
+							}
 						}}
 						onError={() => {
 							console.log("Google login failed")
@@ -88,4 +112,10 @@ export default function LoginPage(props: PaperProps) {
 			</Paper>
 		</Container>
 	)
+}
+
+// this function extracts the part before @ from an email
+function parseEmailUsername(email: string): string {
+	if (!email) return ""
+	return email.split("@")[0]
 }
