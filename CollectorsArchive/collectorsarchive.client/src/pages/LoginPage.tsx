@@ -6,7 +6,6 @@ import {
 	Divider,
 	Group,
 	Paper,
-	PasswordInput,
 	Stack,
 	Text,
 	TextInput,
@@ -14,14 +13,36 @@ import {
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { upperFirst, useToggle } from "@mantine/hooks"
-import { GoogleLogin } from "@react-oauth/google" // added for google login
-import { jwtDecode } from "jwt-decode" // this is for storing or getting users credentials from google
+import { useGoogleLogin } from "@react-oauth/google"
+import { IconBrandGoogleFilled } from "@tabler/icons-react"
 import { useNavigate } from "react-router-dom"
+
+const GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])
-
 	const navigate = useNavigate()
+
+	const login = useGoogleLogin({
+		onSuccess: async (tokenResponse) => {
+			try {
+				// Fetch user info using the access token we got
+				const response = await fetch(GOOGLE_USER_INFO_URL, {
+					headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+				})
+
+				const userData = await response.json()
+				const email = userData.email
+				const userName = parseEmailUsername(email)
+
+				// Navigate to home page with user data
+				navigate("/home", { state: { userName, email } })
+			} catch (error) {
+				console.error("Failed to fetch user info from Google:", error)
+			}
+		},
+		onError: () => console.log("Login Failed"),
+	})
 
 	const form = useForm({
 		initialValues: {
@@ -41,44 +62,15 @@ export default function LoginPage(props: PaperProps) {
 			<Paper p="lg" {...props}>
 				<Center>
 					<Text size="lg" fw={500} c="bright">
-						Welcome to Collector's Archive, {type} with
+						Welcome to Collector's Archive
 					</Text>
 				</Center>
 
-				<Group grow mb="md" mt="md">
+				<Group mb="md" mt="md" align="center" justify="center">
 					{/* Google login button */}
-					<GoogleLogin
-						onSuccess={(credentialResponse) => {
-							console.log("Google login success:", credentialResponse)
-
-							// this will  have a credential ID token
-							if (credentialResponse.credential) {
-								// Decode the Google ID token to extract user info
-								const decoded: any = jwtDecode(credentialResponse.credential)
-
-								// Extract email
-								const email = decoded.email
-								console.log("Google email:", email)
-
-								// Store email in form
-								form.setFieldValue("email", email)
-
-								// Extract username before "@"
-								const userName = parseEmailUsername(email)
-								console.log("Google username:", userName)
-								console.log("Full credentialResponse:", credentialResponse)
-
-								// Navigate to home page with user data
-								navigate("/home", { state: { userName, email } })
-							}
-						}}
-						onError={() => {
-							console.log("Google login failed")
-						}}
-					/>
-
-					{/* You can replace this placeholder with GitHub login later */}
-					<Button>Placeholder</Button>
+					<Button fullWidth variant="light" leftSection={<IconBrandGoogleFilled size={16} />} onClick={() => login()}>
+						Sign in with Google
+					</Button>
 				</Group>
 
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
