@@ -89,18 +89,19 @@ BEGIN
 	CREATE TABLE CardSet (
 		CardSetID INT IDENTITY(1,1) PRIMARY KEY,
 		GameID INT FOREIGN KEY REFERENCES CardGame(GameID),
-		SetName VARCHAR (50),
+		SetName VARCHAR (100),
 		SetCode VARCHAR (8),
 		ReleaseDate DATE
 	);
 
 	CREATE TABLE CardPrinting (
 		PrintID INT IDENTITY(1,1) PRIMARY KEY,
-		CardID INT, 
+		CardID VARCHAR (10), 
 		GameID INT FOREIGN KEY REFERENCES CardGame(GameID),
 		LanguageID INT FOREIGN KEY REFERENCES CardLanguage(LanguageID),
 		CardSetID INT FOREIGN KEY REFERENCES CardSet(CardSetID),
-		CardSetIndex VARCHAR (5)
+		CardSetIndex VARCHAR (5),
+		CardRarity VARCHAR (50)
 	);
 
 	

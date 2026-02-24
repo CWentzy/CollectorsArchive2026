@@ -52,6 +52,11 @@ BEGIN
 		DROP TABLE YGOCard;
 	END
 
+	IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MonsterAttribute'))
+	BEGIN
+		DROP TABLE MonsterAttribute;
+	END
+
 	IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CardSuperType'))
 	BEGIN
 		DROP TABLE CardSuperType;
@@ -75,11 +80,17 @@ BEGIN
 		SubTypeName VARCHAR (50)
 	);
 
+	CREATE TABLE MonsterAttribute (
+		AttributeID INT IDENTITY(1,1) PRIMARY KEY,
+		AttributeName VARCHAR(8)
+	);
+
 	CREATE TABLE YGOCard (
-		CardID INT IDENTITY(1,1) PRIMARY KEY,
-		CardName VARCHAR (50),
-		CardCode VARCHAR (8),
-		CardText VARCHAR (1000),
+		-- CardID INT IDENTITY(1,1) PRIMARY KEY,
+		CardID VARCHAR(10) PRIMARY KEY,
+		CardName VARCHAR (100),
+		-- CardCode VARCHAR (8),
+		CardText VARCHAR (1500),
 		SuperType INT FOREIGN KEY REFERENCES CardSuperType(SuperTypeID),
 		SubType INT FOREIGN KEY REFERENCES CardSubType(SubTypeID),
 
@@ -87,11 +98,11 @@ BEGIN
 
 		-- Monster Specific Card Traits --
 		PendulumScale TINYINT,		-- Values range from 0 - 13
+		Attribute INT FOREIGN KEY REFERENCES MonsterAttribute(AttributeID),
 		CardLevel TINYINT,			-- Values range from 0 - 12
 		AttackValue SMALLINT,		-- Values range from 0 - 9999
 		DefenseValue SMALLINT,		-- Values range from 0 - 9999
-		
-		-- The method for recording Monster Link Arrows is still being decided --
+		LinkRating TINYINT			-- Values range from 0 - 8
 	);
 
 	CREATE TABLE MonsterClassification (
@@ -101,7 +112,7 @@ BEGIN
 
 	CREATE TABLE CardMonsterClassification (
 		CardClassificationID INT IDENTITY(1,1) PRIMARY KEY,
-		CardID INT FOREIGN KEY REFERENCES YGOCard(CardID),
+		CardID VARCHAR (10) FOREIGN KEY REFERENCES YGOCard(CardID),
 		ClassificationID INT FOREIGN KEY REFERENCES MonsterClassification(ClassificationID)
 	);
 
@@ -111,7 +122,9 @@ BEGIN
 	INSERT INTO CardSuperType (SuperTypeName) VALUES
 		('MONSTER'),
 		('SPELL'),
-		('TRAP');
+		('TRAP'),
+		('TOKEN'),
+		('SKILL');
 
 
 	INSERT INTO CardSubType (SubTypeName) VALUES
@@ -130,6 +143,10 @@ BEGIN
 
 		-- Index 32 - __: Trap Specific SubTypes --
 		('Counter');
+
+
+	INSERT INTO MonsterAttribute (AttributeName) VALUES
+		('EARTH'), ('WIND'), ('FIRE'), ('WATER'), ('LIGHT'), ('DARK'), ('DIVINE');
 
 
 	INSERT INTO MonsterClassification (ClassificationName) VALUES
