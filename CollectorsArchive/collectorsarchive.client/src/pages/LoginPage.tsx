@@ -26,7 +26,6 @@ export default function LoginPage(props: PaperProps) {
 	const login = useGoogleLogin({
 		onSuccess: async (tokenResponse) => {
 			try {
-				// Fetch user info using the access token we got
 				const response = await fetch(GOOGLE_USER_INFO_URL, {
 					headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
 				})
@@ -34,8 +33,29 @@ export default function LoginPage(props: PaperProps) {
 				const userData = await response.json()
 				const email = userData.email
 				const userName = parseEmailUsername(email)
+				const googleSubject = userData.sub
 
-				// Navigate to home page with user data
+				// here i am adding a request for backend
+
+				// Try login
+				const backendResponse = await fetch("http://localhost:5190/api/Auth/google-login", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ googleSubject }),
+				})
+
+				if (backendResponse.status === 404) {
+					await fetch("http://localhost:5190/api/Auth/register", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							email,
+							name: userName,
+							googleSubject,
+						}),
+					})
+				}
+
 				navigate("/home", { state: { userName, email } })
 			} catch (error) {
 				console.error("Failed to fetch user info from Google:", error)
@@ -61,13 +81,12 @@ export default function LoginPage(props: PaperProps) {
 		<Container size="xs">
 			<Paper p="lg" {...props}>
 				<Center>
-					<Text size="lg" fw={500} c="bright">
+					<Text size="lg" fw={500}>
 						Welcome to Collector's Archive
 					</Text>
 				</Center>
 
 				<Group mb="md" mt="md" align="center" justify="center">
-					{/* Google login button */}
 					<Button fullWidth variant="light" leftSection={<IconBrandGoogleFilled size={16} />} onClick={() => login()}>
 						Sign in with Google
 					</Button>
@@ -95,7 +114,7 @@ export default function LoginPage(props: PaperProps) {
 					</Stack>
 
 					<Group justify="space-between" mt="xl">
-						<Anchor component="button" type="button" c="bright" opacity={0.85} onClick={() => toggle()} size="xs">
+						<Anchor component="button" type="button" opacity={0.85} onClick={() => toggle()} size="xs">
 							{type === "register" ? "Already have an account? Login" : "Don't have an account? Register"}
 						</Anchor>
 						<Button type="submit">{upperFirst(type)}</Button>
@@ -106,7 +125,6 @@ export default function LoginPage(props: PaperProps) {
 	)
 }
 
-// this function extracts the part before @ from an email
 function parseEmailUsername(email: string): string {
 	if (!email) return ""
 	return email.split("@")[0]
