@@ -56,7 +56,8 @@ export default function LoginPage(props: PaperProps) {
 					})
 				}
 
-				navigate("/home", { state: { userName, email } })
+				localStorage.setItem("user", JSON.stringify({ userName, email }))
+				navigate("/home")
 			} catch (error) {
 				console.error("Failed to fetch user info from Google:", error)
 			}
