@@ -68,42 +68,9 @@ export default function LoginPage(props: PaperProps) {
 
 				<Group mb="md" mt="md" align="center" justify="center">
 					{/* Google login button */}
-<<<<<<< HEAD
-					<GoogleLogin
-						onSuccess={(credentialResponse) => {
-							console.log("Google login success:", credentialResponse)
-
-							// this will  have a credential ID token
-							if (credentialResponse.credential) {
-								// Decode the Google ID token to extract user info
-								const decoded: any = jwtDecode(credentialResponse.credential)
-
-								// Extract email
-								const email = decoded.email
-								console.log("Google email:", email)
-
-								// Store email in form
-								form.setFieldValue("email", email)
-
-								// Extract username before "@"
-								const userName = parseEmailUsername(email)
-								console.log("Google username:", userName)
-								console.log("Full credentialResponse:", credentialResponse)
-
-								// Navigate to home page with user data
-								navigate("/home", { state: { userName, email } })
-							}
-						}}
-						onError={() => {
-							console.log("Google login failed")
-						}}
-					/>
-					<Button>Placeholder</Button>
-=======
 					<Button fullWidth variant="light" leftSection={<IconBrandGoogleFilled size={16} />} onClick={() => login()}>
 						Sign in with Google
 					</Button>
->>>>>>> e33cec7b0ad03b485cdda63877fa2d0399699a8f
 				</Group>
 
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
