@@ -76,8 +76,6 @@ export default function LoginPage(props: PaperProps) {
 							console.log("Google login failed")
 						}}
 					/>
-
-					{/* You can replace this placeholder with GitHub login later */}
 					<Button>Placeholder</Button>
 				</Group>
 
