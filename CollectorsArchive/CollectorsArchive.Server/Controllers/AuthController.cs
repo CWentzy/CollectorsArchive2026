@@ -1,6 +1,8 @@
 using CollectorsArchive.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CollectorsArchive.Server.Service;
+
 
 namespace CollectorsArchive.Server.Controllers
 {
@@ -9,17 +11,16 @@ namespace CollectorsArchive.Server.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDatabaseContents _db;
+        IEmailService _emailService;
 
-        public AuthController(AppDatabaseContents db)
+        public AuthController(AppDatabaseContents db, IEmailService emailService)
         {
             _db = db;
+            _emailService = emailService;
         }
 
-        /// <summary>
-        /// Registers a new user via Google authentication.
-        /// Receives the user's email, name, and Google subject ID.
-        /// </summary>
-        [HttpPost("register")]
+   
+        [HttpPost("RegisterNewUser")]
         public async Task<IActionResult> Register([FromBody] GoogleAuthRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Email) ||
@@ -44,7 +45,7 @@ namespace CollectorsArchive.Server.Controllers
                 UserName = request.Name,
                 GoogleSubject = request.GoogleSubject
             };
-            //Adding new user to the database
+
             _db.UserInformation.Add(newUser);
             await _db.SaveChangesAsync();
 
@@ -57,11 +58,8 @@ namespace CollectorsArchive.Server.Controllers
             });
         }
 
-        /// <summary>
-        /// Logs in a user via Google authentication.
-        /// Looks up the user by their Google subject ID.
-        /// </summary>
-        [HttpPost("google-login")]
+
+        [HttpPost("LoginUSingGoogle")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.GoogleSubject))
@@ -85,11 +83,83 @@ namespace CollectorsArchive.Server.Controllers
                 userName = user.UserName
             });
         }
+
+        [HttpPost("RequestForTempCode")]
+        public async Task<IActionResult> RequestTempCode([FromBody] TempCodeRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest("Email is required");
+
+            //  this will generate 6-digit code when every time users request it 
+            var code = new Random().Next(100000, 999999).ToString();
+
+            // this will save the code in our database but im not sure if we actually need to save every generated code. 
+            var tempCode = new TempLoginCode
+            {
+                Email = request.Email,
+                Code = code,
+                Expiration = DateTime.UtcNow.AddMinutes(10)
+            };
+
+            _db.TempLoginCodes.Add(tempCode);
+            await _db.SaveChangesAsync();
+
+            // Send email , im sending an email by plugin the email servive the class i create that send email 
+            await _emailService.SendAsync(
+                request.Email,
+                "This is your Collector's Archive Login Code",
+                $"Your login code is: {code} This code will expire with in 10 minutes from the time you recieved this email"
+            );
+
+            return Ok(new { message = "Temporary login code sent" });
+        }
+
+        [HttpPost("VerfyingTemporaryCode")]
+        public async Task<IActionResult> VerifyTempCode([FromBody] TempCodeVerifyRequest request)
+        {
+            var record = await _db.TempLoginCodes
+                .FirstOrDefaultAsync(x => x.Email == request.Email && x.Code == request.Code);
+
+            if (record == null || record.Expiration < DateTime.UtcNow)
+                return BadRequest(new { message = "Invalid or expired code" });
+
+            // b4 i regester the user i will check if the user is in the database or not because if the user is in the database then i dont need to create them again
+            var user = await _db.UserInformation
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
+
+            // here i am creating user if the user is not in the database because
+            // i want to make sure that every user that login with email and code will be in the database
+            if (user == null)
+            {
+                user = new UserInformation
+                {
+                    Email = request.Email,
+                    UserName = request.Email.Split('@')[0],
+                    GoogleSubject = null
+                };
+
+                _db.UserInformation.Add(user);
+                await _db.SaveChangesAsync();
+            }
+
+            // Remove used code
+            _db.TempLoginCodes.Remove(record);
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Login successful",
+                userName = user.UserName,
+                email = user.Email
+            });
+        }
+
+
+        // I need to creating another endpoit when users gives me their non google email i will first search in the database and
+        // then if the user is the db then i dont need to send them code again and again 
     }
 
-    /// <summary>
-    /// Request model for Google authentication endpoints.
-    /// </summary>
+    // not sure about this I will CHECKKKKK LATERRR 
     public class GoogleAuthRequest
     {
         public string Email { get; set; } = string.Empty;

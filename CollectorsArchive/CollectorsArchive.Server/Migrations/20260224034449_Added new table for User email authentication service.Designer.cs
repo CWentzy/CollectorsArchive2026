@@ -4,6 +4,7 @@ using CollectorsArchive.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CollectorsArchive.Server.Migrations
 {
     [DbContext(typeof(AppDatabaseContents))]
-    partial class AppDatabaseContentsModelSnapshot : ModelSnapshot
+    [Migration("20260224034449_Added new table for User email authentication service")]
+    partial class AddednewtableforUseremailauthenticationservice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -24,4 +24,9 @@ namespace CollectorsArchive.Server.Models
         [Column("GoogleSubject")]
         public string? GoogleSubject { get; set; }
     }
+
+
+
+
+
 }

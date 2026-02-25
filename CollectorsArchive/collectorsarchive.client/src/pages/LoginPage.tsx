@@ -16,17 +16,32 @@ import { upperFirst, useToggle } from "@mantine/hooks"
 import { useGoogleLogin } from "@react-oauth/google"
 import { IconBrandGoogleFilled } from "@tabler/icons-react"
 import { useNavigate } from "react-router-dom"
+import { useState } from "react"
 
-const GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
+
+const RegisterNewUserURL = "https://localhost:7053/api/Auth/RegisterNewUser"
+
+const LoginUSingGoogleURL = "https://localhost:7053/api/Auth/LoginUSingGoogle"
+
+const RequestForTempCodeURL = "https://localhost:7053/api/Auth/RequestForTempCode"
+
+// this variable i will be using it for after user recieved an email with the code
+const VerfyingTemporaryCodeURL = "https://localhost:7053/api/Auth/VerfyingTemporaryCode"
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])
 	const navigate = useNavigate()
 
+	// this is for temp code will user provide from their email
+	const [isCodeStep, setIsCodeStep] = useState(false)
+	const [code, setCode] = useState("")
+	const [savedEmail, setSavedEmail] = useState("")
+
 	const login = useGoogleLogin({
 		onSuccess: async (tokenResponse) => {
 			try {
-				const response = await fetch(GOOGLE_USER_INFO_URL, {
+				const response = await fetch(GoogleUserInfoURL, {
 					headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
 				})
 
@@ -37,15 +52,15 @@ export default function LoginPage(props: PaperProps) {
 
 				// here i am adding a request for backend
 
-				// Try login
-				const backendResponse = await fetch("http://localhost:5190/api/Auth/google-login", {
+				// we let user to try to login first
+				const backendResponse = await fetch(LoginUSingGoogleURL, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ googleSubject }),
 				})
 
 				if (backendResponse.status === 404) {
-					await fetch("http://localhost:5190/api/Auth/register", {
+					await fetch(RegisterNewUserURL, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({
@@ -69,12 +84,10 @@ export default function LoginPage(props: PaperProps) {
 		initialValues: {
 			email: "",
 			name: "",
-			password: "",
 		},
 
 		validate: {
 			email: (val) => (/^\S+@\S+$/.test(val) ? null : "Invalid email"),
-			password: (val) => (val.length <= 6 ? "Password should include at least 6 characters" : null),
 		},
 	})
 
@@ -95,7 +108,26 @@ export default function LoginPage(props: PaperProps) {
 
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
 
-				<form onSubmit={form.onSubmit(() => {})}>
+				{/* Here only works for non google users so their will get temp code and they have to provide it from their email  */}
+				<form
+					onSubmit={form.onSubmit(async (values) => {
+						const { email, name } = values
+
+						// Send email and their name to backend for non-Google login
+						await fetch(RequestForTempCodeURL, {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ email, name }),
+						})
+
+						console.log("Temporary login code sent to email")
+
+						// as i save email so verify step always has correct value
+						setSavedEmail(email)
+
+						setIsCodeStep(true)
+					})}
+				>
 					<Stack>
 						{type === "register" && (
 							<TextInput
@@ -107,18 +139,57 @@ export default function LoginPage(props: PaperProps) {
 
 						<TextInput
 							required
-							label="Email"
+							label="Email (for non‑Google login)"
 							value={form.values.email}
 							onChange={(event) => form.setFieldValue("email", event.currentTarget.value)}
 							error={form.errors.email && "Invalid email"}
 						/>
+
+						{/* This input will be displayed  only after user submits email and backend sends temp code */}
+						{isCodeStep && (
+							<TextInput label="Enter the code we emailed you" value={code} onChange={(e) => setCode(e.target.value)} />
+						)}
 					</Stack>
 
 					<Group justify="space-between" mt="xl">
 						<Anchor component="button" type="button" opacity={0.85} onClick={() => toggle()} size="xs">
 							{type === "register" ? "Already have an account? Login" : "Don't have an account? Register"}
 						</Anchor>
-						<Button type="submit">{upperFirst(type)}</Button>
+
+						{/* If we are in code step, this button should verify the code instead of resending 
+						also the fetch URL is different cus the end point at the backend is different too */}
+						{isCodeStep ? (
+							<Button
+								type="button"
+								onClick={async () => {
+									const response = await fetch(VerfyingTemporaryCodeURL, {
+										method: "POST",
+										headers: { "Content-Type": "application/json" },
+										body: JSON.stringify({ email: savedEmail, code }),
+									})
+
+									if (response.ok) {
+										const data = await response.json()
+
+										localStorage.setItem(
+											"user",
+											JSON.stringify({
+												userName: data.userName,
+												email: data.email,
+											})
+										)
+
+										navigate("/home")
+									} else {
+										console.log("Invalid or expired code")
+									}
+								}}
+							>
+								Verify Code
+							</Button>
+						) : (
+							<Button type="submit">{upperFirst(type)}</Button>
+						)}
 					</Group>
 				</form>
 			</Paper>
