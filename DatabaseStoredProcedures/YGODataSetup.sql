@@ -72,7 +72,11 @@ BEGIN
 
 	CREATE TABLE CardSuperType (
 		SuperTypeID INT IDENTITY(1,1) PRIMARY KEY,
-		SuperTypeName VARCHAR (50)
+		SuperTypeName VARCHAR (50),
+		SuperTypeNameFR VARCHAR (50),
+		SuperTypeNameGE VARCHAR (50),
+		SuperTypeNameIT VARCHAR (50),
+		SuperTypeNamePT VARCHAR (50)
 	);
 
 	CREATE TABLE CardSubType (
@@ -119,12 +123,12 @@ BEGIN
 
 -- =================================POPULATE DESCRIPTOR TABLES================================== --
 
-	INSERT INTO CardSuperType (SuperTypeName) VALUES
-		('MONSTER'),
-		('SPELL'),
-		('TRAP'),
-		('TOKEN'),
-		('SKILL');
+	INSERT INTO CardSuperType (SuperTypeName, SuperTypeNameFR, SuperTypeNameGE, SuperTypeNameIT, SuperTypeNamePT) VALUES
+		('MONSTER', 'MONSTRE', 'MONSTER', 'MOSTRO', 'MOSTRO'),
+		('SPELL', 'MAGIE', 'ZAUBER', 'MAGIA', 'TRAPPOLA'),
+		('TRAP', 'PIÈGE', 'FALLE', 'MAGIA', 'ARMADILHA'),
+		('TOKEN', '', '', '', ''),
+		('SKILL', '', '', '', '');
 
 
 	INSERT INTO CardSubType (SubTypeName) VALUES
@@ -139,7 +143,7 @@ BEGIN
 		('Quick-Play'), ('Equip'), ('Field'), ('Ritual'),
 
 		-- Index 30 - 31: Spell/Trap Shared Sub-Types --
-		('Normal'), ('Continous'),
+		('Normal'), ('Continuous'),
 
 		-- Index 32 - __: Trap Specific SubTypes --
 		('Counter');
