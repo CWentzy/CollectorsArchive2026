@@ -59,7 +59,7 @@ namespace CollectorsArchive.Server.Controllers
         }
 
 
-        [HttpPost("LoginUSingGoogle")]
+        [HttpPost("LoginUsingGoogle")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.GoogleSubject))

@@ -25,7 +25,7 @@ namespace CollectorsArchive.Server
         {
             modelBuilder.Entity<UserInformation>(entity =>
             {
-                entity.ToTable("UserInformation");
+                entity.ToTable("User");
 
                 entity.HasKey(e => e.UserId);
 
