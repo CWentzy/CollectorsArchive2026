@@ -108,7 +108,11 @@ BEGIN
 -- =================================POPULATE DESCRIPTOR TABLES================================== --
 
 	INSERT INTO CardLanguage (LanguageName, LanguageCode) VALUES
-		('English', 'ENG');
+		('English', 'EN'),
+		('French','FR'),
+		('German','GE'),
+		('Italian','IT'),
+		('Portuguese','PT');
 
 	INSERT INTO CardGame (GameName, GameCode) VALUES
 		('Yu-Gi-Oh', 'YGO'),
