@@ -22,7 +22,7 @@ const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 const RegisterNewUserURL = "https://localhost:7053/api/Auth/RegisterNewUser"
 
-const LoginUSingGoogleURL = "https://localhost:7053/api/Auth/LoginUSingGoogle"
+const LoginUsingGoogleURL = "https://localhost:7053/api/Auth/LoginUsingGoogle"
 
 const RequestForTempCodeURL = "https://localhost:7053/api/Auth/RequestForTempCode"
 
@@ -53,7 +53,7 @@ export default function LoginPage(props: PaperProps) {
 				// here i am adding a request for backend
 
 				// we let user to try to login first
-				const backendResponse = await fetch(LoginUSingGoogleURL, {
+				const backendResponse = await fetch(LoginUsingGoogleURL, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ googleSubject }),
