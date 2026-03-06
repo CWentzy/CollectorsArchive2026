@@ -46,11 +46,13 @@ namespace CollectorsArchive.Server
             {
                 options.AddPolicy("AllowAll", builder =>
                 {
-                    builder.WithOrigins("https://localhost:5173", "https://localhost:5174")
+                    builder
+                        .AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 });
             });
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

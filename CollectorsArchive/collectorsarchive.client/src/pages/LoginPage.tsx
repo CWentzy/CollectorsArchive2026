@@ -13,12 +13,12 @@ import {
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { upperFirst, useToggle } from "@mantine/hooks"
-import { useGoogleLogin } from "@react-oauth/google"
-import { IconBrandGoogleFilled } from "@tabler/icons-react"
+import { GoogleLogin } from "@react-oauth/google"
+
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 
-const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
+//const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 const RegisterNewUserURL = "https://localhost:7053/api/Auth/RegisterNewUser"
 
@@ -38,52 +38,9 @@ export default function LoginPage(props: PaperProps) {
 	const [code, setCode] = useState("")
 	const [savedEmail, setSavedEmail] = useState("")
 
-	const login = useGoogleLogin({
-		onSuccess: async (tokenResponse) => {
-			try {
-				const response = await fetch(GoogleUserInfoURL, {
-					headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-				})
-
-				const userData = await response.json()
-				const email = userData.email
-				const userName = parseEmailUsername(email)
-				const googleSubject = userData.sub
-
-				// here i am adding a request for backend
-
-				// we let user to try to login first
-				const backendResponse = await fetch(LoginUsingGoogleURL, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ googleSubject }),
-				})
-
-				if (backendResponse.status === 404) {
-					await fetch(RegisterNewUserURL, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							email,
-							name: userName,
-							googleSubject,
-						}),
-					})
-				}
-
-				localStorage.setItem("user", JSON.stringify({ userName, email }))
-				navigate("/home")
-			} catch (error) {
-				console.error("Failed to fetch user info from Google:", error)
-			}
-		},
-		onError: () => console.log("Login Failed"),
-	})
-
 	const form = useForm({
 		initialValues: {
 			email: "",
-			name: "",
 		},
 
 		validate: {
@@ -101,9 +58,44 @@ export default function LoginPage(props: PaperProps) {
 				</Center>
 
 				<Group mb="md" mt="md" align="center" justify="center">
-					<Button fullWidth variant="light" leftSection={<IconBrandGoogleFilled size={16} />} onClick={() => login()}>
-						Sign in with Google
-					</Button>
+					<GoogleLogin
+						onSuccess={async (response) => {
+							if (!response.credential) {
+								console.error("NO Token ID from Google")
+								return
+							}
+							try {
+								const GoogleIDToken = response.credential
+
+								// decode ID token
+								const decoded: any = JSON.parse(atob(GoogleIDToken.split(".")[1]))
+								const email = decoded.email
+								const userName = parseEmailUsername(email)
+
+								// Try login first
+								const backendResponse = await fetch(LoginUsingGoogleURL, {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({ GoogleIDToken }),
+								})
+
+								// If user not found then register
+								if (backendResponse.status === 404) {
+									await fetch(RegisterNewUserURL, {
+										method: "POST",
+										headers: { "Content-Type": "application/json" },
+										body: JSON.stringify({ GoogleIDToken }),
+									})
+								}
+
+								localStorage.setItem("user", JSON.stringify({ userName, email }))
+								navigate("/home")
+							} catch (error) {
+								console.error("Google login failed:", error)
+							}
+						}}
+						onError={() => console.log("Login Failed")}
+					/>
 				</Group>
 
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
@@ -111,13 +103,14 @@ export default function LoginPage(props: PaperProps) {
 				{/* Here only works for non google users so their will get temp code and they have to provide it from their email  */}
 				<form
 					onSubmit={form.onSubmit(async (values) => {
-						const { email, name } = values
+						const email = values.email
+						const userName = parseEmailUsername(email)
 
 						// Send email and their name to backend for non-Google login
 						await fetch(RequestForTempCodeURL, {
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
-							body: JSON.stringify({ email, name }),
+							body: JSON.stringify({ email, userName }),
 						})
 
 						console.log("Temporary login code sent to email")
@@ -129,17 +122,9 @@ export default function LoginPage(props: PaperProps) {
 					})}
 				>
 					<Stack>
-						{type === "register" && (
-							<TextInput
-								label="Username"
-								value={form.values.name}
-								onChange={(event) => form.setFieldValue("name", event.currentTarget.value)}
-							/>
-						)}
-
 						<TextInput
 							required
-							label="Email (for non‑Google login)"
+							label="Email (for non Google login)"
 							value={form.values.email}
 							onChange={(event) => form.setFieldValue("email", event.currentTarget.value)}
 							error={form.errors.email && "Invalid email"}
@@ -157,7 +142,7 @@ export default function LoginPage(props: PaperProps) {
 						</Anchor>
 
 						{/* If we are in code step, this button should verify the code instead of resending 
-						also the fetch URL is different cus the end point at the backend is different too */}
+            also the fetch URL is different cus the end point at the backend is different too */}
 						{isCodeStep ? (
 							<Button
 								type="button"
