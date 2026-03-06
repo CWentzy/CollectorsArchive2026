@@ -110,7 +110,7 @@ BEGIN
 	INSERT INTO CardLanguage (LanguageName, LanguageCode) VALUES
 		('English', 'EN'),
 		('French','FR'),
-		('German','GE'),
+		('German','DE'),
 		('Italian','IT'),
 		('Portuguese','PT');
 

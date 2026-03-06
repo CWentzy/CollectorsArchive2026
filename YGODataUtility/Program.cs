@@ -45,16 +45,7 @@ namespace YGODataUtility
             Console.WriteLine("Done.");
 
 
-            // Checks for sets that need to be added. If more than __ sets need to be added,
-            // A full database reset is performed instead.
-            //List<API_YGOSet> updates = new List<API_YGOSet>();
-            //foreach (API_YGOSet set in allSets)
-            //{
-
-            //}
-
-
-            // ----- Inserting all sets -----
+            // ----- Inserting/Updating all sets -----
             using (conn)
             {
                 conn.Open();
@@ -116,6 +107,30 @@ namespace YGODataUtility
             //        Thread.Sleep(250);
             //    }
             //}
+
+            API_YGOCardAltLanguageDataHolder altCards = new API_YGOCardAltLanguageDataHolder();
+            foreach (string lang in API_YGO._APIAltLanguages)
+            {
+                if (!API_YGO.RetrieveCardAltLanguageData(ref altCards, lang))
+                {
+                    Console.WriteLine("Something went wrong.");
+                    continue;
+                }
+
+                conn = new SqlConnection(_connectionString);
+                using (conn)
+                {
+                    conn.Open();
+                    SqlCommand cmd = conn.CreateCommand();
+                    foreach (API_YGOCardAltLanguage card in altCards.data)
+                    {
+                        Console.WriteLine(card.name);
+                        cmd = card.GetInsertCommand(lang);
+                        cmd.Connection = conn;
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
         }
     }
 }

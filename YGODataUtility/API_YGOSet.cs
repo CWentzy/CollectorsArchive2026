@@ -17,7 +17,7 @@ namespace YGODataUtility
         // ------------------------------------- PROPERTIES ------------------------------------ //
 
         // ----- Yu-Gi-Oh SetID in the Database -----
-        static private readonly int SetID = 1;
+        static private readonly int GameID = 1;
 
         public string set_name { get; set; }
         public string set_code { get; set; }
@@ -37,25 +37,24 @@ namespace YGODataUtility
 
             // This accounts for (currently 2) sets that do not have a recorded release date,
             // leaving the release date field NULL.
-            if (tcg_date != null)
-            {
-                commandText = "INSERT INTO CardSet (GameID, SetName, SetCode, ReleaseDate) VALUES " +
-                                "((SELECT GameID FROM CardGame WHERE GameID = @gameID), " +
-                                "@setName, @setCode, @releaseDate);";
-            }
-            else
-            {
-                commandText = "INSERT INTO CardSet (GameID, SetName, SetCode) VALUES " +
-                                "((SELECT GameID FROM CardGame WHERE GameID = @gameID), " +
-                                "@setName, @setCode);";
-            }
+            commandText = "INSERT INTO CardSet (GameID, SetName, SetCode";
+            if (tcg_date != null) { commandText += ", ReleaseDate"; }
 
+            commandText += ") VALUES ((SELECT GameID FROM CardGame WHERE GameID = @gameID), " +
+                "@setName, @setCode";
+            if (tcg_date != null) { commandText += ", @releaseDate"; }
+
+            commandText += ");";
+
+
+            // Add parameter values
             SqlCommand cmd = new SqlCommand(commandText);
-            cmd.Parameters.AddWithValue("@gameID", SetID);
+            cmd.Parameters.AddWithValue("@gameID", GameID);
             cmd.Parameters.AddWithValue("@setName", set_name);
             cmd.Parameters.AddWithValue("@setCode", set_code);
-            
+
             if (tcg_date != null) { cmd.Parameters.AddWithValue("@releaseDate", DateTime.Parse(tcg_date).Date); }
+
 
             return cmd;
         }

@@ -30,6 +30,9 @@ namespace YGODataUtility
         const string _APIExtensionSetSearch = "cardset=";   // Specifiy single card set by name
         const string _APISpaceEscape = "%20";               // Used to escape spaces in set names
 
+        const string _APIExtensionLanguage = "?language=";
+        static public readonly string[] _APIAltLanguages = { "fr", "de", "it", "pt" };
+
 
         // --------------------------- API DATA RETRIEVAL - CARD SET --------------------------- //
 
@@ -127,6 +130,32 @@ namespace YGODataUtility
 
             return true;
         }
+
+
+        // --------------------------- API DATA RETRIEVAL - CARD DATA -------------------------- //
+
+        public static bool RetrieveCardAltLanguageData(ref API_YGOCardAltLanguageDataHolder data, string index)
+        {
+            bool result = true;
+
+            try
+            {
+                HttpClient client = new HttpClient();
+                var response = client.GetAsync(_APICardEndpoint + _APIExtensionLanguage + index).Result;
+
+                string responsedata = response.Content.ReadAsStringAsync().Result;
+                // ----- Should add an additional check for valid JSON -----
+
+                data = JsonSerializer.Deserialize<API_YGOCardAltLanguageDataHolder>(responsedata);
+            }
+            catch (Exception)
+            {
+                result = false;
+            }
+
+            return result;
+        }
+
 
 
         // ----------------------------------- DATABASE RESET ---------------------------------- //

@@ -74,7 +74,7 @@ BEGIN
 		SuperTypeID INT IDENTITY(1,1) PRIMARY KEY,
 		SuperTypeName VARCHAR (50),
 		SuperTypeNameFR VARCHAR (50),
-		SuperTypeNameGE VARCHAR (50),
+		SuperTypeNameDE VARCHAR (50),
 		SuperTypeNameIT VARCHAR (50),
 		SuperTypeNamePT VARCHAR (50)
 	);
@@ -83,18 +83,18 @@ BEGIN
 		SubTypeID INT IDENTITY(1,1) PRIMARY KEY,
 		SubTypeName VARCHAR (50),
 		SubTypeNameFR VARCHAR (50),
-		SubTypeNameGE VARCHAR (50),
+		SubTypeNameDE VARCHAR (50),
 		SubTypeNameIT VARCHAR (50),
 		SubTypeNamePT VARCHAR (50)
 	);
 
 	CREATE TABLE MonsterAttribute (
 		AttributeID INT IDENTITY(1,1) PRIMARY KEY,
-		AttributeName VARCHAR (8),
-		AttributeNameFR VARCHAR (8),
-		AttributeNameGE VARCHAR (8),
-		AttributeNameIT VARCHAR (8),
-		AttributeNamePT VARCHAR (8)
+		AttributeName VARCHAR (10),
+		AttributeNameFR VARCHAR (10),
+		AttributeNameDE VARCHAR (10),
+		AttributeNameIT VARCHAR (10),
+		AttributeNamePT VARCHAR (10)
 	);
 
 	CREATE TABLE YGOCard (
@@ -102,13 +102,13 @@ BEGIN
 		CardID VARCHAR(10) PRIMARY KEY,
 		CardName VARCHAR (100),
 		CardNameFR VARCHAR (100),
-		CardNameGE VARCHAR (100),
+		CardNameDE VARCHAR (100),
 		CardNameIT VARCHAR (100),
 		CardNamePT VARCHAR (100),
 		-- CardCode VARCHAR (8),
 		CardText VARCHAR (1500),
 		CardTextFR VARCHAR (1500),
-		CardTextGE VARCHAR (1500),
+		CardTextDE VARCHAR (1500),
 		CardTextIT VARCHAR (1500),
 		CardTextPT VARCHAR (1500),
 		SuperType INT FOREIGN KEY REFERENCES CardSuperType(SuperTypeID),
@@ -129,7 +129,7 @@ BEGIN
 		ClassificationID INT IDENTITY(1,1) PRIMARY KEY,
 		ClassificationName VARCHAR (20),
 		ClassificationNameFR VARCHAR (20),
-		ClassificationNameGE VARCHAR (20),
+		ClassificationNameDE VARCHAR (20),
 		ClassificationNameIT VARCHAR (20),
 		ClassificationNamePT VARCHAR (20)
 	);
@@ -143,7 +143,7 @@ BEGIN
 
 -- =================================POPULATE DESCRIPTOR TABLES================================== --
 
-	INSERT INTO CardSuperType (SuperTypeName, SuperTypeNameFR, SuperTypeNameGE, SuperTypeNameIT, SuperTypeNamePT) VALUES
+	INSERT INTO CardSuperType (SuperTypeName, SuperTypeNameFR, SuperTypeNameDE, SuperTypeNameIT, SuperTypeNamePT) VALUES
 		('MONSTER', 'MONSTRE', 'MONSTER', 'MOSTRO', 'MOSTRO'),
 		('SPELL', 'MAGIE', 'ZAUBER', 'MAGIA', 'TRAPPOLA'),
 		('TRAP', 'PIÈGE', 'FALLE', 'MAGIA', 'ARMADILHA'),
@@ -151,7 +151,7 @@ BEGIN
 		('SKILL', 'COMPÉNTENCE', 'FÄHIGKEIT', 'ABILITÀ', 'HABILIDADE');
 
 
-	INSERT INTO CardSubType (SubTypeName, SubTypeNameFR, SubTypeNameGE, SubTypeNameIT, SubTypeNamePT) VALUES
+	INSERT INTO CardSubType (SubTypeName, SubTypeNameFR, SubTypeNameDE, SubTypeNameIT, SubTypeNamePT) VALUES
 
 		-- Index 1 - 25: Moster Sub-Types --
 		('Spellcaster', 'Magicien', 'Hexer', 'Incantatore', 'Mago'), 
@@ -194,7 +194,7 @@ BEGIN
 		('Counter', 'Contre', 'Konter', 'Contro', 'Marcador');
 
 
-	INSERT INTO MonsterAttribute (AttributeName, AttributeNameFR, AttributeNameGE, AttributeNameIT, AttributeNamePT) VALUES
+	INSERT INTO MonsterAttribute (AttributeName, AttributeNameFR, AttributeNameDE, AttributeNameIT, AttributeNamePT) VALUES
 		('EARTH', 'TERRE', 'ERDE', 'TERRA', 'TERRA'), 
 		('WIND', 'VENT', 'WIND', 'VENTO', 'VENTO'), 
 		('FIRE', 'FEU', 'FEUER', 'FUOCO', 'FOGO'), 
@@ -204,7 +204,7 @@ BEGIN
 		('DIVINE', 'DIVIN', 'GÖTTLICH', 'DIVINO', 'DIVINO');
 
 
-	INSERT INTO MonsterClassification (ClassificationName) VALUES
+	INSERT INTO MonsterClassification (ClassificationName, ClassificationNameFR, ClassificationNameDE, ClassificationNameIT, ClassificationNamePT) VALUES
 		('Normal', 'Normal', 'Normal', 'Normale',  'Normal'), 
 		('Effect', 'Effet', 'Effekt', 'Effetto', 'Efeito'), 
 		('Ritual', 'Rituel', 'Ritual', 'Rituale', 'Ritual'), 
