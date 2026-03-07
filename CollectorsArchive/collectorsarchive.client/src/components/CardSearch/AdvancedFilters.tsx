@@ -1,6 +1,9 @@
 import { Text } from "@mantine/core"
 import type { Game, SearchType } from "./schema"
 import YGOAdvancedFilters from "./ygo/YGOAdvancedFilters"
+import type { YGOFormFilters } from "./ygo/schema"
+
+export type CardSearchFormAdvancedFilters = YGOFormFilters // just to keep it clean when we add more games
 
 interface AdvancedFiltersProps {
 	searchType: SearchType

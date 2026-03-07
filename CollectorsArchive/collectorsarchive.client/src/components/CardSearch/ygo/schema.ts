@@ -1,3 +1,9 @@
+export const MIN_CARD_LEVEL = 0
+export const MAX_CARD_LEVEL = 13
+
+export const MIN_ATK_DEF = 0
+export const MAX_ATK_DEF = 5000
+
 // Super Types
 export const SuperType = {
 	monster: "Monster",
@@ -8,6 +14,18 @@ export const SuperType = {
 export type SuperType = (typeof SuperType)[keyof typeof SuperType]
 
 // Monster Card
+export const Attribute = {
+	dark: "Dark",
+	light: "Light",
+	earth: "Earth",
+	water: "Water",
+	fire: "Fire",
+	wind: "Wind",
+	divine: "Divine",
+} as const
+
+export type Attribute = (typeof Attribute)[keyof typeof Attribute]
+
 export const MonsterSubType = {
 	spellcaster: "Spellcaster",
 	dragon: "Dragon",
@@ -36,6 +54,27 @@ export const MonsterSubType = {
 	illusion: "Illusion",
 } as const
 
+export type MonsterSubType = (typeof MonsterSubType)[keyof typeof MonsterSubType]
+
+export const CardType = {
+	normal: "Normal",
+	effect: "Effect",
+	ritual: "Ritual",
+	fusion: "Fusion",
+	synchro: "Synchro",
+	xyz: "Xyz",
+	toon: "Toon",
+	spirit: "Spirit",
+	union: "Union",
+	gemini: "Gemini",
+	tuner: "Tuner",
+	flip: "Flip",
+	pendulum: "Pendulum",
+	link: "Link",
+}
+
+export type CardType = (typeof CardType)[keyof typeof CardType]
+
 // Spell Card
 export const SpellSubType = {
 	equip: "Equip",
@@ -56,3 +95,20 @@ export const TrapSubType = {
 } as const
 
 export type TrapSubType = (typeof TrapSubType)[keyof typeof TrapSubType]
+
+// Advanced Filters for Card Search
+export interface YGOFormFilters {
+	attributes?: Attribute[]
+	subTypes?: MonsterSubType[] | SpellSubType[] | TrapSubType[]
+	cardTypes?: CardType[]
+	cardTypesOperator?: "and" | "or"
+	excludedCardTypes?: CardType[]
+	levelRange?: [number, number]
+	minATK?: number
+	maxATK?: number
+	minDEF?: number
+	maxDEF?: number
+}
+
+// Default values for advanced filters
+export const YGOSearchDefaultFilters: YGOFormFilters = {}

@@ -6,6 +6,7 @@ import {
 	Flex,
 	Group,
 	Image,
+	JsonInput,
 	Card as MantineCard,
 	Paper,
 	SegmentedControl,
@@ -16,11 +17,16 @@ import {
 	ThemeIcon,
 	useMantineTheme,
 } from "@mantine/core"
-import { useForm } from "@mantine/form"
 import { useMediaQuery } from "@mantine/hooks"
-import { DicesIcon, LanguagesIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
+import { DicesIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
 import { useState } from "react"
-import AdvancedFilters from "./AdvancedFilters"
+import AdvancedFilters, { type CardSearchFormAdvancedFilters } from "./AdvancedFilters"
+import {
+	CardSearchFormProvider,
+	useCardSearchForm,
+	useCardSearchFormContext,
+	type CardSearchFormValues,
+} from "./CardSearchFormContext"
 import {
 	Game,
 	SEARCH_QUERY_MAX_LENGTH,
@@ -30,6 +36,17 @@ import {
 	type SearchResult,
 	type Set,
 } from "./schema"
+import { YGOSearchDefaultFilters } from "./ygo/schema"
+
+const initialFormValues: CardSearchFormValues = {
+	// General
+	query: "" as string,
+	searchType: SearchType.card as SearchType,
+	game: "all" as Game | undefined,
+
+	// Game specific
+	advancedFilters: YGOSearchDefaultFilters as CardSearchFormAdvancedFilters,
+}
 
 const dummyResults: SearchResult[] = [
 	{
@@ -43,45 +60,53 @@ const dummyResults: SearchResult[] = [
 	},
 ]
 
-interface QuerySectionProps {
-	type: SearchType
-	onTypeChange: (value: SearchType) => void
-	queryProps: React.ComponentPropsWithoutRef<typeof TextInput>
-}
+function QuerySection() {
+	const form = useCardSearchFormContext()
+	const [searchType, setSearchType] = useState<SearchType>(form.getValues().searchType)
 
-function QuerySection({ type, onTypeChange, queryProps }: QuerySectionProps) {
+	form.watch("searchType", ({ value }) => setSearchType(value))
+
 	return (
 		<Stack gap={4}>
 			{/* min height to avoid layout shift when error shows */}
 			<Flex gap="md" align="flex-start" mih={60}>
 				<SegmentedControl
-					value={type}
-					onChange={(value) => onTypeChange(value as SearchType)}
+					key={form.key("searchType")}
+					{...form.getInputProps("searchType")}
 					data={[
 						{ label: "Card", value: SearchType.card },
 						{ label: "Set", value: SearchType.set },
 					]}
 					w={150}
 				/>
-				<TextInput flex={1} placeholder={`Enter ${type} name`} {...queryProps} />
+				<TextInput
+					key={form.key("query")}
+					{...form.getInputProps("query")}
+					flex={1}
+					placeholder={`Enter ${searchType} name`}
+				/>
 			</Flex>
 		</Stack>
 	)
 }
 
-interface GameSelectorProps {
-	game: Game | undefined
-	onGameChange: (value: Game) => void
-	isMobile?: boolean
-}
+function GameSelector({ isMobile }: { isMobile?: boolean }) {
+	const form = useCardSearchFormContext()
 
-function GameSelector({ game, onGameChange, isMobile }: GameSelectorProps) {
 	const gameOptions = [
 		{ label: "All", value: "all" },
 		{ label: "Yu-Gi-Oh!", value: Game.ygo },
 		{ label: "Magic: The Gathering", value: Game.mtg },
 		{ label: "Pokémon", value: Game.pokemon },
 	]
+
+	function handleGameChange(value: string | null) {
+		if (!value) return
+		form.setFieldValue("game", value === "all" ? (undefined as unknown as Game) : (value as Game))
+		form.setFieldValue("advancedFilters", YGOSearchDefaultFilters)
+	}
+
+	const defaultGame = form.getValues().game ?? "all"
 
 	return (
 		<Stack gap={4}>
@@ -95,30 +120,29 @@ function GameSelector({ game, onGameChange, isMobile }: GameSelectorProps) {
 			</Group>
 			{isMobile ? (
 				<Select
-					value={game === undefined ? "all" : game}
-					onChange={(value) => onGameChange(value as Game)}
+					key={form.key("game")}
+					defaultValue={defaultGame}
+					onChange={handleGameChange}
+					error={form.errors.game}
 					data={gameOptions}
 					allowDeselect={false}
 				/>
 			) : (
-				<SegmentedControl value={game} onChange={(value) => onGameChange(value as Game)} data={gameOptions} />
+				<SegmentedControl
+					key={form.key("game")}
+					defaultValue={defaultGame}
+					onChange={handleGameChange}
+					data={gameOptions}
+				/>
 			)}
 		</Stack>
 	)
 }
 
-interface LanguageSelectorProps {
-	language: string
-	onLanguageChange: (value: string) => void
-	isMobile?: boolean
-}
+/* function LanguageSelector({ isMobile }: { isMobile?: boolean }) {
+	const form = useCardSearchFormContext()
 
-function LanguageSelector({ language, onLanguageChange, isMobile }: LanguageSelectorProps) {
-	const languageOptions = [
-		{ label: "English", value: "en" },
-		{ label: "French", value: "fr" },
-		{ label: "German", value: "de" },
-	]
+	const languageOptions = Object.values(Language).map((lang) => ({ label: LanguageNames[lang], value: lang }))
 
 	return (
 		<Stack gap={4}>
@@ -132,23 +156,26 @@ function LanguageSelector({ language, onLanguageChange, isMobile }: LanguageSele
 			</Group>
 			{isMobile ? (
 				<Select
-					value={language}
-					onChange={(value) => onLanguageChange(value as string)}
+					key={form.key("language")}
+					{...form.getInputProps("language")}
 					data={languageOptions}
 					allowDeselect={false}
 				/>
 			) : (
-				<SegmentedControl
-					value={language}
-					onChange={(value) => onLanguageChange(value as string)}
-					data={languageOptions}
-				/>
+				<SegmentedControl key={form.key("language")} {...form.getInputProps("language")} data={languageOptions} />
 			)}
 		</Stack>
 	)
-}
+} */
 
-function AdvancedFiltersSection({ searchType, game }: { searchType: SearchType; game: Game | undefined }) {
+function AdvancedFiltersSection() {
+	const form = useCardSearchFormContext()
+	const [searchType, setSearchType] = useState<SearchType>(form.getValues().searchType)
+	const [game, setGame] = useState<Game | undefined>(form.getValues().game)
+
+	form.watch("searchType", ({ value }) => setSearchType(value))
+	form.watch("game", ({ value }) => setGame(value))
+
 	return (
 		<Accordion variant="separated">
 			<Accordion.Item value="filters">
@@ -224,14 +251,11 @@ export default function CardSearchForm() {
 
 	const [accordionValue, setAccordionValue] = useState<string | null>("search")
 
-	const form = useForm({
-		mode: "controlled",
-		initialValues: {
-			query: "" as string,
-			searchType: SearchType.card as SearchType,
-			game: "all" as Game | undefined,
-			language: "en" as string,
-		},
+	const [debugValues, setDebugValues] = useState<typeof form.values>(initialFormValues) // for debugging - TODO: remove
+
+	const form = useCardSearchForm({
+		mode: "uncontrolled",
+		initialValues: initialFormValues,
 		transformValues: (values) => ({
 			...values,
 			query: values.query?.trim().replace(/\s{2,}/g, " ") || "", // trim, and limit consecutive spaces to 1
@@ -243,8 +267,8 @@ export default function CardSearchForm() {
 					: `Search term must be between ${SEARCH_QUERY_MIN_LENGTH} and ${SEARCH_QUERY_MAX_LENGTH} characters`,
 			searchType: (value) => (Object.values(SearchType).includes(value) ? null : "Invalid search type"),
 			game: (value) => (value === undefined || Object.values(Game).includes(value) ? null : "Invalid game selection"),
-			language: (value) => (value ? null : "Language is required"),
 		},
+		onValuesChange: (values) => setDebugValues(values), // for debugging - TODO: remove
 	})
 
 	const handleSubmit = async (values: typeof form.values) => {
@@ -262,35 +286,31 @@ export default function CardSearchForm() {
 						<Text fw={500}>Search Tool</Text>
 					</Accordion.Control>
 					<Accordion.Panel pt="md" p="xs">
-						<form onSubmit={form.onSubmit(handleSubmit)}>
-							<Stack>
-								<QuerySection
-									type={form.values.searchType}
-									onTypeChange={(value) => form.setFieldValue("searchType", value)}
-									queryProps={form.getInputProps("query")}
-								/>
+						<CardSearchFormProvider form={form}>
+							<form onSubmit={form.onSubmit(handleSubmit)}>
+								<Stack>
+									<QuerySection />
 
-								<GameSelector
-									game={form.values.game}
-									onGameChange={(value) => form.setFieldValue("game", value)}
-									isMobile={isMobile}
-								/>
+									<GameSelector isMobile={isMobile} />
 
-								<LanguageSelector
-									language={form.values.language}
-									onLanguageChange={(value) => form.setFieldValue("language", value)}
-									isMobile={isMobile}
-								/>
+									<Box mt="lg">
+										{/* For debugging - TODO: remove */}
+										<div>
+											<Text size="xs" c="dimmed" fw={200}>
+												Live form values (for debugging):
+											</Text>
+											<JsonInput value={JSON.stringify(debugValues, null, 2)} readOnly rows={10} />
+										</div>
 
-								<Box mt="lg">
-									<AdvancedFiltersSection searchType={form.values.searchType} game={form.values.game} />
-								</Box>
+										<AdvancedFiltersSection />
+									</Box>
 
-								<Group justify="flex-end">
-									<Button type="submit">Search</Button>
-								</Group>
-							</Stack>
-						</form>
+									<Group justify="flex-end">
+										<Button type="submit">Search</Button>
+									</Group>
+								</Stack>
+							</form>
+						</CardSearchFormProvider>
 					</Accordion.Panel>
 				</Accordion.Item>
 			</Accordion>

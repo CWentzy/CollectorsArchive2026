@@ -16,6 +16,24 @@ export const Game = {
 
 export type Game = (typeof Game)[keyof typeof Game]
 
+export const Language = {
+	en: "en",
+	fr: "fr",
+	de: "de",
+	it: "it",
+	pt: "pt",
+} as const
+
+export type Language = (typeof Language)[keyof typeof Language]
+
+export const LanguageNames: Record<Language, string> = {
+	en: "English",
+	fr: "French",
+	de: "German",
+	it: "Italian",
+	pt: "Portuguese",
+}
+
 export interface Card {
 	id: string
 	name: string
