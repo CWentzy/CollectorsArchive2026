@@ -266,7 +266,7 @@ export default function CardSearchForm() {
 							<Stack>
 								<QuerySection
 									type={form.values.searchType}
-									onTypeChange={(value) => form.setFieldValue("type", value)}
+									onTypeChange={(value) => form.setFieldValue("searchType", value)}
 									queryProps={form.getInputProps("query")}
 								/>
 
