@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Startup.cs" />
+  </Folder>
   <Project Path="collectorsarchive.client/collectorsarchive.client.esproj">
     <Build />
     <Deploy />

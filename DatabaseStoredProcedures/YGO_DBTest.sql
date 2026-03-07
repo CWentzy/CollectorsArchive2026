@@ -1,10 +1,21 @@
 use CollectorsArchive
 
+SELECT * FROM CardSet  WHERE SetName LIKE '%Legend of %' ORDER BY ReleaseDate
+
+SELECT * FROM CardSuperType
+
 SELECT * FROM YGOCard
+
+SELECT YGOCard.CardName
+FROM YGOCard
+LEFT JOIN CardPrinting ON CardPrinting.CardID = YGOCard.CardID
+WHERE CardPrinting.CardID IS NULL
+
+SELECT DISTINCT CardID FROM CardPrinting
 
 SELECT COUNT(*) FROM YGOCard
 
-SELECT * FROM CardPrinting
+SELECT DISTINCT CardRarity FROM CardPrinting
 
 -- SPELL/TRAP SEARCH --
 SELECT CardName, CardID, CardSuperType.SuperTypeName, CardSubType.SubTypeName, CardText
@@ -14,7 +25,7 @@ FROM YGOCard
 WHERE CardSuperType.SuperTypeName = 'SPELL'			-- Value should be 'SPELL' or 'TRAP'
 		AND CardName LIKE '%%'						-- Search card name
 		AND CardText LIKE '%Dark Magician%'						-- Search card text
-		AND CardSubType.SubTypeID IN (26,27, 28, 29, 30)		-- Include for SubType search (Index 26 - 32 of SubType Table
+		AND CardSubType.SubTypeID IN (26,27,28,29,30,31)		-- Include for SubType search (Index 26 - 32 of SubType Table
 
 
 -- PRINTING SEARCH --
@@ -31,9 +42,9 @@ FROM CardPrinting
 	JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
 
 -- CARD SERACH --
-WHERE CardName LIKE '%Toon%' AND CardRarity LIKE '%%'
-ORDER BY CardName, CardSet.ReleaseDate
+--WHERE CardName LIKE '%Blue-Eyes White Dragon%' AND CardRarity LIKE '%%'
+--ORDER BY CardName, CardSet.ReleaseDate
 
 -- SET SEARCH --
---WHERE CardSet.SetName = 'Magician''s Force'
---ORDER BY CardPrinting.CardSetIndex
+WHERE CardSet.SetName = 'Magician''s Force'
+ORDER BY CardPrinting.CardSetIndex

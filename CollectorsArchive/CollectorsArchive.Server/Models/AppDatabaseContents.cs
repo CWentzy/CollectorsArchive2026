@@ -9,12 +9,15 @@ namespace CollectorsArchive.Server
         // this entity will be our table in the database, it will store user information .
         // The UserID field will be the primary key that we specify in sql, and the email and username
         // user name will be the email id of the user without @domain part this is the class that we created in Models/User.cs
-        public DbSet<UserInformation> UserInformation { get; set; }   // <-- FIXED: renamed from Users to UserInformation
+        public DbSet<UserInformation> UserInformation { get; set; }  
 
         // here I am doing is creating a constructor for the AppDatabaseContents class that takes in DbContextOptions and passes it to the base class constructor
         public AppDatabaseContents(DbContextOptions<AppDatabaseContents> options) : base(options)
         {
         }
+
+        public DbSet<TempLoginCode> TempLoginCodes { get; set; }
+
 
         // this since we already has the database and the tables created in sql, we need to tell entity framework to use the existing database and tables instead of trying to create new ones.
         // So we will override the OnModelCreating method and specify the table name and column names for the User entity.
@@ -22,7 +25,7 @@ namespace CollectorsArchive.Server
         {
             modelBuilder.Entity<UserInformation>(entity =>
             {
-                entity.ToTable("UserInformation");
+                entity.ToTable("User");
 
                 entity.HasKey(e => e.UserId);
 

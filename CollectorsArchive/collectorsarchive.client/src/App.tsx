@@ -50,7 +50,7 @@ const resolver: CSSVariablesResolver = () => ({
 function App() {
 	return (
 		/* wrapping the whole app with GoogleOAuthProvider so google login works everywhere */
-		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+		<GoogleOAuthProvider clientId={"887271318818-l8omtrnmumbkr0tc4ssu031qkbii4t8i.apps.googleusercontent.com"}>
 			<MantineThemeProvider theme={theme}>
 				<MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
 					<Routes>
