@@ -3,9 +3,8 @@
  * FILENAME:        Program.cs
  * ASSIGNMENT:      PROG3221 - Capstone
  * DESCRIPTION:     Console tool for creating/updating the Yu-Gi-Oh card listings in the database.
- * 
- *                  Currently adds all sets, card, and printings WITHOUT CHECKING FOR DUPLICATES.
- *                  functionality for updating the database coming soon.
+ *                  Retreives the data from the API and compares it to our current database, adding
+ *                  all sets, cards and printing that are not present within our database.
  */
 
 using System;
@@ -19,82 +18,49 @@ namespace YGODataUtility
 {
     internal class Program
     {
-        const string _folderImages = "\\images";
-        const string _folderImagesLarge = "\\images\\large";
-        const string _folderImagesSmall = "\\images\\small";
         const string _connectionString = "Data Source=localhost;" +
                                             "Initial Catalog=CollectorsArchive;" +
                                             "Integrated Security=true;";
 
         static void Main(string[] args)
         {
-            Directory.CreateDirectory(Directory.GetCurrentDirectory() + _folderImages);
-            Directory.CreateDirectory(Directory.GetCurrentDirectory() + _folderImagesLarge);
-            Directory.CreateDirectory(Directory.GetCurrentDirectory() + _folderImagesSmall);
 
-            SqlConnection conn = new SqlConnection(_connectionString);
-
-            // ----- Retrieve all sets -----
-            Console.Write("Retrieving Set Data...");
-            List<API_YGOSet> allSets = new List<API_YGOSet>();
-            if (!API_YGO.RetrieveSetData(ref allSets))
+            bool loop = true;
+            while (loop)
             {
-                Console.WriteLine("Something went wrong. Exiting Program.");
-                return;
-            }
-            Console.WriteLine("Done.");
+                Console.Clear();
+                Console.WriteLine("===== SELECT AN OPTION =====");
+                Console.WriteLine("1. Check for new data\n" +
+                                  "2. Update alternate language data\n" +
+                                  "3. Exit");
+                Console.Write("Option: ");
 
-
-            // ----- Inserting/Updating all sets -----
-            using (conn)
-            {
-                conn.Open();
-                SqlCommand cmd = conn.CreateCommand();
-                foreach (API_YGOSet set in allSets)
+                switch (Console.ReadLine())
                 {
-                    cmd = set.GetInsertCommand();
-                    cmd.Connection = conn;
-                    cmd.ExecuteNonQuery();
+                    case "1":
+                        SetData();
+                        CardData();
+
+                        Console.WriteLine("Press any key to finish...");
+                        Console.ReadKey();
+
+                        break;
+                    case "2":
+                        UpdateAltLanguageData();
+
+                        Console.WriteLine("Press any key to finish...");
+                        Console.ReadKey();
+
+                        break;
+                    case "3":
+                        loop = false;
+                        break;
                 }
             }
 
-
-            // ----- Retrieve all cards -----
-            Console.Write("Retrieving Card Data...");
-            API_YGOCardDataHolder allCards = new API_YGOCardDataHolder();
-            if (!API_YGO.RetrieveCardDataAll(ref allCards))
-            {
-                Console.WriteLine("Something went wrong. Exiting Program.");
-                return;
-            }
-            Console.WriteLine("Done.");
-
-
-            // ----- Inserting all cards and printings -----
-            conn = new SqlConnection(_connectionString);
-            using (conn)
-            {
-                conn.Open();
-                SqlCommand cmd = conn.CreateCommand();
-                foreach (API_YGOCard card in allCards.data)
-                {
-                    Console.WriteLine(card.name);
-                    cmd = card.GetInsertCommand();
-                    cmd.Connection = conn;
-                    cmd.ExecuteNonQuery();
-
-                    if (card.card_sets != null)
-                    {
-                        foreach (API_YGOCardPrinitng printing in card.card_sets)
-                        {
-                            Console.WriteLine($"\t{printing.set_name}");
-                            cmd = printing.GetInsertCommand(conn, card.idString);
-                            cmd.Connection = conn;
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
-            }
+            //Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\images");
+            //Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\images\\large");
+            //Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\images\\small");
 
             // ----- DO NOT USE -----
             // ----- THE API WILL BLACKLIST YOU BEFORE FINISHING -----
@@ -107,28 +73,187 @@ namespace YGODataUtility
             //        Thread.Sleep(250);
             //    }
             //}
+        }
 
-            API_YGOCardAltLanguageDataHolder altCards = new API_YGOCardAltLanguageDataHolder();
-            foreach (string lang in API_YGO._APIAltLanguages)
+
+        // ---------------------------------- UPDATE SET DATA ---------------------------------- //
+
+        /// <summary>
+        /// 
+        /// </summary>
+        static void SetData()
+        {
+            // ----- Retrieve all sets -----
+            Console.Write("\nRetrieving Set Data...");
+            List<API_YGOSet> allSets = new List<API_YGOSet>();
+            if (!API_YGO.RetrieveSetData(ref allSets))
             {
-                if (!API_YGO.RetrieveCardAltLanguageData(ref altCards, lang))
+                Console.WriteLine("\nUnable to retrieve Card Set Data.");
+                return;
+            }
+            Console.WriteLine("Done.");
+
+
+            // ----- Inserting/Updating all sets -----
+            Console.WriteLine("Updating Set Data...");
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                for (int i = 0; i < allSets.Count; i++)
+                {
+                    Console.Write($"\rUpdating Sets: {i + 1}/{allSets.Count}");
+                    UpdateSetData(conn, allSets[i]);
+                }
+            }
+            Console.WriteLine("\nDone.\n");
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="conn"></param>
+        /// <param name="set"></param>
+        static void UpdateSetData(SqlConnection conn, API_YGOSet set)
+        {
+            SqlCommand cmd = conn.CreateCommand();
+
+            cmd.CommandText = "SELECT * FROM CardSet WHERE GameID = 1 AND SetName = @name";
+            cmd.Parameters.AddWithValue("@name", set.set_name);
+            cmd.Connection = conn;
+            object result = cmd.ExecuteScalar();
+
+            if (result == null) { cmd = set.GetInsertCommand(); }
+            else { return; }
+
+            Console.WriteLine(set.set_name);
+            cmd.Connection = conn;
+            cmd.ExecuteNonQuery();
+        }
+
+
+        // ---------------------------------- UPDATE CARD DATA --------------------------------- //
+
+        /// <summary>
+        /// 
+        /// </summary>
+        static void CardData()
+        {
+            // ----- Retrieve all cards -----
+            Console.Write("Retrieving Card Data...");
+            API_YGOCardDataHolder allCards = new API_YGOCardDataHolder();
+            if (!API_YGO.RetrieveCardDataAll(ref allCards))
+            {
+                Console.WriteLine("Unable to retrieve Card Data.");
+                return;
+            }
+            Console.WriteLine("Done.");
+
+
+            // ----- Inserting all cards and printings -----
+            Console.WriteLine("Updating Card Data...");
+            int addCount = 0;
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                for (int i = 0; i < allCards.data.Count; i++)
+                {
+                    Console.Write($"\rUpdating Card: {i + 1}/{allCards.data.Count}");
+                    UpdateCardData(conn, allCards.data[i]);
+                }
+            }
+            Console.WriteLine("\nDone.\n");
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="conn"></param>
+        /// <param name="card"></param>
+        static void UpdateCardData(SqlConnection conn, API_YGOCard card)
+        {
+            SqlCommand cmd = conn.CreateCommand();
+
+            cmd.CommandText = "SELECT * FROM YGOCard WHERE CardID = @id";
+            cmd.Parameters.AddWithValue("@id", card.idString);
+            cmd.Connection = conn;
+            object result = cmd.ExecuteScalar();
+
+            if (result == null) { cmd = card.GetInsertCommand(); }
+            else { return; }
+
+            cmd.Connection = conn;
+            cmd.ExecuteNonQuery();
+
+            if (card.card_sets != null)
+            {
+                foreach (API_YGOCardPrinitng printing in card.card_sets)
+                {
+                    UpdatePrintingData(conn, card.idString, printing);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="conn"></param>
+        /// <param name="idString"></param>
+        /// <param name="printing"></param>
+        static void UpdatePrintingData(SqlConnection conn, string idString, API_YGOCardPrinitng printing)
+        {
+            SqlCommand cmd = conn.CreateCommand();
+
+            cmd.CommandText = "SELECT * FROM CardPrinting " +
+                                "JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID" +
+                                "WHERE CardPrinting.GameID = 1 AND CardID = @id AND SetName = @set";
+            cmd.Parameters.AddWithValue("@id", idString);
+            cmd.Parameters.AddWithValue("@set", printing.set_name);
+            cmd.Connection = conn;
+            object result = cmd.ExecuteScalar();
+
+            if (result == null) { cmd = printing.GetInsertCommand(conn, idString); }
+            else { return; }
+
+            cmd.Connection = conn;
+            cmd.ExecuteNonQuery();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        static void UpdateAltLanguageData()
+        {
+            API_YGOCardAltLanguageDataHolder altCards = new API_YGOCardAltLanguageDataHolder();
+
+            for (int i = 0; i < API_YGO._APIAltLanguages.Length; i++)
+            {
+                Console.Write($"\nRetrieving data for language: {API_YGO._APIAltLanguages[i]}...");
+                if (!API_YGO.RetrieveCardAltLanguageData(ref altCards, API_YGO._APIAltLanguages[i]))
                 {
                     Console.WriteLine("Something went wrong.");
                     continue;
                 }
+                Console.WriteLine("Done.");
 
-                conn = new SqlConnection(_connectionString);
-                using (conn)
+                using (SqlConnection conn = new SqlConnection(_connectionString))
                 {
                     conn.Open();
                     SqlCommand cmd = conn.CreateCommand();
-                    foreach (API_YGOCardAltLanguage card in altCards.data)
+                    Console.WriteLine("Updating Card Data...");
+
+                    for (int j = 0; j < altCards.data.Count; j++)
                     {
-                        Console.WriteLine(card.name);
-                        cmd = card.GetInsertCommand(lang);
+                        Console.Write($"\rUpdating Card: {j + 1}/{altCards.data.Count}");
+                        cmd = altCards.data[j].GetInsertCommand(API_YGO._APIAltLanguages[i]);
                         cmd.Connection = conn;
                         cmd.ExecuteNonQuery();
                     }
+                    Console.WriteLine("\nDone.");
                 }
             }
         }

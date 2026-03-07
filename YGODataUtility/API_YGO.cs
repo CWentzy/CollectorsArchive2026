@@ -12,7 +12,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Net.Http;
-using System.Data.SqlClient;
 
 namespace YGODataUtility
 {
@@ -152,45 +151,6 @@ namespace YGODataUtility
             {
                 result = false;
             }
-
-            return result;
-        }
-
-
-
-        // ----------------------------------- DATABASE RESET ---------------------------------- //
-
-        /// <summary>
-        /// ----- MADE FOR TESTING -----
-        /// Removes ALL records from the Yu-Gi-Oh 
-        /// </summary>
-        public static void YGODataReset()
-        {
-
-        }
-
-
-        // ---------------------------------- DATABASE INSERT ---------------------------------- //
-
-        public static bool InsertSetData(SqlConnection conn, List<API_YGOSet> data)
-        {
-            bool result = true;
-
-            return result;
-        }
-
-
-        public static bool InsertCardData(SqlConnection conn, List<API_YGOCard> data)
-        {
-            bool result = true;
-
-            return result;
-        }
-
-
-        public static bool InsertPrintingData(SqlConnection conn, List<API_YGOCardPrinitng> data)
-        {
-            bool result = true;
 
             return result;
         }
