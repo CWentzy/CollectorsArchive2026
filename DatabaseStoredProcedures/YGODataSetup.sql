@@ -74,27 +74,43 @@ BEGIN
 		SuperTypeID INT IDENTITY(1,1) PRIMARY KEY,
 		SuperTypeName VARCHAR (50),
 		SuperTypeNameFR VARCHAR (50),
-		SuperTypeNameGE VARCHAR (50),
+		SuperTypeNameDE VARCHAR (50),
 		SuperTypeNameIT VARCHAR (50),
 		SuperTypeNamePT VARCHAR (50)
 	);
 
 	CREATE TABLE CardSubType (
 		SubTypeID INT IDENTITY(1,1) PRIMARY KEY,
-		SubTypeName VARCHAR (50)
+		SubTypeName VARCHAR (50),
+		SubTypeNameFR VARCHAR (50),
+		SubTypeNameDE VARCHAR (50),
+		SubTypeNameIT VARCHAR (50),
+		SubTypeNamePT VARCHAR (50)
 	);
 
 	CREATE TABLE MonsterAttribute (
 		AttributeID INT IDENTITY(1,1) PRIMARY KEY,
-		AttributeName VARCHAR(8)
+		AttributeName VARCHAR (10),
+		AttributeNameFR VARCHAR (10),
+		AttributeNameDE VARCHAR (10),
+		AttributeNameIT VARCHAR (10),
+		AttributeNamePT VARCHAR (10)
 	);
 
 	CREATE TABLE YGOCard (
 		-- CardID INT IDENTITY(1,1) PRIMARY KEY,
 		CardID VARCHAR(10) PRIMARY KEY,
 		CardName VARCHAR (100),
+		CardNameFR VARCHAR (100),
+		CardNameDE VARCHAR (100),
+		CardNameIT VARCHAR (100),
+		CardNamePT VARCHAR (100),
 		-- CardCode VARCHAR (8),
 		CardText VARCHAR (1500),
+		CardTextFR VARCHAR (1500),
+		CardTextDE VARCHAR (1500),
+		CardTextIT VARCHAR (1500),
+		CardTextPT VARCHAR (1500),
 		SuperType INT FOREIGN KEY REFERENCES CardSuperType(SuperTypeID),
 		SubType INT FOREIGN KEY REFERENCES CardSubType(SubTypeID),
 
@@ -111,7 +127,11 @@ BEGIN
 
 	CREATE TABLE MonsterClassification (
 		ClassificationID INT IDENTITY(1,1) PRIMARY KEY,
-		ClassificationName VARCHAR (20)
+		ClassificationName VARCHAR (20),
+		ClassificationNameFR VARCHAR (20),
+		ClassificationNameDE VARCHAR (20),
+		ClassificationNameIT VARCHAR (20),
+		ClassificationNamePT VARCHAR (20)
 	);
 
 	CREATE TABLE CardMonsterClassification (
@@ -123,39 +143,82 @@ BEGIN
 
 -- =================================POPULATE DESCRIPTOR TABLES================================== --
 
-	INSERT INTO CardSuperType (SuperTypeName, SuperTypeNameFR, SuperTypeNameGE, SuperTypeNameIT, SuperTypeNamePT) VALUES
+	INSERT INTO CardSuperType (SuperTypeName, SuperTypeNameFR, SuperTypeNameDE, SuperTypeNameIT, SuperTypeNamePT) VALUES
 		('MONSTER', 'MONSTRE', 'MONSTER', 'MOSTRO', 'MOSTRO'),
 		('SPELL', 'MAGIE', 'ZAUBER', 'MAGIA', 'TRAPPOLA'),
 		('TRAP', 'PIÈGE', 'FALLE', 'MAGIA', 'ARMADILHA'),
-		('TOKEN', '', '', '', ''),
-		('SKILL', '', '', '', '');
+		('TOKEN', 'JETON', 'SPIELMARKE', 'SEGNA-MONSTRO', 'FICHA'),
+		('SKILL', 'COMPÉNTENCE', 'FÄHIGKEIT', 'ABILITÀ', 'HABILIDADE');
 
 
-	INSERT INTO CardSubType (SubTypeName) VALUES
+	INSERT INTO CardSubType (SubTypeName, SubTypeNameFR, SubTypeNameDE, SubTypeNameIT, SubTypeNamePT) VALUES
 
 		-- Index 1 - 25: Moster Sub-Types --
-		('Spellcaster'), ('Dragon'), ('Zombie'), ('Warrior'), ('Beast-Warrior'), ('Beast'),
-		('Winged Beast'), ('Fiend'), ('Fairy'), ('Insect'), ('Dinosaur'), ('Reptile'), ('Fish'),
-		('Sea Serpent'), ('Aqua'), ('Pyro'), ('Thunder'), ('Rock'),	('Plant'), ('Machine'),
-		('Psychic'), ('Divine-Beast'), ('Wyrm'), ('Cyberse'), ('Illusion'),
+		('Spellcaster', 'Magicien', 'Hexer', 'Incantatore', 'Mago'), 
+		('Dragon', 'Dragon', 'Drache', 'Drago', 'Dragão'), 
+		('Zombie', 'Zombie', 'Zombie', 'Zombie', 'Zumbi'), 
+		('Warrior', 'Guerrier', 'Kreiger', 'Guerriero', 'Guerreiro'), 
+		('Beast-Warrior', 'Bête-Gurrier', 'Ungeheuer-Kreiger', 'Guerriero-Bestia', 'Besta-Guerreira'), 
+		('Beast', 'Bête', 'Ungeheuer', 'Bestia', 'Besta'),
+		('Winged Beast', 'Bête Ailée', 'Geflügeltes Ungeheuer', 'Bestia Alata', 'Besta Alada'), 
+		('Fiend', 'Démon', 'Unterweltler', 'Demone', 'Demônio'), 
+		('Fairy', 'Elfe', 'Fee', 'Fata', 'Fada'), 
+		('Insect', 'Insecte', 'Insekt', 'Insetto', 'Inseto'),
+		('Dinosaur', 'Dinosaure', 'Dinosaurier', 'Dinosauro', 'Dinossauro'), 
+		('Reptile', 'Reptile', 'Reptil', 'Rettile', 'Réptil'), 
+		('Fish', 'Poisson', 'Fisch', 'Pesce', 'Peixe'),
+		('Sea Serpent', 'Serpent de Mer', 'Seeschlange', 'Serpente Marino', 'Serpente Marinha'), 
+		('Aqua', 'Aqua', 'Aqua', 'Acqua', 'Aqua'), 
+		('Pyro', 'Pyro', 'Pyro', 'Pyro', 'Pino'), 
+		('Thunder', 'Tonnerre', 'Donner', 'Tuono', 'Trovão'), 
+		('Rock', 'Rocher', 'Fels', 'Roccia', 'Rocha'),
+		('Plant', 'Plante', 'Pflanze', 'Pianta', 'Planta'), 
+		('Machine', 'Machine', 'Maschine', 'Machina', 'Máquina'),
+		('Psychic', 'Psychique', 'Psi', 'Psichico', 'Psíquico'), 
+		('Divine-Beast', 'Bête Divine', 'Göttliches Ungeheuer', 'Divinità-Bestia', 'Besta Divina'), 
+		('Wyrm', 'Wyrm', 'Wyrm', 'Wyrm', 'Wyrm'), 
+		('Cyberse', 'Cyberse', 'Cyberse', 'Cyberso', 'Ciberso'), 
+		('Illusion', 'Illusion', 'Illusion', 'Illusione', 'Illusão'),
 
 		-- Index 26 - 29: Spell Specific Sub-Types --
-		('Quick-Play'), ('Equip'), ('Field'), ('Ritual'),
+		('Quick-Play', 'Jeu-Rapide', 'Schnell', 'Rapida', 'Rápida'), 
+		('Equip', 'Équipement', 'Ausrüstung', 'Equipaggiamento', 'Equipamento'), 
+		('Field', 'Terrain', 'Spielfeld', 'Terreno', 'Campo'), 
+		('Ritual', 'Rituel', 'Ritual', 'Rituale', 'Ritual'),
 
 		-- Index 30 - 31: Spell/Trap Shared Sub-Types --
-		('Normal'), ('Continuous'),
+		('Normal', 'Normale', 'Normal', 'Normali', 'Normal'), 
+		('Continuous', 'Continu', 'Permanent', 'Continua', 'Contínua'),
 
 		-- Index 32 - __: Trap Specific SubTypes --
-		('Counter');
+		('Counter', 'Contre', 'Konter', 'Contro', 'Marcador');
 
 
-	INSERT INTO MonsterAttribute (AttributeName) VALUES
-		('EARTH'), ('WIND'), ('FIRE'), ('WATER'), ('LIGHT'), ('DARK'), ('DIVINE');
+	INSERT INTO MonsterAttribute (AttributeName, AttributeNameFR, AttributeNameDE, AttributeNameIT, AttributeNamePT) VALUES
+		('EARTH', 'TERRE', 'ERDE', 'TERRA', 'TERRA'), 
+		('WIND', 'VENT', 'WIND', 'VENTO', 'VENTO'), 
+		('FIRE', 'FEU', 'FEUER', 'FUOCO', 'FOGO'), 
+		('WATER', 'EAU', 'WASSER', 'ACQUA', 'ÁGUA'), 
+		('LIGHT', 'LUMIÈRE', 'LICHT', 'LUCE', 'LUZ'), 
+		('DARK', 'TÉNÈBRES', 'FINSTERNIS', 'OSCURITÀ', 'TREVAS'), 
+		('DIVINE', 'DIVIN', 'GÖTTLICH', 'DIVINO', 'DIVINO');
 
 
-	INSERT INTO MonsterClassification (ClassificationName) VALUES
-		('Normal'), ('Effect'), ('Ritual'), ('Fusion'), ('Synchro'), ('Xyz'), ('Toon'), ('Flip'),
-		('Spirit'), ('Union'), ('Gemini'), ('Tuner'), ('Pendulum'), ('Link');
+	INSERT INTO MonsterClassification (ClassificationName, ClassificationNameFR, ClassificationNameDE, ClassificationNameIT, ClassificationNamePT) VALUES
+		('Normal', 'Normal', 'Normal', 'Normale',  'Normal'), 
+		('Effect', 'Effet', 'Effekt', 'Effetto', 'Efeito'), 
+		('Ritual', 'Rituel', 'Ritual', 'Rituale', 'Ritual'), 
+		('Fusion', 'Fusion', 'Fusion', 'Fusione', 'Fusão'), 
+		('Synchro', 'Synchro', 'Synchro', 'Synchro', 'Sincro'), 
+		('Xyz', 'Xyz', 'Xyz', 'Xyz', 'Xyz'), 
+		('Toon', 'Toon', 'Toon', 'Toon', 'Toon'), 
+		('Flip', 'Flip', 'Flipp', 'Scoperta', 'Virar'),
+		('Spirit', 'Spirit', 'Spirit', 'Spirit', 'Espírito'), 
+		('Union', 'Union', 'Union', 'Unione', 'União'), 
+		('Gemini', 'Gémeau', 'Zwilling', 'Gemello', 'Gêmeos'), 
+		('Tuner', 'Syntoniseur', 'Empfänger', 'Tuner', 'Regulador'), 
+		('Pendulum', 'Pendule', 'Pendel', 'Pendulum', 'Pêndulo'), 
+		('Link', 'Lien', 'Link', 'Link', 'Link');
 
 
 END

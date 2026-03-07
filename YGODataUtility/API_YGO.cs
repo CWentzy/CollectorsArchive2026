@@ -12,7 +12,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Net.Http;
-using System.Data.SqlClient;
 
 namespace YGODataUtility
 {
@@ -29,6 +28,9 @@ namespace YGODataUtility
         // ----- API Data Modifiers -----
         const string _APIExtensionSetSearch = "cardset=";   // Specifiy single card set by name
         const string _APISpaceEscape = "%20";               // Used to escape spaces in set names
+
+        const string _APIExtensionLanguage = "?language=";
+        static public readonly string[] _APIAltLanguages = { "fr", "de", "it", "pt" };
 
 
         // --------------------------- API DATA RETRIEVAL - CARD SET --------------------------- //
@@ -129,39 +131,26 @@ namespace YGODataUtility
         }
 
 
-        // ----------------------------------- DATABASE RESET ---------------------------------- //
+        // --------------------------- API DATA RETRIEVAL - CARD DATA -------------------------- //
 
-        /// <summary>
-        /// ----- MADE FOR TESTING -----
-        /// Removes ALL records from the Yu-Gi-Oh 
-        /// </summary>
-        public static void YGODataReset()
-        {
-
-        }
-
-
-        // ---------------------------------- DATABASE INSERT ---------------------------------- //
-
-        public static bool InsertSetData(SqlConnection conn, List<API_YGOSet> data)
+        public static bool RetrieveCardAltLanguageData(ref API_YGOCardAltLanguageDataHolder data, string index)
         {
             bool result = true;
 
-            return result;
-        }
+            try
+            {
+                HttpClient client = new HttpClient();
+                var response = client.GetAsync(_APICardEndpoint + _APIExtensionLanguage + index).Result;
 
+                string responsedata = response.Content.ReadAsStringAsync().Result;
+                // ----- Should add an additional check for valid JSON -----
 
-        public static bool InsertCardData(SqlConnection conn, List<API_YGOCard> data)
-        {
-            bool result = true;
-
-            return result;
-        }
-
-
-        public static bool InsertPrintingData(SqlConnection conn, List<API_YGOCardPrinitng> data)
-        {
-            bool result = true;
+                data = JsonSerializer.Deserialize<API_YGOCardAltLanguageDataHolder>(responsedata);
+            }
+            catch (Exception)
+            {
+                result = false;
+            }
 
             return result;
         }

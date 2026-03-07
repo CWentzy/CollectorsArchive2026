@@ -15,14 +15,7 @@ namespace YGODataUtility
 {
     public class API_YGOCardAltLanguageDataHolder
     {
-        private string languageCode;
         public List<API_YGOCardAltLanguage> data { get; set; }
-
-
-        public API_YGOCardAltLanguageDataHolder(string languageCode)
-        {
-            this.languageCode = languageCode;
-        }
     }
 
 
@@ -46,9 +39,9 @@ namespace YGODataUtility
                     nameColumn = "CardNameFR";
                     descColumn = "CardTextFR";
                     break;
-                case "ge":
-                    nameColumn = "CardNameGE";
-                    descColumn = "CardTextGE";
+                case "de":
+                    nameColumn = "CardNameDE";
+                    descColumn = "CardTextDE";
                     break;
                 case "it":
                     nameColumn = "CardNameIT";
