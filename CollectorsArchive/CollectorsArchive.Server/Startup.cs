@@ -18,7 +18,6 @@ namespace CollectorsArchive.Server
             Configuration = configuration;
         }
 
-        
         public void ConfigureServices(IServiceCollection services)
         {
             // so this is important! 
@@ -32,8 +31,7 @@ namespace CollectorsArchive.Server
             // and it will use the connection string from the appsetting json file to connect to the database,
             // this will allow us to easily access the database context in our controllers and services.
             services.AddDbContext<AppDatabaseContents>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("ErmiyasDb")));          
-
+                options.UseSqlServer(Configuration.GetConnectionString("ErmiyasDb")));
 
             // Register the app email service 
             services.AddScoped<IEmailService, EmailConfirmationService>();
@@ -42,17 +40,18 @@ namespace CollectorsArchive.Server
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
+            // CORS FIX — allow my Vite frontend to call my backend
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", builder =>
+                options.AddPolicy("FrontendPolicy", builder =>
                 {
                     builder
-                        .AllowAnyOrigin()
+                        .WithOrigins("https://localhost:5173", "http://localhost:5173") // my frontend origin
+                        .AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowAnyHeader();
+                        .AllowCredentials(); // needed for auth cookies or headers
                 });
             });
-
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -64,11 +63,11 @@ namespace CollectorsArchive.Server
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
 
-            app.UseCors("AllowAll");
+            app.UseCors("FrontendPolicy");   // CORS MUST be here
+
+            app.UseHttpsRedirection();       // move this BELOW cors
 
             app.UseAuthorization();
 

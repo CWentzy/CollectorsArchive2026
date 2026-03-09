@@ -18,16 +18,11 @@ import { GoogleLogin } from "@react-oauth/google"
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 
-//const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
-
-const RegisterNewUserURL = "https://localhost:7053/api/Auth/RegisterNewUser"
-
-const LoginUsingGoogleURL = "https://localhost:7053/api/Auth/LoginUsingGoogle"
-
-const RequestForTempCodeURL = "https://localhost:7053/api/Auth/RequestForTempCode"
-
-// this variable i will be using it for after user recieved an email with the code
-const VerfyingTemporaryCodeURL = "https://localhost:7053/api/Auth/VerfyingTemporaryCode"
+const RegisterNewUserURL = "/api/Auth/RegisterNewUser"
+const LoginUsingGoogleURL = "/api/Auth/LoginUsingGoogle"
+const RequestForTempCodeURL = "/api/Auth/RequestForTempCode"
+const VerfyingTemporaryCodeURL = "/api/Auth/VerfyingTemporaryCode"
+const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])
@@ -64,29 +59,25 @@ export default function LoginPage(props: PaperProps) {
 								console.error("NO Token ID from Google")
 								return
 							}
+
 							try {
 								const GoogleIDToken = response.credential
 
-								// decode ID token
-								const decoded: any = JSON.parse(atob(GoogleIDToken.split(".")[1]))
-								const email = decoded.email
-								const userName = parseEmailUsername(email)
-
-								// Try login first
 								const backendResponse = await fetch(LoginUsingGoogleURL, {
 									method: "POST",
 									headers: { "Content-Type": "application/json" },
 									body: JSON.stringify({ GoogleIDToken }),
 								})
 
-								// If user not found then register
-								if (backendResponse.status === 404) {
-									await fetch(RegisterNewUserURL, {
-										method: "POST",
-										headers: { "Content-Type": "application/json" },
-										body: JSON.stringify({ GoogleIDToken }),
-									})
+								if (!backendResponse.ok) {
+									const err = await backendResponse.json()
+									console.error("Backend error:", err)
+									return
 								}
+
+								const decoded: any = JSON.parse(atob(GoogleIDToken.split(".")[1]))
+								const email = decoded.email
+								const userName = parseEmailUsername(email)
 
 								localStorage.setItem("user", JSON.stringify({ userName, email }))
 								navigate("/home")
@@ -109,6 +100,7 @@ export default function LoginPage(props: PaperProps) {
 						// Send email and their name to backend for non-Google login
 						await fetch(RequestForTempCodeURL, {
 							method: "POST",
+							mode: "cors",
 							headers: { "Content-Type": "application/json" },
 							body: JSON.stringify({ email, userName }),
 						})
