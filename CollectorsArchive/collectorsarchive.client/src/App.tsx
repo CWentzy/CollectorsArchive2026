@@ -14,6 +14,7 @@ import { Layout } from "./Layout"
 import HomePage from "./pages/HomePage"
 import LandingPage from "./pages/LandingPage"
 import LoginPage from "./pages/LoginPage"
+import MembersPage from "./pages/MembersPage"
 import NotFound from "./pages/NotFound"
 
 const accentColor: MantineColorsTuple = [
@@ -59,6 +60,7 @@ function App() {
 							<Route path="/home" element={<HomePage />} />
 
 							<Route path="/login" element={<LoginPage />} />
+							<Route path="/members" element={<MembersPage />} />
 
 							{/* Should be the last route */}
 							<Route path="*" element={<NotFound />} />

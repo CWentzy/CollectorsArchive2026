@@ -23,6 +23,8 @@ namespace CollectorsArchive.Server.Models
         [MaxLength(255)]
         [Column("GoogleSubject")]
         public string? GoogleSubject { get; set; }
+        // Navigation property — links to this user's profile (nullable if not yet created)
+        public UserProfile? Profile { get; set; }
     }
 
 
