@@ -1,5 +1,7 @@
 export const MIN_CARD_LEVEL = 0
 export const MAX_CARD_LEVEL = 13
+export const MIN_PENDULUM_LEVEL = 0
+export const MAX_PENDULUM_LEVEL = 13
 
 export const MIN_ATK_DEF = 0
 export const MAX_ATK_DEF = 5000
@@ -104,6 +106,7 @@ export interface YGOFormFilters {
 	classificationsOperator?: "and" | "or"
 	excludedClassifications?: Classification[]
 	levelRange?: [number, number]
+	pendulumRange?: [number, number]
 	minATK?: number
 	maxATK?: number
 	minDEF?: number

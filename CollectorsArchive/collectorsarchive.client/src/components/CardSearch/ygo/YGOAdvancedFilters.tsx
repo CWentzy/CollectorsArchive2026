@@ -20,8 +20,10 @@ import {
 	Classification,
 	MAX_ATK_DEF,
 	MAX_CARD_LEVEL,
+	MAX_PENDULUM_LEVEL,
 	MIN_ATK_DEF,
 	MIN_CARD_LEVEL,
+	MIN_PENDULUM_LEVEL,
 	MonsterSubType,
 	SpellSubType,
 	SuperType,
@@ -64,6 +66,9 @@ function ChipSection<T extends string>({ title, fieldPath, data }: { title: stri
 
 function MonsterFilters() {
 	const form = useCardSearchFormContext()
+
+	const levelRange = form.getValues().advancedFilters.levelRange || [MIN_CARD_LEVEL, MAX_CARD_LEVEL]
+	const pendulumRange = form.getValues().advancedFilters.pendulumRange || [MIN_PENDULUM_LEVEL, MAX_PENDULUM_LEVEL]
 
 	return (
 		<Stack gap="md" p="sm">
@@ -149,16 +154,32 @@ function MonsterFilters() {
 				<RangeSlider
 					key={form.key("advancedFilters.levelRange")}
 					{...form.getInputProps("advancedFilters.levelRange")}
-					labelAlwaysOn
 					min={MIN_CARD_LEVEL}
 					max={MAX_CARD_LEVEL}
 					minRange={0}
 					step={1}
-					marks={[
-						{ value: MIN_CARD_LEVEL, label: MIN_CARD_LEVEL.toString() },
-						{ value: MAX_CARD_LEVEL, label: MAX_CARD_LEVEL.toString() },
-					]}
 				></RangeSlider>
+				<Text size="xs" c="dimmed">
+					{levelRange[0]} - {levelRange[1]}
+				</Text>
+			</Stack>
+
+			{/* Pendulum */}
+			<Stack gap={4}>
+				<Text size="sm" fw={500}>
+					Pendulum
+				</Text>
+				<RangeSlider
+					key={form.key("advancedFilters.pendulumRange")}
+					{...form.getInputProps("advancedFilters.pendulumRange")}
+					min={MIN_PENDULUM_LEVEL}
+					max={MAX_PENDULUM_LEVEL}
+					minRange={0}
+					step={1}
+				></RangeSlider>
+				<Text size="xs" c="dimmed">
+					{pendulumRange[0]} - {pendulumRange[1]}
+				</Text>
 			</Stack>
 
 			<Space />
