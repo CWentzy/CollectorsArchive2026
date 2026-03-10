@@ -15,6 +15,7 @@ import {
 	Group,
 	Image,
 	JsonInput,
+	LoadingOverlay,
 	Card as MantineCard,
 	Paper,
 	SegmentedControl,
@@ -51,7 +52,7 @@ const gameValidators = buildGameValidators()
 const initialFormValues: CardSearchFormValues = {
 	query: "" as string,
 	searchType: SearchType.card as SearchType,
-	game: "all" as Game | undefined,
+	game: undefined as Game | undefined,
 }
 
 const dummyResults: SearchResult[] = [
@@ -124,7 +125,7 @@ function GameSelector({ isMobile }: { isMobile?: boolean }) {
 		}
 	}
 
-	const defaultGame = form.getValues().game ?? "all"
+	const defaultGame = form.getValues().game ?? undefined
 
 	return (
 		<Stack gap={4}>
@@ -268,6 +269,7 @@ export default function CardSearchForm() {
 	const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`)
 
 	const [accordionValue, setAccordionValue] = useState<string | null>("search")
+	const [searching, setSearching] = useState(false)
 
 	const [debugValues, setDebugValues] = useState<typeof form.values>(initialFormValues) // for debugging - TODO: remove
 
@@ -297,22 +299,32 @@ export default function CardSearchForm() {
 	})
 
 	const handleSubmit = async (values: typeof form.values) => {
-		setAccordionValue(null) // close accordion on mobile after submitting
+		try {
+			setSearching(true)
+
+			// TODO: implement actual search logic
+			await new Promise((resolve) => setTimeout(resolve, 250))
+		} catch (error) {
+			console.error("Error during search:", error)
+		} finally {
+			setAccordionValue(null) // close accordion after results are shown
+			setSearching(false)
+		}
 
 		console.log("Search submitted with values:", values)
 	}
 
 	return (
 		<Stack gap="xl" p={0}>
-			{/* Search Tool */}
-			<Accordion defaultValue={accordionValue} onChange={setAccordionValue} variant="separated">
+			<Accordion value={accordionValue} onChange={setAccordionValue} variant="separated">
 				<Accordion.Item value="search">
 					<Accordion.Control icon={<SearchIcon />}>
 						<Text fw={500}>Search Tool</Text>
 					</Accordion.Control>
 					<Accordion.Panel pt="md" p="xs">
+						{/* Search Tool */}
 						<CardSearchFormProvider form={form}>
-							<form onSubmit={form.onSubmit(handleSubmit)}>
+							<form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
 								<Stack>
 									<QuerySection />
 
@@ -331,7 +343,9 @@ export default function CardSearchForm() {
 									</Box>
 
 									<Group justify="flex-end">
-										<Button type="submit">Search</Button>
+										<Button type="submit" loading={searching}>
+											Search
+										</Button>
 									</Group>
 								</Stack>
 							</form>
@@ -343,7 +357,8 @@ export default function CardSearchForm() {
 			<Divider label="Search Results" />
 
 			{/* Search Results */}
-			<Paper>
+			<Paper pos="relative">
+				<LoadingOverlay visible={searching} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
 				<SearchResults results={dummyResults} />
 			</Paper>
 		</Stack>
