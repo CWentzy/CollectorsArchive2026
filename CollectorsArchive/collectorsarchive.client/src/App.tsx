@@ -59,7 +59,6 @@ function App() {
 							<Route path="/home" element={<HomePage />} />
 
 							<Route path="/login" element={<LoginPage />} />
-
 							{/* Should be the last route */}
 							<Route path="*" element={<NotFound />} />
 						</Route>

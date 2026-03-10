@@ -32,7 +32,7 @@ namespace CollectorsArchive.Server.Controllers
 
             // Check if user already exists by Google Subject or Email
             var existingUser = await _db.UserInformation
-                .FirstOrDefaultAsync(u => u.GoogleSubject == request.GoogleSubject || u.Email == request.Email);
+                .FirstOrDefaultAsync(u => u.UserName == request.Name || u.Email == request.Email);
 
             if (existingUser != null)
             {
