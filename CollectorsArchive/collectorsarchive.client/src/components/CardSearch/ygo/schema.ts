@@ -56,7 +56,7 @@ export const MonsterSubType = {
 
 export type MonsterSubType = (typeof MonsterSubType)[keyof typeof MonsterSubType]
 
-export const CardType = {
+export const Classification = {
 	normal: "Normal",
 	effect: "Effect",
 	ritual: "Ritual",
@@ -73,7 +73,7 @@ export const CardType = {
 	link: "Link",
 }
 
-export type CardType = (typeof CardType)[keyof typeof CardType]
+export type Classification = (typeof Classification)[keyof typeof Classification]
 
 // Spell Card
 export const SpellSubType = {
@@ -100,9 +100,9 @@ export type TrapSubType = (typeof TrapSubType)[keyof typeof TrapSubType]
 export interface YGOFormFilters {
 	attributes?: Attribute[]
 	subTypes?: MonsterSubType[] | SpellSubType[] | TrapSubType[]
-	cardTypes?: CardType[]
-	cardTypesOperator?: "and" | "or"
-	excludedCardTypes?: CardType[]
+	classifications?: Classification[]
+	classificationsOperator?: "and" | "or"
+	excludedClassifications?: Classification[]
 	levelRange?: [number, number]
 	minATK?: number
 	maxATK?: number

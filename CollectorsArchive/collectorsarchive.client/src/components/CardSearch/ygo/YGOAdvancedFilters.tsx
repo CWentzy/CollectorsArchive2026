@@ -17,7 +17,7 @@ import { ShieldHalfIcon, SwordsIcon } from "lucide-react"
 import { useCardSearchFormContext } from "../CardSearchFormContext"
 import {
 	Attribute,
-	CardType,
+	Classification,
 	MAX_ATK_DEF,
 	MAX_CARD_LEVEL,
 	MIN_ATK_DEF,
@@ -88,26 +88,26 @@ function MonsterFilters() {
 			{/* Card Types */}
 			<Stack gap="xs">
 				<MultiSelect
-					key={form.key("advancedFilters.cardTypes")}
-					{...form.getInputProps("advancedFilters.cardTypes")}
+					key={form.key("advancedFilters.classifications")}
+					{...form.getInputProps("advancedFilters.classifications")}
 					label="Card Types"
 					description="Options are disabled if they are already selected in the 'Excluded Card Types' filter below."
 					clearable
 					hidePickedOptions
 					searchable
-					data={Object.values(CardType)
+					data={Object.values(Classification)
 						.sort((a, b) => a.localeCompare(b))
 						.map((type) => ({
 							label: type,
 							value: type,
-							disabled: form.getValues().advancedFilters.excludedCardTypes?.includes(type),
+							disabled: form.getValues().advancedFilters.excludedClassifications?.includes(type),
 						}))}
 				/>
 
 				<Group gap="xs">
 					<SegmentedControl
-						key={form.key("advancedFilters.cardTypesOperator")}
-						{...form.getInputProps("advancedFilters.cardTypesOperator")}
+						key={form.key("advancedFilters.classificationsOperator")}
+						{...form.getInputProps("advancedFilters.classificationsOperator")}
 						data={[
 							{ label: "AND", value: "and" },
 							{ label: "OR", value: "or" },
@@ -116,7 +116,7 @@ function MonsterFilters() {
 						w={100}
 					/>
 					<Text size="xs" c="dimmed">
-						{form.getValues().advancedFilters.cardTypesOperator === "and"
+						{form.getValues().advancedFilters.classificationsOperator === "and"
 							? "Card must match all selected types"
 							: "Card can match any of the selected types"}
 					</Text>
@@ -125,19 +125,19 @@ function MonsterFilters() {
 
 			{/* Exclude Card Types */}
 			<MultiSelect
-				key={form.key("advancedFilters.excludedCardTypes")}
-				{...form.getInputProps("advancedFilters.excludedCardTypes")}
+				key={form.key("advancedFilters.excludedClassifications")}
+				{...form.getInputProps("advancedFilters.excludedClassifications")}
 				label="Exclude Card Types"
 				description="Options are disabled if they are already included in the 'Card Types' filter above."
 				clearable
 				hidePickedOptions
 				searchable
-				data={Object.values(CardType)
+				data={Object.values(Classification)
 					.sort((a, b) => a.localeCompare(b))
 					.map((type) => ({
 						label: type,
 						value: type,
-						disabled: form.getValues().advancedFilters.cardTypes?.includes(type),
+						disabled: form.getValues().advancedFilters.classifications?.includes(type),
 					}))}
 			/>
 
