@@ -1,3 +1,11 @@
+/*
+ * PROGRAMMER:			Hassan Alqhwaizi (8896386)
+ * FILENAME:				CardSearchForm.tsx
+ * ASSIGNMENT:			PROG3221 - Capstone
+ * DESCRIPTION:			The main card search form component, which contains the search query input, game selector, advanced filters,
+ * 									and search results.
+ */
+
 import {
 	Accordion,
 	Box,
@@ -20,13 +28,14 @@ import {
 import { useMediaQuery } from "@mantine/hooks"
 import { DicesIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
 import { useState } from "react"
-import AdvancedFilters, { type CardSearchFormAdvancedFilters } from "./AdvancedFilters"
+import AdvancedFilters from "./AdvancedFilters"
 import {
 	CardSearchFormProvider,
 	useCardSearchForm,
 	useCardSearchFormContext,
 	type CardSearchFormValues,
 } from "./CardSearchFormContext"
+import { buildGameValidators, getGameDefaults, getGameFieldKeys } from "./gameFilterConfigs"
 import {
 	Game,
 	SEARCH_QUERY_MAX_LENGTH,
@@ -36,16 +45,13 @@ import {
 	type SearchResult,
 	type Set,
 } from "./schema"
-import { YGOSearchDefaultFilters } from "./ygo/schema"
+
+const gameValidators = buildGameValidators()
 
 const initialFormValues: CardSearchFormValues = {
-	// General
 	query: "" as string,
 	searchType: SearchType.card as SearchType,
 	game: "all" as Game | undefined,
-
-	// Game specific
-	advancedFilters: YGOSearchDefaultFilters as CardSearchFormAdvancedFilters,
 }
 
 const dummyResults: SearchResult[] = [
@@ -102,8 +108,20 @@ function GameSelector({ isMobile }: { isMobile?: boolean }) {
 
 	function handleGameChange(value: string | null) {
 		if (!value) return
-		form.setFieldValue("game", value === "all" ? (undefined as unknown as Game) : (value as Game))
-		form.setFieldValue("advancedFilters", YGOSearchDefaultFilters)
+		const oldGame = form.getValues().game
+		const newGame = value === "all" ? undefined : (value as Game)
+
+		// Clear old game's fields
+		for (const key of getGameFieldKeys(oldGame)) {
+			form.setFieldValue(key, undefined)
+		}
+
+		// Set new game and its defaults
+		form.setFieldValue("game", newGame as unknown as Game)
+		const defaults = getGameDefaults(newGame)
+		for (const [key, value] of Object.entries(defaults)) {
+			form.setFieldValue(key, value)
+		}
 	}
 
 	const defaultGame = form.getValues().game ?? "all"
@@ -261,12 +279,19 @@ export default function CardSearchForm() {
 			query: values.query?.trim().replace(/\s{2,}/g, " ") || "", // trim, and limit consecutive spaces to 1
 		}),
 		validate: {
-			query: (value) =>
-				value.length >= SEARCH_QUERY_MIN_LENGTH && value.length <= SEARCH_QUERY_MAX_LENGTH
-					? null
-					: `Search term must be between ${SEARCH_QUERY_MIN_LENGTH} and ${SEARCH_QUERY_MAX_LENGTH} characters`,
-			searchType: (value) => (Object.values(SearchType).includes(value) ? null : "Invalid search type"),
-			game: (value) => (value === undefined || Object.values(Game).includes(value) ? null : "Invalid game selection"),
+			query: (value) => {
+				if (value.length < SEARCH_QUERY_MIN_LENGTH || value.length > SEARCH_QUERY_MAX_LENGTH) {
+					return `Search term must be between ${SEARCH_QUERY_MIN_LENGTH} and ${SEARCH_QUERY_MAX_LENGTH} characters`
+				}
+				return null
+			},
+			searchType: (value) => {
+				return Object.values(SearchType).includes(value) ? null : "Invalid search type"
+			},
+			game: (value) => {
+				return value === undefined || Object.values(Game).includes(value) ? null : "Invalid game selection"
+			},
+			...gameValidators,
 		},
 		onValuesChange: (values) => setDebugValues(values), // for debugging - TODO: remove
 	})

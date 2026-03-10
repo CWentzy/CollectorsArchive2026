@@ -1,3 +1,10 @@
+/*
+ * PROGRAMMER:			Hassan Alqhwaizi (8896386)
+ * FILENAME:				schema.ts
+ * ASSIGNMENT:			PROG3221 - Capstone
+ * DESCRIPTION:			Defines YGO-specific types, interfaces, and constants related to Card Search.
+ */
+
 export const MIN_CARD_LEVEL = 0
 export const MAX_CARD_LEVEL = 13
 export const MIN_PENDULUM_LEVEL = 0
@@ -115,3 +122,18 @@ export interface YGOFormFilters {
 
 // Default values for advanced filters
 export const YGOSearchDefaultFilters: YGOFormFilters = {}
+
+// Field keys that belong to YGO (used to clear fields when switching game)
+export const YGO_FIELD_KEYS: (keyof YGOFormFilters)[] = [
+	"attributes",
+	"subTypes",
+	"classifications",
+	"classificationsOperator",
+	"excludedClassifications",
+	"levelRange",
+	"pendulumRange",
+	"minATK",
+	"maxATK",
+	"minDEF",
+	"maxDEF",
+]
