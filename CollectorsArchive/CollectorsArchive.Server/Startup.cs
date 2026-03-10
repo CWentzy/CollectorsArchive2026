@@ -18,8 +18,16 @@ namespace CollectorsArchive.Server
             Configuration = configuration;
         }
 
+
         public void ConfigureServices(IServiceCollection services)
         {
+
+            // this is my local host name and pc name urs might be different if u go through an issue (FROM ERMI) 
+            services.AddHostFiltering(options =>
+            {
+                options.AllowedHosts = new[] { "localhost", "127.0.0.1", "Ermiyas" };
+            });
+
             // so this is important! 
             // this will be the email settings that we will use to send the email to the user for the email confirmation service,
             // we will get the values from the appsettings.json file and bind it to the CollectorArchiveEmailSettings class
@@ -33,6 +41,7 @@ namespace CollectorsArchive.Server
             services.AddDbContext<AppDatabaseContents>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("ErmiyasDb")));
 
+
             // Register the app email service 
             services.AddScoped<IEmailService, EmailConfirmationService>();
 
@@ -40,16 +49,13 @@ namespace CollectorsArchive.Server
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            // CORS FIX — allow my Vite frontend to call my backend
             services.AddCors(options =>
             {
-                options.AddPolicy("FrontendPolicy", builder =>
+                options.AddPolicy("AllowAll", builder =>
                 {
-                    builder
-                        .WithOrigins("https://localhost:5173", "http://localhost:5173") // my frontend origin
-                        .AllowAnyHeader()
+                    builder.WithOrigins("https://localhost:5173", "https://localhost:5174")
                         .AllowAnyMethod()
-                        .AllowCredentials(); // needed for auth cookies or headers
+                        .AllowAnyHeader();
                 });
             });
         }
@@ -63,11 +69,13 @@ namespace CollectorsArchive.Server
                 app.UseSwaggerUI();
             }
 
+            app.UseHttpsRedirection();
+            app.UseHostFiltering();
+
+
             app.UseRouting();
 
-            app.UseCors("FrontendPolicy");   // CORS MUST be here
-
-            app.UseHttpsRedirection();       // move this BELOW cors
+            app.UseCors("AllowAll");
 
             app.UseAuthorization();
 
@@ -78,3 +86,4 @@ namespace CollectorsArchive.Server
         }
     }
 }
+

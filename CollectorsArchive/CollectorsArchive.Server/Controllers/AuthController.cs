@@ -2,7 +2,7 @@ using CollectorsArchive.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CollectorsArchive.Server.Service;
-using Google.Apis.Auth;
+
 
 namespace CollectorsArchive.Server.Controllers
 {
@@ -11,7 +11,7 @@ namespace CollectorsArchive.Server.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDatabaseContents _db;
-        private readonly IEmailService _emailService;
+        IEmailService _emailService;
 
         public AuthController(AppDatabaseContents db, IEmailService emailService)
         {
@@ -19,78 +19,69 @@ namespace CollectorsArchive.Server.Controllers
             _emailService = emailService;
         }
 
-        // This model is used for Google-based login (frontend sends GoogleIDToken)
-        public class GoogleAuthRequest
+
+        [HttpPost("RegisterNewUser")]
+        public async Task<IActionResult> Register([FromBody] GoogleAuthRequest request)
         {
-            public string GoogleIDToken { get; set; } = string.Empty;
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Name) ||
+                string.IsNullOrWhiteSpace(request.GoogleSubject))
+            {
+                return BadRequest(new { message = "Email, Name, and Google Subject are required." });
+            }
+
+            // Check if user already exists by Google Subject or Email
+            var existingUser = await _db.UserInformation
+                .FirstOrDefaultAsync(u => u.GoogleSubject == request.GoogleSubject || u.Email == request.Email);
+
+            if (existingUser != null)
+            {
+                return Conflict(new { message = "A user with this email or Google account already exists." });
+            }
+
+            var newUser = new UserInformation
+            {
+                Email = request.Email,
+                UserName = request.Name,
+                GoogleSubject = request.GoogleSubject
+            };
+
+            _db.UserInformation.Add(newUser);
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Registration successful.",
+                userId = newUser.UserId,
+                email = newUser.Email,
+                userName = newUser.UserName
+            });
         }
+
 
         [HttpPost("LoginUsingGoogle")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
         {
-            try
+            if (string.IsNullOrWhiteSpace(request.GoogleSubject))
             {
-                if (string.IsNullOrWhiteSpace(request.GoogleIDToken))
-                    return BadRequest(new { message = "Missing Google ID token" });
-
-                // Validate Google ID token against my real client ID
-                var settings = new GoogleJsonWebSignature.ValidationSettings
-                {
-                    Audience = new List<string>
-                    {
-                        "887271318818-l8omtrnmumbkr0tc4ssu031qkbii4t8i.apps.googleusercontent.com"
-                    }
-                };
-
-                var payload = await GoogleJsonWebSignature.ValidateAsync(request.GoogleIDToken, settings);
-
-                var email = payload.Email;
-                var googleSubject = payload.Subject;
-                var userName = email.Split('@')[0];
-
-                // Check if user exists and i am checking with their email
-                // cus if user has non google email they still should be the same account
-                var user = await _db.UserInformation
-                    .FirstOrDefaultAsync(u => u.Email == email);
-
-                // If user does NOT exist → auto-register
-                if (user == null)
-                {
-                    user = new UserInformation
-                    {
-                        Email = email,
-                        UserName = userName,
-                        GoogleSubject = googleSubject
-                    };
-
-                    _db.UserInformation.Add(user);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    // If user exists but GoogleSubject is null (they were non-Google before),
-                    // then I will attach their GoogleSubject now so next time it's linked.
-                    if (string.IsNullOrEmpty(user.GoogleSubject))
-                    {
-                        user.GoogleSubject = googleSubject;
-                        await _db.SaveChangesAsync();
-                    }
-                }
-
-                // Return login success
-                return Ok(new
-                {
-                    message = "Login successful.",
-                    userId = user.UserId,
-                    email = user.Email,
-                    userName = user.UserName
-                });
+                return BadRequest(new { message = "Google Subject is required." });
             }
-            catch (Exception ex)
+
+            var user = await _db.UserInformation
+                .FirstOrDefaultAsync(u => u.GoogleSubject == request.GoogleSubject);
+
+            if (user == null)
             {
-                // I want to see the real error while developing
-                return StatusCode(500, new { message = "Google login failed.", error = ex.Message });
+                return NotFound(new { message = "User not found. Please register first." });
             }
+
+            return Ok(new
+            {
+                message = "Login successful.",
+                userId = user.UserId,
+                email = user.Email,
+                userName = user.UserName
+            });
         }
 
         [HttpPost("RequestForTempCode")]
@@ -99,26 +90,7 @@ namespace CollectorsArchive.Server.Controllers
             if (string.IsNullOrWhiteSpace(request.Email))
                 return BadRequest("Email is required");
 
-            // Before generating code, I will make sure user exists in the database
-            var user = await _db.UserInformation
-                .FirstOrDefaultAsync(u => u.Email == request.Email);
-
-            // If user is not in the database, I will create them as non-Google user
-            if (user == null)
-            {
-                user = new UserInformation
-                {
-                    Email = request.Email,
-                    // I am parsing username from email so I don't need a separate username input
-                    UserName = request.Email.Split('@')[0],
-                    GoogleSubject = null
-                };
-
-                _db.UserInformation.Add(user);
-                await _db.SaveChangesAsync();
-            }
-
-            // this will generate 6-digit code when every time users request it 
+            //  this will generate 6-digit code when every time users request it 
             var code = new Random().Next(100000, 999999).ToString();
 
             // this will save the code in our database but im not sure if we actually need to save every generated code. 
@@ -182,10 +154,17 @@ namespace CollectorsArchive.Server.Controllers
             });
         }
 
+
         // I need to creating another endpoit when users gives me their non google email i will first search in the database and
         // then if the user is the db then i dont need to send them code again and again 
-        // (I can add this later if I want to optimize the flow)
     }
 
     // not sure about this I will CHECKKKKK LATERRR 
+    public class GoogleAuthRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string GoogleSubject { get; set; } = string.Empty;
+    }
 }
+
