@@ -1,6 +1,6 @@
-import { AppShell, Avatar, Button, Container, Grid, Group, Menu, Modal, Text } from "@mantine/core"
+import { AppShell, Avatar, Button, Container, Grid, Group, Modal } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
-import { IconLogout, IconUser } from "@tabler/icons-react"
+import { IconUser } from "@tabler/icons-react"
 import { Outlet, useNavigate } from "react-router-dom"
 import { CardScanButton } from "./components/CardScan/CardScanButton"
 import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
@@ -17,48 +17,18 @@ export function Layout() {
 	const isLoggedIn = !!user
 
 	// Logout handler
-	const handleLogout = () => {
-		localStorage.removeItem("user")
-		closeProfile()
-		navigate("/login")
-	}
+	
 	const ProfileMenu = () => (
-		<Menu shadow="md" width={160} position="bottom-end" withArrow>
-			<Menu.Target>
-				{/*For now we are just using the first letter of the username as avatar, but we can replace it with actual profile picture in the future*/}
-				<Avatar
-					style={{ cursor: "pointer" }}
-					size="sm"
-					radius="xl"
-					color="spell-green"
-					variant="filled"
-				>
-					{user?.userName?.[0]?.toUpperCase() ?? <IconUser size={16} />}
-				</Avatar>
-			</Menu.Target>
-
-			<Menu.Dropdown>
-				<Menu.Label>
-					<Text size="xs" c="dimmed" truncate>
-						{user?.userName}
-					</Text>
-				</Menu.Label>
-				<Menu.Item
-					leftSection={<IconUser size={14} />}
-					onClick={toggleProfile}
-				>
-					Profile
-				</Menu.Item>
-				<Menu.Divider />
-				<Menu.Item
-					leftSection={<IconLogout size={14} />}
-					color="red"
-					onClick={handleLogout}
-				>
-					Logout
-				</Menu.Item>
-			</Menu.Dropdown>
-		</Menu>
+		<Avatar
+			style={{ cursor: "pointer" }}
+			size="sm"
+			radius="xl"
+			color="spell-green"
+			variant="filled"
+			onClick={toggleProfile}
+		>
+			{user?.userName?.[0]?.toUpperCase() ?? <IconUser size={16} />}
+		</Avatar>
 	)
 	return (
 		<AppShell header={{ height: 60 }}

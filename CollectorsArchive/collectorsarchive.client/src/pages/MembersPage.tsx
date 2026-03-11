@@ -1,6 +1,7 @@
 import { Avatar, Box, Card, Grid, Group, Skeleton, Stack, Text, Title } from "@mantine/core"
 import { Users2Icon } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 // Shape of member data returned from the API
 type Member = {
@@ -12,10 +13,15 @@ type Member = {
 
 const API_URL = "https://localhost:7053/api/Members/GetAllMembers"
 
+const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "Unknown"
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+}
 export default function MembersPage() {
     const [members, setMembers] = useState<Member[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchMembers = async () => {
@@ -34,9 +40,8 @@ export default function MembersPage() {
         fetchMembers()
     }, [])
 
-    const formatDate = (dateStr: string | null) => {
-        if (!dateStr) return "Unknown"
-        return new Date(dateStr).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+    const handleMemberClick = (member: Member) => {
+        navigate(`/profile/${member.userId}`, { state: { member } })
     }
 
     return (
@@ -67,7 +72,14 @@ export default function MembersPage() {
                                 ))
                                 : members.map((member) => (
                                     <Grid.Col key={member.userId} span={{ base: 12, sm: 6 }}>
-                                        <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
+                                        <Card
+                                            shadow="sm"
+                                            padding="lg"
+                                            radius="md"
+                                            withBorder h="100%"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() => handleMemberClick(member)}
+                                        >
                                             <Group align="center">
                                                 <Avatar
                                                     src={member.photoUrl ?? undefined}
