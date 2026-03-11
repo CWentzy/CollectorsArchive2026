@@ -14,6 +14,7 @@ import { Layout } from "./Layout"
 import HomePage from "./pages/HomePage"
 import LandingPage from "./pages/LandingPage"
 import LoginPage from "./pages/LoginPage"
+import SingleCardDisplay from "./pages/SingleCardDisplay"
 import NotFound from "./pages/NotFound"
 
 const accentColor: MantineColorsTuple = [
@@ -59,6 +60,9 @@ function App() {
 							<Route path="/home" element={<HomePage />} />
 
 							<Route path="/login" element={<LoginPage />} />
+
+							{/* we need a card id to able to display the exact card this might come from backkkendd  */}
+							<Route path="/card/:id" element={<SingleCardDisplay />} />
 							{/* Should be the last route */}
 							<Route path="*" element={<NotFound />} />
 						</Route>

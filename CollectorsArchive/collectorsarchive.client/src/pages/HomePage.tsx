@@ -4,6 +4,7 @@ import { useState } from "react"
 //import { useLocation } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
 import sampleImage from "../assets/singleCardSample.png"
+import CardItem from "../pages/CardItem"
 
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
@@ -50,22 +51,11 @@ export default function HomePage() {
 				</Flex>
 
 				{/* CARD GRID */}
+
 				<Grid gutter="lg" justify="center" w="75%">
-					{[...Array(10)].map((_, index) => (
+					{[...Array(12)].map((_, index) => (
 						<Grid.Col key={index} span="content">
-							<Card
-								shadow="sm"
-								padding="xs"
-								radius="md"
-								withBorder
-								style={{ cursor: "pointer" }}
-								// navigate to SingleCardDisplay page using dynamic route
-								onClick={() => navigate(`/card/${index}`)}
-							>
-								<Card.Section>
-									<Image src={sampleImage} height={250} width={200} alt="Card" />
-								</Card.Section>
-							</Card>
+							<CardItem id={index} navigate={navigate} />
 						</Grid.Col>
 					))}
 				</Grid>
