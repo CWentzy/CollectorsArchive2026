@@ -1,3 +1,11 @@
+/*
+ * PROGRAMMER:			Hassan Alqhwaizi (8896386)
+ * FILENAME:				schema.ts
+ * ASSIGNMENT:			PROG3221 - Capstone
+ * DESCRIPTION:			Defines the types, interfaces, and constants used across card search
+ * 									components.
+ */
+
 export const SEARCH_QUERY_MIN_LENGTH = 3
 export const SEARCH_QUERY_MAX_LENGTH = 100
 

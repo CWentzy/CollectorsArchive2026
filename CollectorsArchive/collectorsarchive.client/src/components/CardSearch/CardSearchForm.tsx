@@ -1,3 +1,11 @@
+/*
+ * PROGRAMMER:			Hassan Alqhwaizi (8896386)
+ * FILENAME:				CardSearchForm.tsx
+ * ASSIGNMENT:			PROG3221 - Capstone
+ * DESCRIPTION:			The main card search form component, which contains the search query input, game selector, advanced filters,
+ * 									and search results.
+ */
+
 import {
 	Accordion,
 	Box,
@@ -7,6 +15,7 @@ import {
 	Group,
 	Image,
 	JsonInput,
+	LoadingOverlay,
 	Card as MantineCard,
 	Paper,
 	SegmentedControl,
@@ -20,13 +29,14 @@ import {
 import { useMediaQuery } from "@mantine/hooks"
 import { DicesIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
 import { useState } from "react"
-import AdvancedFilters, { type CardSearchFormAdvancedFilters } from "./AdvancedFilters"
+import AdvancedFilters from "./AdvancedFilters"
 import {
 	CardSearchFormProvider,
 	useCardSearchForm,
 	useCardSearchFormContext,
 	type CardSearchFormValues,
 } from "./CardSearchFormContext"
+import { buildGameValidators, getGameDefaults, getGameFieldKeys } from "./gameFilterConfigs"
 import {
 	Game,
 	SEARCH_QUERY_MAX_LENGTH,
@@ -36,16 +46,13 @@ import {
 	type SearchResult,
 	type Set,
 } from "./schema"
-import { YGOSearchDefaultFilters } from "./ygo/schema"
+
+const gameValidators = buildGameValidators()
 
 const initialFormValues: CardSearchFormValues = {
-	// General
 	query: "" as string,
 	searchType: SearchType.card as SearchType,
-	game: "all" as Game | undefined,
-
-	// Game specific
-	advancedFilters: YGOSearchDefaultFilters as CardSearchFormAdvancedFilters,
+	game: undefined as Game | undefined,
 }
 
 const dummyResults: SearchResult[] = [
@@ -102,11 +109,23 @@ function GameSelector({ isMobile }: { isMobile?: boolean }) {
 
 	function handleGameChange(value: string | null) {
 		if (!value) return
-		form.setFieldValue("game", value === "all" ? (undefined as unknown as Game) : (value as Game))
-		form.setFieldValue("advancedFilters", YGOSearchDefaultFilters)
+		const oldGame = form.getValues().game
+		const newGame = value === "all" ? undefined : (value as Game)
+
+		// Clear old game's fields
+		for (const key of getGameFieldKeys(oldGame)) {
+			form.setFieldValue(key, undefined)
+		}
+
+		// Set new game and its defaults
+		form.setFieldValue("game", newGame as unknown as Game)
+		const defaults = getGameDefaults(newGame)
+		for (const [key, value] of Object.entries(defaults)) {
+			form.setFieldValue(key, value)
+		}
 	}
 
-	const defaultGame = form.getValues().game ?? "all"
+	const defaultGame = form.getValues().game ?? undefined
 
 	return (
 		<Stack gap={4}>
@@ -250,6 +269,7 @@ export default function CardSearchForm() {
 	const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`)
 
 	const [accordionValue, setAccordionValue] = useState<string | null>("search")
+	const [searching, setSearching] = useState(false)
 
 	const [debugValues, setDebugValues] = useState<typeof form.values>(initialFormValues) // for debugging - TODO: remove
 
@@ -261,33 +281,50 @@ export default function CardSearchForm() {
 			query: values.query?.trim().replace(/\s{2,}/g, " ") || "", // trim, and limit consecutive spaces to 1
 		}),
 		validate: {
-			query: (value) =>
-				value.length >= SEARCH_QUERY_MIN_LENGTH && value.length <= SEARCH_QUERY_MAX_LENGTH
-					? null
-					: `Search term must be between ${SEARCH_QUERY_MIN_LENGTH} and ${SEARCH_QUERY_MAX_LENGTH} characters`,
-			searchType: (value) => (Object.values(SearchType).includes(value) ? null : "Invalid search type"),
-			game: (value) => (value === undefined || Object.values(Game).includes(value) ? null : "Invalid game selection"),
+			query: (value) => {
+				if (value.length < SEARCH_QUERY_MIN_LENGTH || value.length > SEARCH_QUERY_MAX_LENGTH) {
+					return `Search term must be between ${SEARCH_QUERY_MIN_LENGTH} and ${SEARCH_QUERY_MAX_LENGTH} characters`
+				}
+				return null
+			},
+			searchType: (value) => {
+				return Object.values(SearchType).includes(value) ? null : "Invalid search type"
+			},
+			game: (value) => {
+				return value === undefined || Object.values(Game).includes(value) ? null : "Invalid game selection"
+			},
+			...gameValidators,
 		},
 		onValuesChange: (values) => setDebugValues(values), // for debugging - TODO: remove
 	})
 
 	const handleSubmit = async (values: typeof form.values) => {
-		setAccordionValue(null) // close accordion on mobile after submitting
+		try {
+			setSearching(true)
+
+			// TODO: implement actual search logic
+			await new Promise((resolve) => setTimeout(resolve, 250))
+		} catch (error) {
+			console.error("Error during search:", error)
+		} finally {
+			setAccordionValue(null) // close accordion after results are shown
+			setSearching(false)
+		}
 
 		console.log("Search submitted with values:", values)
 	}
 
 	return (
 		<Stack gap="xl" p={0}>
-			{/* Search Tool */}
-			<Accordion defaultValue={accordionValue} onChange={setAccordionValue} variant="separated">
+			<Accordion value={accordionValue} onChange={setAccordionValue} variant="separated">
 				<Accordion.Item value="search">
 					<Accordion.Control icon={<SearchIcon />}>
 						<Text fw={500}>Search Tool</Text>
 					</Accordion.Control>
 					<Accordion.Panel pt="md" p="xs">
+						{/* Search Tool */}
 						<CardSearchFormProvider form={form}>
-							<form onSubmit={form.onSubmit(handleSubmit)}>
+							<form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
 								<Stack>
 									<QuerySection />
 
@@ -306,7 +343,9 @@ export default function CardSearchForm() {
 									</Box>
 
 									<Group justify="flex-end">
-										<Button type="submit">Search</Button>
+										<Button type="submit" loading={searching}>
+											Search
+										</Button>
 									</Group>
 								</Stack>
 							</form>
@@ -318,7 +357,8 @@ export default function CardSearchForm() {
 			<Divider label="Search Results" />
 
 			{/* Search Results */}
-			<Paper>
+			<Paper pos="relative">
+				<LoadingOverlay visible={searching} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
 				<SearchResults results={dummyResults} />
 			</Paper>
 		</Stack>

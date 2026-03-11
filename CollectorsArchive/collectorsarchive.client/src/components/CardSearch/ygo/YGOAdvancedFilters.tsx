@@ -1,3 +1,10 @@
+/*
+ * PROGRAMMER:			Hassan Alqhwaizi (8896386)
+ * FILENAME:				YGOAdvancedFilters.tsx
+ * ASSIGNMENT:			PROG3221 - Capstone
+ * DESCRIPTION:			YGO-specific advanced filters component for card search.
+ */
+
 import {
 	Box,
 	Button,
@@ -17,11 +24,13 @@ import { ShieldHalfIcon, SwordsIcon } from "lucide-react"
 import { useCardSearchFormContext } from "../CardSearchFormContext"
 import {
 	Attribute,
-	CardType,
+	Classification,
 	MAX_ATK_DEF,
 	MAX_CARD_LEVEL,
+	MAX_PENDULUM_LEVEL,
 	MIN_ATK_DEF,
 	MIN_CARD_LEVEL,
+	MIN_PENDULUM_LEVEL,
 	MonsterSubType,
 	SpellSubType,
 	SuperType,
@@ -65,19 +74,22 @@ function ChipSection<T extends string>({ title, fieldPath, data }: { title: stri
 function MonsterFilters() {
 	const form = useCardSearchFormContext()
 
+	const levelRange = form.getValues().levelRange || [MIN_CARD_LEVEL, MAX_CARD_LEVEL]
+	const pendulumRange = form.getValues().pendulumRange || [MIN_PENDULUM_LEVEL, MAX_PENDULUM_LEVEL]
+
 	return (
 		<Stack gap="md" p="sm">
 			{/* Attributes */}
 			<ChipSection
 				title="Attributes"
-				fieldPath="advancedFilters.attributes"
+				fieldPath="attributes"
 				data={Object.values(Attribute).sort((a, b) => a.localeCompare(b))}
 			/>
 
 			{/* Monster Types */}
 			<MultiSelect
-				key={form.key("advancedFilters.subTypes")}
-				{...form.getInputProps("advancedFilters.subTypes")}
+				key={form.key("subTypes")}
+				{...form.getInputProps("subTypes")}
 				label="Monster Types"
 				clearable
 				hidePickedOptions
@@ -88,26 +100,26 @@ function MonsterFilters() {
 			{/* Card Types */}
 			<Stack gap="xs">
 				<MultiSelect
-					key={form.key("advancedFilters.cardTypes")}
-					{...form.getInputProps("advancedFilters.cardTypes")}
+					key={form.key("classifications")}
+					{...form.getInputProps("classifications")}
 					label="Card Types"
 					description="Options are disabled if they are already selected in the 'Excluded Card Types' filter below."
 					clearable
 					hidePickedOptions
 					searchable
-					data={Object.values(CardType)
+					data={Object.values(Classification)
 						.sort((a, b) => a.localeCompare(b))
 						.map((type) => ({
 							label: type,
 							value: type,
-							disabled: form.getValues().advancedFilters.excludedCardTypes?.includes(type),
+							disabled: form.getValues().excludedClassifications?.includes(type),
 						}))}
 				/>
 
 				<Group gap="xs">
 					<SegmentedControl
-						key={form.key("advancedFilters.cardTypesOperator")}
-						{...form.getInputProps("advancedFilters.cardTypesOperator")}
+						key={form.key("classificationsOperator")}
+						{...form.getInputProps("classificationsOperator")}
 						data={[
 							{ label: "AND", value: "and" },
 							{ label: "OR", value: "or" },
@@ -116,7 +128,7 @@ function MonsterFilters() {
 						w={100}
 					/>
 					<Text size="xs" c="dimmed">
-						{form.getValues().advancedFilters.cardTypesOperator === "and"
+						{form.getValues().classificationsOperator === "and"
 							? "Card must match all selected types"
 							: "Card can match any of the selected types"}
 					</Text>
@@ -125,19 +137,19 @@ function MonsterFilters() {
 
 			{/* Exclude Card Types */}
 			<MultiSelect
-				key={form.key("advancedFilters.excludedCardTypes")}
-				{...form.getInputProps("advancedFilters.excludedCardTypes")}
+				key={form.key("excludedClassifications")}
+				{...form.getInputProps("excludedClassifications")}
 				label="Exclude Card Types"
 				description="Options are disabled if they are already included in the 'Card Types' filter above."
 				clearable
 				hidePickedOptions
 				searchable
-				data={Object.values(CardType)
+				data={Object.values(Classification)
 					.sort((a, b) => a.localeCompare(b))
 					.map((type) => ({
 						label: type,
 						value: type,
-						disabled: form.getValues().advancedFilters.cardTypes?.includes(type),
+						disabled: form.getValues().classifications?.includes(type),
 					}))}
 			/>
 
@@ -147,18 +159,34 @@ function MonsterFilters() {
 					Level
 				</Text>
 				<RangeSlider
-					key={form.key("advancedFilters.levelRange")}
-					{...form.getInputProps("advancedFilters.levelRange")}
-					labelAlwaysOn
+					key={form.key("levelRange")}
+					{...form.getInputProps("levelRange")}
 					min={MIN_CARD_LEVEL}
 					max={MAX_CARD_LEVEL}
 					minRange={0}
 					step={1}
-					marks={[
-						{ value: MIN_CARD_LEVEL, label: MIN_CARD_LEVEL.toString() },
-						{ value: MAX_CARD_LEVEL, label: MAX_CARD_LEVEL.toString() },
-					]}
 				></RangeSlider>
+				<Text size="xs" c="dimmed">
+					{levelRange[0] === levelRange[1] ? levelRange[0] : `${levelRange[0]} - ${levelRange[1]}`}
+				</Text>
+			</Stack>
+
+			{/* Pendulum */}
+			<Stack gap={4}>
+				<Text size="sm" fw={500}>
+					Pendulum
+				</Text>
+				<RangeSlider
+					key={form.key("pendulumRange")}
+					{...form.getInputProps("pendulumRange")}
+					min={MIN_PENDULUM_LEVEL}
+					max={MAX_PENDULUM_LEVEL}
+					minRange={0}
+					step={1}
+				></RangeSlider>
+				<Text size="xs" c="dimmed">
+					{pendulumRange[0] === pendulumRange[1] ? pendulumRange[0] : `${pendulumRange[0]} - ${pendulumRange[1]}`}
+				</Text>
 			</Stack>
 
 			<Space />
@@ -167,8 +195,8 @@ function MonsterFilters() {
 			<div>
 				<Flex gap="md" w="100%" wrap="wrap" align="flex-end">
 					<NumberInput
-						key={form.key("advancedFilters.minATK")}
-						{...form.getInputProps("advancedFilters.minATK")}
+						key={form.key("minATK")}
+						{...form.getInputProps("minATK")}
 						flex={1}
 						label="ATK (Min)"
 						leftSection={<SwordsIcon size={16} />}
@@ -180,8 +208,8 @@ function MonsterFilters() {
 					/>
 
 					<NumberInput
-						key={form.key("advancedFilters.maxATK")}
-						{...form.getInputProps("advancedFilters.maxATK")}
+						key={form.key("maxATK")}
+						{...form.getInputProps("maxATK")}
 						flex={1}
 						label="ATK (Max)"
 						leftSection={<SwordsIcon size={16} />}
@@ -198,8 +226,8 @@ function MonsterFilters() {
 			<div>
 				<Flex gap="md" w="100%" wrap="wrap" align="flex-end">
 					<NumberInput
-						key={form.key("advancedFilters.minDEF")}
-						{...form.getInputProps("advancedFilters.minDEF")}
+						key={form.key("minDEF")}
+						{...form.getInputProps("minDEF")}
 						flex={1}
 						label="DEF (Min)"
 						leftSection={<ShieldHalfIcon size={16} />}
@@ -211,8 +239,8 @@ function MonsterFilters() {
 					/>
 
 					<NumberInput
-						key={form.key("advancedFilters.maxDEF")}
-						{...form.getInputProps("advancedFilters.maxDEF")}
+						key={form.key("maxDEF")}
+						{...form.getInputProps("maxDEF")}
 						flex={1}
 						label="DEF (Max)"
 						leftSection={<ShieldHalfIcon size={16} />}
@@ -231,7 +259,7 @@ function MonsterFilters() {
 function SpellFilters() {
 	return (
 		<Box p="sm">
-			<ChipSection title="Sub Types" fieldPath="advancedFilters.subTypes" data={Object.values(SpellSubType)} />
+			<ChipSection title="Sub Types" fieldPath="subTypes" data={Object.values(SpellSubType)} />
 		</Box>
 	)
 }
@@ -239,7 +267,7 @@ function SpellFilters() {
 function TrapFilters() {
 	return (
 		<Box p="sm">
-			<ChipSection title="Sub Types" fieldPath="advancedFilters.subTypes" data={Object.values(TrapSubType)} />
+			<ChipSection title="Sub Types" fieldPath="subTypes" data={Object.values(TrapSubType)} />
 		</Box>
 	)
 }

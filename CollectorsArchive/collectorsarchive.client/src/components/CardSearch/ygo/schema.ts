@@ -1,5 +1,14 @@
+/*
+ * PROGRAMMER:			Hassan Alqhwaizi (8896386)
+ * FILENAME:				schema.ts
+ * ASSIGNMENT:			PROG3221 - Capstone
+ * DESCRIPTION:			Defines YGO-specific types, interfaces, and constants related to Card Search.
+ */
+
 export const MIN_CARD_LEVEL = 0
 export const MAX_CARD_LEVEL = 13
+export const MIN_PENDULUM_LEVEL = 0
+export const MAX_PENDULUM_LEVEL = 13
 
 export const MIN_ATK_DEF = 0
 export const MAX_ATK_DEF = 5000
@@ -56,7 +65,7 @@ export const MonsterSubType = {
 
 export type MonsterSubType = (typeof MonsterSubType)[keyof typeof MonsterSubType]
 
-export const CardType = {
+export const Classification = {
 	normal: "Normal",
 	effect: "Effect",
 	ritual: "Ritual",
@@ -73,7 +82,7 @@ export const CardType = {
 	link: "Link",
 }
 
-export type CardType = (typeof CardType)[keyof typeof CardType]
+export type Classification = (typeof Classification)[keyof typeof Classification]
 
 // Spell Card
 export const SpellSubType = {
@@ -100,10 +109,11 @@ export type TrapSubType = (typeof TrapSubType)[keyof typeof TrapSubType]
 export interface YGOFormFilters {
 	attributes?: Attribute[]
 	subTypes?: MonsterSubType[] | SpellSubType[] | TrapSubType[]
-	cardTypes?: CardType[]
-	cardTypesOperator?: "and" | "or"
-	excludedCardTypes?: CardType[]
+	classifications?: Classification[]
+	classificationsOperator?: "and" | "or"
+	excludedClassifications?: Classification[]
 	levelRange?: [number, number]
+	pendulumRange?: [number, number]
 	minATK?: number
 	maxATK?: number
 	minDEF?: number
@@ -112,3 +122,18 @@ export interface YGOFormFilters {
 
 // Default values for advanced filters
 export const YGOSearchDefaultFilters: YGOFormFilters = {}
+
+// Field keys that belong to YGO (used to clear fields when switching game)
+export const YGO_FIELD_KEYS: (keyof YGOFormFilters)[] = [
+	"attributes",
+	"subTypes",
+	"classifications",
+	"classificationsOperator",
+	"excludedClassifications",
+	"levelRange",
+	"pendulumRange",
+	"minATK",
+	"maxATK",
+	"minDEF",
+	"maxDEF",
+]
