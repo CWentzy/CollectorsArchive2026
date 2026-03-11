@@ -8,7 +8,7 @@
 
 namespace CollectorsArchive.Server.Models.CardSearch
 {
-    public class CVSearchYGOPrinting
+    public class CVSearchYGO
     {
         public string? cardName { get; set; }
         public string? cardID { get; set; }
