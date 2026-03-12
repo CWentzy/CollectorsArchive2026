@@ -1,6 +1,7 @@
 // src/components/CardItem.tsx
 import { Card, Group, Image, Text } from "@mantine/core"
-import sampleImage from "../assets/singleCardSample.png"
+
+const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
 
 interface CardItemProps {
 	id: string
@@ -30,7 +31,7 @@ export default function CardItem({ id, name = "Card Name", navigate }: CardItemP
 			}}
 		>
 			<Card.Section>
-				<Image src={sampleImage} height={260} width={180} alt={name} fit="contain" />
+				<Image src={placeholderImageUrl} height={260} width={180} alt={name} fit="contain" />
 			</Card.Section>
 
 			<Group justify="center" mt="sm">

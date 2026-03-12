@@ -1,58 +1,24 @@
-import {
-	Badge,
-	Box,
-	Button,
-	Card,
-	Divider,
-	Grid,
-	Group,
-	Image,
-	Stack,
-	Text,
-	Title,
-	UnstyledButton,
-} from "@mantine/core"
-import { IconCards, IconChevronLeft, IconInfoCircle, IconTimeline } from "@tabler/icons-react"
-import { useNavigate, useParams } from "react-router-dom"
+import { Badge, Box, Button, Card, Divider, Grid, Group, Image, Stack, Text, Title } from "@mantine/core"
+import { IconCards, IconInfoCircle, IconTimeline } from "@tabler/icons-react"
+import { useParams } from "react-router-dom"
 
-const placeholderImageUrl = "assets/images/card_placeholder_ygo.jpg"
+const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
 
 export default function SingleCardDisplay() {
 	const { id, name } = useParams<{ id: string; name: string }>()
-	const navigate = useNavigate()
 
 	// TODO: Once backend returns full card details by ID, fetch them here using id
 	// e.g. GET /api/Cards/{id} → replace all TBD placeholders below with real data
 
 	return (
-		<Box bg="gray.0" style={{ minHeight: "100vh" }}>
+		<Box mih="100vh">
 			<Box maw={1100} mx="auto" p="xl">
-				{/* Back to HomePage */}
-				<UnstyledButton mb="xl" onClick={() => navigate("/home")}>
-					<Group gap={4} c="dimmed">
-						<IconChevronLeft size={16} />
-						<Text size="sm" fw={600}>
-							Back to Home
-						</Text>
-					</Group>
-				</UnstyledButton>
-
 				<Grid gutter={40}>
 					{/* Card Image Column */}
 					<Grid.Col span={{ base: 12, md: 5 }}>
-						<Card
-							shadow="xl"
-							radius="lg"
-							p="xl"
-							bg="white"
-							style={{
-								border: "1px solid var(--mantine-color-gray-2)",
-								top: "2rem",
-								position: "sticky",
-							}}
-						>
-							{/* TODO: Replace placeholderImageUrl with real card image from backend */}
-							<Image src={placeholderImageUrl} alt={name} radius="md" fit="contain" h={520} />
+						<Card shadow="xl" radius="md" p="xl">
+							{/* TODO: Replace with real card image from backend */}
+							<Image src={placeholderImageUrl} alt={name} fit="contain" h={520} />
 						</Card>
 					</Grid.Col>
 
@@ -60,14 +26,17 @@ export default function SingleCardDisplay() {
 					<Grid.Col span={{ base: 12, md: 7 }}>
 						<Stack gap="xl">
 							{/* Header — name and id come from route params */}
-							<Box>
-								<Title order={1} fz={44} fw={900} lts={-1.5} lh={1}>
-									{name ?? "Unknown Card"}
-								</Title>
-								<Text size="sm" c="dimmed" mt={4}>
-									ID: {id}
-								</Text>
-								<Group mt="md" gap="xs">
+							<Stack>
+								<Group gap="xs" align="flex-end">
+									<Title order={1} fz={44} fw={900} lts={-1.5} lh={1}>
+										{name ?? "Unknown Card"}
+									</Title>
+									<Text size="xs" c="dimmed">
+										ID: {id}
+									</Text>
+								</Group>
+
+								<Group gap="xs">
 									{/* TODO: Replace placeholder badges with real data from backend */}
 									<Badge variant="dot" size="lg" color="blue">
 										Type TBD
@@ -75,11 +44,11 @@ export default function SingleCardDisplay() {
 									<Badge variant="dot" size="lg" color="orange">
 										Attribute TBD
 									</Badge>
-									<Badge variant="gradient" gradient={{ from: "yellow", to: "orange", deg: 45 }} size="lg">
+									<Badge variant="gradient" size="lg" gradient={{ from: "yellow", to: "orange", deg: 45 }}>
 										Rarity TBD
 									</Badge>
 								</Group>
-							</Box>
+							</Stack>
 
 							<Divider />
 
@@ -91,10 +60,9 @@ export default function SingleCardDisplay() {
 										Description
 									</Text>
 								</Group>
+
 								{/* TODO: Replace with real description from backend */}
-								<Text size="lg" lh={1.6} c="dimmed">
-									No description available yet.
-								</Text>
+								<Text size="md">No description available yet.</Text>
 							</Stack>
 
 							{/* Printing Info — placeholder */}
@@ -105,14 +73,13 @@ export default function SingleCardDisplay() {
 										Printing Information
 									</Text>
 								</Group>
+
 								{/* TODO: Replace with real printing info from backend */}
-								<Text size="md" c="dark.3">
-									No printing information available yet.
-								</Text>
+								<Text size="md">No printing information available yet.</Text>
 							</Stack>
 
 							{/* Card Specifications — placeholder */}
-							<Card withBorder radius="lg" p="xl" shadow="sm">
+							<Card withBorder radius="md" p="lg">
 								<Group gap="xs" mb="lg">
 									<IconCards size={20} />
 									<Text fw={800} size="sm" tt="uppercase" lts={0.5}>
@@ -129,7 +96,7 @@ export default function SingleCardDisplay() {
 										// TODO: Replace all "TBD" values with real fields from backend
 									].map((item) => (
 										<Grid.Col span={6} key={item.label}>
-											<Text size="xs" c="dimmed" fw={700} tt="uppercase" mb={4}>
+											<Text size="xs" c="dimmed" fw={500} tt="uppercase" mb={4}>
 												{item.label}
 											</Text>
 											<Text fw={600} size="md">
@@ -141,10 +108,10 @@ export default function SingleCardDisplay() {
 							</Card>
 
 							<Group justify="space-between" grow>
-								<Button size="xl" radius="md" h={60} fz="md" variant="filled" color="green">
-									Add to Your Collection
+								<Button size="lg" radius="md" fz="md" variant="light">
+									Add to Collection
 								</Button>
-								<Button size="xl" radius="md" h={60} fz="md" variant="filled" color="green">
+								<Button size="lg" radius="md" fz="md" variant="light">
 									Add to Wishlist
 								</Button>
 							</Group>
