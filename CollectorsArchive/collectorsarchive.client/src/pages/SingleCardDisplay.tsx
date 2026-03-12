@@ -3,12 +3,10 @@ import {
 	Box,
 	Button,
 	Card,
-	Center,
 	Divider,
 	Grid,
 	Group,
 	Image,
-	Loader,
 	Stack,
 	Text,
 	Title,
@@ -22,10 +20,10 @@ const placeholderImageUrl = "assets/images/card_placeholder_ygo.jpg"
 export default function SingleCardDisplay() {
 	const { id, name } = useParams<{ id: string; name: string }>()
 	const navigate = useNavigate()
- 
+
 	// TODO: Once backend returns full card details by ID, fetch them here using id
 	// e.g. GET /api/Cards/{id} → replace all TBD placeholders below with real data
- 
+
 	return (
 		<Box bg="gray.0" style={{ minHeight: "100vh" }}>
 			<Box maw={1100} mx="auto" p="xl">
@@ -38,7 +36,7 @@ export default function SingleCardDisplay() {
 						</Text>
 					</Group>
 				</UnstyledButton>
- 
+
 				<Grid gutter={40}>
 					{/* Card Image Column */}
 					<Grid.Col span={{ base: 12, md: 5 }}>
@@ -57,7 +55,7 @@ export default function SingleCardDisplay() {
 							<Image src={placeholderImageUrl} alt={name} radius="md" fit="contain" h={520} />
 						</Card>
 					</Grid.Col>
- 
+
 					{/* Details Column */}
 					<Grid.Col span={{ base: 12, md: 7 }}>
 						<Stack gap="xl">
@@ -82,9 +80,9 @@ export default function SingleCardDisplay() {
 									</Badge>
 								</Group>
 							</Box>
- 
+
 							<Divider />
- 
+
 							{/* Description — placeholder until backend returns it */}
 							<Stack gap="xs">
 								<Group gap="xs" c="dimmed">
@@ -98,7 +96,7 @@ export default function SingleCardDisplay() {
 									No description available yet.
 								</Text>
 							</Stack>
- 
+
 							{/* Printing Info — placeholder */}
 							<Stack gap="xs">
 								<Group gap="xs" c="dimmed">
@@ -112,7 +110,7 @@ export default function SingleCardDisplay() {
 									No printing information available yet.
 								</Text>
 							</Stack>
- 
+
 							{/* Card Specifications — placeholder */}
 							<Card withBorder radius="lg" p="xl" shadow="sm">
 								<Group gap="xs" mb="lg">
@@ -121,7 +119,7 @@ export default function SingleCardDisplay() {
 										Card Specifications
 									</Text>
 								</Group>
- 
+
 								<Grid gutter={30}>
 									{[
 										{ label: "Type", value: "TBD" },
@@ -141,7 +139,7 @@ export default function SingleCardDisplay() {
 									))}
 								</Grid>
 							</Card>
- 
+
 							<Group justify="space-between" grow>
 								<Button size="xl" radius="md" h={60} fz="md" variant="filled" color="green">
 									Add to Your Collection
