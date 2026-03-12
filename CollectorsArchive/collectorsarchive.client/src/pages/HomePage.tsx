@@ -44,6 +44,7 @@ export default function HomePage() {
 				console.log("Backend response:", data) //CHECKING THE BACKEND RESPONSE
 				// Cards are nested under "collection" in the response
 				setCards(data.collection)
+				console.log("First card:", data.collection[0])
 			} catch (err) {
 				setError("Could not load cards. Please try again later.")
 				console.error(err)
