@@ -90,15 +90,11 @@ function DropDownListForSearching({ navigate }: { navigate: any }) {
 			onOptionSubmit={(val) => {
 				setValue(val)
 				combobox.closeDropdown()
+				navigate("/SingleCardDisplay")
 			}}
 		>
 			<Combobox.Target>
-				<Button
-					variant="default"
-					// navigate to SingleCardDisplay when dropdown button is clicked
-					onClick={() => navigate("/SingleCardDisplay")}
-					style={{ width: 150 }}
-				>
+				<Button variant="default" onClick={() => combobox.toggleDropdown()} style={{ width: 150 }}>
 					<Group gap="sm">
 						{value && <img src={sampleImage} alt={value} style={{ width: 20, height: 20, borderRadius: 4 }} />}
 						{value || "Display Games"}
