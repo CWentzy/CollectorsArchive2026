@@ -20,14 +20,14 @@ import { useState } from "react"
 
 const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
-const RegisterNewUserURL = "/api/Auth/RegisterNewUser"
+const RegisterNewUserURL = "https://collectorsarchive.azurewebsites.net/api/Auth/RegisterNewUser"
 
-const LoginUsingGoogleURL = "/api/Auth/LoginUsingGoogle"
+const LoginUsingGoogleURL = "https://collectorsarchive.azurewebsites.net/api/Auth/LoginUsingGoogle"
 
-const RequestForTempCodeURL = "/api/Auth/RequestForTempCode"
+const RequestForTempCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/RequestForTempCode"
 
 // this variable i will be using it for after user recieved an email with the code
-const VerfyingTemporaryCodeURL = "/api/Auth/VerfyingTemporaryCode"
+const VerfyingTemporaryCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/VerfyingTemporaryCode"
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])
@@ -111,35 +111,54 @@ export default function LoginPage(props: PaperProps) {
 				{/* Here only works for non google users so their will get temp code and they have to provide it from their email  */}
 				<form
 					onSubmit={form.onSubmit(async (values) => {
-						const { email, name } = values
+						const { email } = values
 
-						// Send email and their name to backend for non-Google login
-						await fetch(RequestForTempCodeURL, {
-							method: "POST",
-							headers: { "Content-Type": "application/json" },
-							body: JSON.stringify({ email, name }),
-						})
+						const nonGoogleUsers = parseEmailUsername(email)
 
-						console.log("Temporary login code sent to email")
+						// here if user clicks register then i send the user name and email for registration
+						if (type === "register") {
+							const registerResponse = await fetch(RegisterNewUserURL, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({ email, nonGoogleUsers }),
+							})
 
-						// as i save email so verify step always has correct value
+							if (!registerResponse.ok) {
+								console.log("Registration failed")
+								return
+							}
+
+							console.log("User registered successfully.")
+
+							// then if the registration is success then i will request a code the  th user has to confirm that
+							await fetch(RequestForTempCodeURL, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({ email }),
+							})
+
+							console.log("Temp code sent after registration.")
+						}
+
+						// then this will be login mode also the
+						else {
+							await fetch(RequestForTempCodeURL, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({ email }),
+							})
+
+							console.log("Temp code sent for login.")
+						}
+
 						setSavedEmail(email)
-
 						setIsCodeStep(true)
 					})}
 				>
 					<Stack>
-						{type === "register" && (
-							<TextInput
-								label="Username"
-								value={form.values.name}
-								onChange={(event) => form.setFieldValue("name", event.currentTarget.value)}
-							/>
-						)}
-
 						<TextInput
 							required
-							label="Email (for non‑Google login)"
+							label="Email (for non-Google login)"
 							value={form.values.email}
 							onChange={(event) => form.setFieldValue("email", event.currentTarget.value)}
 							error={form.errors.email && "Invalid email"}

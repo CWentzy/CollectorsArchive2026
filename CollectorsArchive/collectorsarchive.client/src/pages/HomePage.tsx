@@ -1,11 +1,16 @@
-import { Box, Button, Combobox, Flex, Grid, Group, Input, Stack, Text, useCombobox } from "@mantine/core"
+import { Box, Button, Combobox, Flex, Grid, Group, Input, Stack, Text, useCombobox, Loader, Center } from "@mantine/core"
 import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 //import { useLocation } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
 import sampleImage from "../assets/singleCardSample.png"
 import CardItem from "../pages/CardItem"
-
+const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
+interface CardData {
+	cardID: string
+	cardName: string
+	
+}
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
 	// react-router stores that info in "location.state", so this lets me pull it out
@@ -14,6 +19,42 @@ export default function HomePage() {
 	const userName = user.userName
 	const navigate = useNavigate()
 
+	const [cards, setCards] = useState<CardData[]>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState("")
+
+	useEffect(() => {
+		if (!userName) {
+			setError("No user found. Please log in.")
+			setLoading(false)
+			return
+		}
+
+		const fetchCollection = async () => {
+			try {
+				const response = await fetch(GET_USER_COLLECTION_URL, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ UserName: userName }),
+				})
+
+				if (!response.ok) throw new Error("Failed to fetch collection")
+
+				const data = await response.json()
+				console.log("Backend response:", data) //CHECKING THE BACKEND RESPONSE
+				// Cards are nested under "collection" in the response
+				setCards(data.collection)
+				console.log("First card:", data.collection[0])
+			} catch (err) {
+				setError("Could not load cards. Please try again later.")
+				console.error(err)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchCollection()
+	}, [userName])
 	return (
 		<Box mih="100vh" w="100%" py="md">
 			{/* this box is for header part  */}
@@ -52,13 +93,27 @@ export default function HomePage() {
 
 				{/* CARD GRID */}
 
-				<Grid gutter="lg" justify="center" w="75%">
-					{[...Array(12)].map((_, index) => (
-						<Grid.Col key={index} span="content">
-							<CardItem id={index} navigate={navigate} />
-						</Grid.Col>
-					))}
-				</Grid>
+				{loading ? (
+					<Center mt="xl">
+						<Loader size="lg" />
+					</Center>
+				) : error ? (
+					<Center mt="xl">
+						<Text c="red">{error}</Text>
+					</Center>
+				) : cards.length === 0 ? (
+					<Center mt="xl">
+						<Text c="dimmed">No cards found in your collection.</Text>
+					</Center>
+				) : (
+					<Grid gutter="lg" justify="center" w="75%">
+						{cards.map((card) => (
+							<Grid.Col key={card.cardID} span="content">
+								<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
+							</Grid.Col>
+						))}
+					</Grid>
+				)}
 			</Stack>
 		</Box>
 	)
@@ -90,15 +145,11 @@ function DropDownListForSearching({ navigate }: { navigate: any }) {
 			onOptionSubmit={(val) => {
 				setValue(val)
 				combobox.closeDropdown()
+				navigate("/SingleCardDisplay")
 			}}
 		>
 			<Combobox.Target>
-				<Button
-					variant="default"
-					// navigate to SingleCardDisplay when dropdown button is clicked
-					onClick={() => navigate("/SingleCardDisplay")}
-					style={{ width: 150 }}
-				>
+				<Button variant="default" onClick={() => combobox.toggleDropdown()} style={{ width: 150 }}>
 					<Group gap="sm">
 						{value && <img src={sampleImage} alt={value} style={{ width: 20, height: 20, borderRadius: 4 }} />}
 						{value || "Display Games"}

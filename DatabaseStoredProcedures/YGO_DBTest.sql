@@ -28,23 +28,31 @@ WHERE CardSuperType.SuperTypeName = 'SPELL'			-- Value should be 'SPELL' or 'TRA
 		AND CardSubType.SubTypeID IN (26,27,28,29,30,31)		-- Include for SubType search (Index 26 - 32 of SubType Table
 
 
--- PRINTING SEARCH --
 SELECT 
-	CASE WHEN CardPrinting.GameID = 1 THEN YGOCard.CardName
-		END AS 'CardName',
-	CardSet.SetName,
-	CardSet.SetCode,
-	CardPrinting.CardSetIndex,
-	CardSet.ReleaseDate,
-	CardPrinting.CardRarity
+	CardPrinting.CardID,
+    YGOCard.CardName,
+	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
+    CardPrinting.CardRarity
 FROM CardPrinting
-	JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
-	JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
+    JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
+    JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
+WHERE
+	YGOCard.CardName = 'Dark Magician';
 
--- CARD SERACH --
---WHERE CardName LIKE '%Blue-Eyes White Dragon%' AND CardRarity LIKE '%%'
---ORDER BY CardName, CardSet.ReleaseDate
 
--- SET SEARCH --
-WHERE CardSet.SetName = 'Magician''s Force'
-ORDER BY CardPrinting.CardSetIndex
+SELECT 
+	YGOCard.CardID,
+	YGOCard.CardName,
+	YGOCard.CardText,
+	CardSuperType.SuperTypeName,
+	CardSubType.SubTypeName,
+	YGOCard.PendulumScale,
+	MonsterAttribute.AttributeName,
+	YGOCard.CardLevel,
+	YGOCard.AttackValue,
+	YGOCard.DefenseValue,
+	YGOCard.LinkRating
+FROM YGOCard
+	JOIN CardSuperType ON YGOCard.SuperType = CardSuperType.SuperTypeID
+	JOIN CardSubType ON YGOCard.SubType = CardSubType.SubTypeID
+	JOIN MonsterAttribute ON YGOCard.Attribute = MonsterAttribute.AttributeID;

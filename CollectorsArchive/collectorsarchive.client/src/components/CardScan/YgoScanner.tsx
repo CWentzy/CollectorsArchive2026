@@ -454,7 +454,7 @@ export default function YgoLiveScanner({
             // What we check before capturing a fram**********************************************************************
             //************************************************************************************************************
             const brightnessGood = avgBrightness >= 70 && avgBrightness <= 190;
-            const sharpnessGood = sharpnessScore >= 16;
+            const sharpnessGood = sharpnessScore >= 14;
 
             if (brightnessGood && sharpnessGood) {
                 goodFrameCountRef.current++;
