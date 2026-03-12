@@ -20,14 +20,14 @@ import { useState } from "react"
 
 const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
-const RegisterNewUserURL = "https://localhost:7053/api/Auth/RegisterNewUser"
+const RegisterNewUserURL = "/api/Auth/RegisterNewUser"
 
-const LoginUsingGoogleURL = "https://localhost:7053/api/Auth/LoginUsingGoogle"
+const LoginUsingGoogleURL = "/api/Auth/LoginUsingGoogle"
 
-const RequestForTempCodeURL = "https://localhost:7053/api/Auth/RequestForTempCode"
+const RequestForTempCodeURL = "/api/Auth/RequestForTempCode"
 
 // this variable i will be using it for after user recieved an email with the code
-const VerfyingTemporaryCodeURL = "https://localhost:7053/api/Auth/VerfyingTemporaryCode"
+const VerfyingTemporaryCodeURL = "/api/Auth/VerfyingTemporaryCode"
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])

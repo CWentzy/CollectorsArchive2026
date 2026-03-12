@@ -22,10 +22,10 @@ namespace CollectorsArchive.Server
         public void ConfigureServices(IServiceCollection services)
         {
 
-            // this is my local host name and pc name urs might be different if u go through an issue (FROM ERMI) 
             services.AddHostFiltering(options =>
             {
-                options.AllowedHosts = new[] { "localhost", "127.0.0.1", "Ermiyas" };
+                var hosts = Configuration["AllowedHosts"].Split(';', StringSplitOptions.RemoveEmptyEntries);
+                options.AllowedHosts = hosts;
             });
 
             // so this is important! 
@@ -53,7 +53,9 @@ namespace CollectorsArchive.Server
             {
                 options.AddPolicy("AllowAll", builder =>
                 {
-                    builder.WithOrigins("https://localhost:5173", "https://localhost:5174")
+                    var allowedOrigins = Configuration["AllowedOrigins"];
+
+                    builder.WithOrigins(allowedOrigins)
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 });

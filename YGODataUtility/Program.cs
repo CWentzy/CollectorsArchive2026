@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -18,9 +19,7 @@ namespace YGODataUtility
 {
     internal class Program
     {
-        const string _connectionString = "Data Source=localhost;" +
-                                            "Initial Catalog=CollectorsArchive;" +
-                                            "Integrated Security=true;";
+        static readonly string _connectionString = ConfigurationManager.ConnectionStrings["CollectorsArchive"].ConnectionString;
 
         static void Main(string[] args)
         {
