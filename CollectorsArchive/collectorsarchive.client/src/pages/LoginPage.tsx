@@ -113,25 +113,51 @@ export default function LoginPage(props: PaperProps) {
 					onSubmit={form.onSubmit(async (values) => {
 						const { email, name } = values
 
-						// Send email and their name to backend for non-Google login
-						await fetch(RequestForTempCodeURL, {
-							method: "POST",
-							headers: { "Content-Type": "application/json" },
-							body: JSON.stringify({ email, name }),
-						})
+						// here if user clicks register then i send the user name and email for registration
+						if (type === "register") {
+							const registerResponse = await fetch(RegisterNewUserURL, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({ email, name }),
+							})
 
-						console.log("Temporary login code sent to email")
+							if (!registerResponse.ok) {
+								console.log("Registration failed")
+								return
+							}
 
-						// as i save email so verify step always has correct value
+							console.log("User registered successfully.")
+
+							// then if the registration is success then i will request a code the  th user has to confirm that
+							await fetch(RequestForTempCodeURL, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({ email }),
+							})
+
+							console.log("Temp code sent after registration.")
+						}
+
+						// then this will be login mode also the
+						else {
+							await fetch(RequestForTempCodeURL, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({ email }),
+							})
+
+							console.log("Temp code sent for login.")
+						}
+
 						setSavedEmail(email)
-
 						setIsCodeStep(true)
 					})}
 				>
 					<Stack>
 						{type === "register" && (
 							<TextInput
-								label="Username"
+								required
+								label="Name"
 								value={form.values.name}
 								onChange={(event) => form.setFieldValue("name", event.currentTarget.value)}
 							/>
@@ -139,7 +165,7 @@ export default function LoginPage(props: PaperProps) {
 
 						<TextInput
 							required
-							label="Email (for non‑Google login)"
+							label="Email (for non-Google login)"
 							value={form.values.email}
 							onChange={(event) => form.setFieldValue("email", event.currentTarget.value)}
 							error={form.errors.email && "Invalid email"}
