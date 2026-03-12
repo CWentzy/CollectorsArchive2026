@@ -120,7 +120,12 @@ export default function LoginPage(props: PaperProps) {
 							const registerResponse = await fetch(RegisterNewUserURL, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
-								body: JSON.stringify({ email, nonGoogleUsers }),
+								// CORRECT
+								body: JSON.stringify({
+									email,
+									name: parseEmailUsername(email), // this creates a username from email prefix
+									GoogleSubject: null, // optional, explicitly null for non-Google users
+								}),
 							})
 							console.log({ nonGoogleUsers }, "Non Google user name ")
 
