@@ -28,6 +28,9 @@ jobs:
 
       - name: dotnet publish
         run: dotnet publish ./CollectorsArchive/CollectorsArchive.Server/CollectorsArchive.Server.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        env:
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -64,3 +67,4 @@ jobs:
           package: .
 
           
+
