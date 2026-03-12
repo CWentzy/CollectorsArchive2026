@@ -1,7 +1,7 @@
 import { AppShell, Avatar, Button, Container, Grid, Group, Modal } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { IconUser } from "@tabler/icons-react"
-import { Outlet, useNavigate } from "react-router-dom"
+import { Outlet } from "react-router-dom"
 import { CardScanButton } from "./components/CardScan/CardScanButton"
 //import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
 import CardScanOverlay from "./components/CardScan/CardScanOverlay"
@@ -11,12 +11,11 @@ import { ProfilePanel } from "./components/ProfilePanel"
 export function Layout() {
 	const [scanOpened, { open, close }] = useDisclosure(false)
 	const [profileOpened, { toggle: toggleProfile, close: closeProfile }] = useDisclosure(false)
-	const navigate = useNavigate()
 
 	// Check login state
 	const user = JSON.parse(localStorage.getItem("user") || "null")
 	const isLoggedIn = !!user
-	
+
 	const ProfileMenu = () => (
 		<Avatar
 			style={{ cursor: "pointer" }}
@@ -29,14 +28,18 @@ export function Layout() {
 			{user?.userName?.[0]?.toUpperCase() ?? <IconUser size={16} />}
 		</Avatar>
 	)
+
 	return (
-		<AppShell header={{ height: 60 }}
-			aside={{ //aside config, collapses when profileOpened is false
+		<AppShell
+			header={{ height: 60 }}
+			aside={{
+				//aside config, collapses when profileOpened is false
 				width: 260,
 				breakpoint: "sm",
 				collapsed: { desktop: !profileOpened, mobile: !profileOpened },
 			}}
-			padding="md">
+			padding="md"
+		>
 			<AppShell.Header>
 				<Container size="xl" py="xs">
 					<Grid justify="space-between" align="center">
