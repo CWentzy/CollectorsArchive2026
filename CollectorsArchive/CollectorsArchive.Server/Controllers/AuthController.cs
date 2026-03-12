@@ -23,11 +23,10 @@ namespace CollectorsArchive.Server.Controllers
         [HttpPost("RegisterNewUser")]
         public async Task<IActionResult> Register([FromBody] GoogleAuthRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email)
-                string.IsNullOrWhiteSpace(request.Name)
-
-         string.IsNullOrWhiteSpace(request.GoogleSubject))
-     {
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Name) ||
+                string.IsNullOrWhiteSpace(request.GoogleSubject))
+            {
                 return BadRequest(new { message = "Email, Name, and Google Subject are required." });
             }
 
@@ -58,6 +57,7 @@ namespace CollectorsArchive.Server.Controllers
                 userName = newUser.UserName
             });
         }
+
 
 
         [HttpPost("LoginUsingGoogle")]
