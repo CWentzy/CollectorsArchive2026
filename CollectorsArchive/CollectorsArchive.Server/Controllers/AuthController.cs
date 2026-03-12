@@ -58,6 +58,40 @@ namespace CollectorsArchive.Server.Controllers
             });
         }
 
+        [HttpPost("ForNonGoogleNewUser")]
+        public async Task<IActionResult> RegisterNonGoogleUser([FromBody] NonGoogleUserRequestModel request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest(new { message = "Email is required." });
+
+            // Check if user already exists by email
+            var existingUser = await _db.UserInformation
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
+
+            if (existingUser != null)
+                return Conflict(new { message = "A user with this email already exists." });
+
+            // Register the non-Google user
+            var newUser = new UserInformation
+            {
+                Email = request.Email,
+                UserName = string.IsNullOrWhiteSpace(request.Name)
+                    ? request.Email.Split('@')[0] 
+                    : request.Name,
+                GoogleSubject = null 
+            };
+
+            _db.UserInformation.Add(newUser);
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Registration successful",
+                userId = newUser.UserId,
+                email = newUser.Email,
+                userName = newUser.UserName
+            });
+        }
 
 
         [HttpPost("LoginUsingGoogle")]
