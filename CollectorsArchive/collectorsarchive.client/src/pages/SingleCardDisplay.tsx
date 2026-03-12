@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom"
 const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
 
 export default function SingleCardDisplay() {
-	const { id, name } = useParams<{ id: string; name: string }>()
+	const { id } = useParams<{ id: string; }>()
 
 	// TODO: Once backend returns full card details by ID, fetch them here using id
 	// e.g. GET /api/Cards/{id} → replace all TBD placeholders below with real data
@@ -18,7 +18,7 @@ export default function SingleCardDisplay() {
 					<Grid.Col span={{ base: 12, md: 5 }}>
 						<Card shadow="xl" radius="md" p="xl">
 							{/* TODO: Replace with real card image from backend */}
-							<Image src={placeholderImageUrl} alt={name} fit="contain" h={520} />
+							<Image src={placeholderImageUrl} alt={"Card Iamge"} fit="contain" h={520} />
 						</Card>
 					</Grid.Col>
 
@@ -29,7 +29,7 @@ export default function SingleCardDisplay() {
 							<Stack>
 								<Group gap="xs" align="flex-end">
 									<Title order={1} fz={44} fw={900} lts={-1.5} lh={1}>
-										{name ?? "Unknown Card"}
+										{/*{name ?? "Unknown Card"}*/}
 									</Title>
 									<Text size="xs" c="dimmed">
 										ID: {id}

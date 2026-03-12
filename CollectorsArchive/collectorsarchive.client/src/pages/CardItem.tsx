@@ -20,7 +20,7 @@ export default function CardItem({ id, name = "Card Name", navigate }: CardItemP
 				cursor: "pointer",
 				transition: "transform 0.2s ease, box-shadow 0.2s ease",
 			}}
-			onClick={() => navigate(`/card/${id}/${encodeURIComponent(name)}`)}
+			onClick={() => navigate(`/card/${id}`)}
 			onMouseEnter={(e) => {
 				e.currentTarget.style.transform = "scale(1.05)"
 				e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.3)"
