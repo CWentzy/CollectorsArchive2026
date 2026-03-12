@@ -18,7 +18,7 @@ export default function LandingPage() {
 					{/* Search Button */}
 					<Button
 						component="a"
-						href="/home"
+						href="/search"
 						size="lg"
 						variant="filled"
 						leftSection={<SearchIcon size={24} />}
@@ -32,13 +32,7 @@ export default function LandingPage() {
 						<Button component="a" href="/home" size="lg" variant="light">
 							Start Collecting
 						</Button>
-						<Button
-							component="a"
-							href="/members"
-							size="lg"
-							variant="light"
-							leftSection={<Users2Icon size={18} />}
-						>
+						<Button component="a" href="/members" size="lg" variant="light" leftSection={<Users2Icon size={18} />}>
 							View Members
 						</Button>
 					</Group>
