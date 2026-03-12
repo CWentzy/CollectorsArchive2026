@@ -17,7 +17,7 @@ import {
 } from "@mantine/core"
 import { IconChevronLeft, IconInfoCircle, IconTimeline, IconCards } from "@tabler/icons-react"
 
-import sampleImage from "../assets/singleCardSample.png"
+import sampleImage from "assets\images\card_placeholder_ygo.jpg"
 
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection"
 //import { Link } from "react-router-dom"
