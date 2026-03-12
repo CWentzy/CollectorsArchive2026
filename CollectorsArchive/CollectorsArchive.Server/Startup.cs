@@ -18,9 +18,16 @@ namespace CollectorsArchive.Server
             Configuration = configuration;
         }
 
-        
+
         public void ConfigureServices(IServiceCollection services)
         {
+
+            services.AddHostFiltering(options =>
+            {
+                var hosts = Configuration["AllowedHosts"].Split(';', StringSplitOptions.RemoveEmptyEntries);
+                options.AllowedHosts = hosts;
+            });
+
             // so this is important! 
             // this will be the email settings that we will use to send the email to the user for the email confirmation service,
             // we will get the values from the appsettings.json file and bind it to the CollectorArchiveEmailSettings class
@@ -32,7 +39,7 @@ namespace CollectorsArchive.Server
             // and it will use the connection string from the appsetting json file to connect to the database,
             // this will allow us to easily access the database context in our controllers and services.
             services.AddDbContext<AppDatabaseContents>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("ErmiyasDb")));          
+                options.UseSqlServer(Configuration.GetConnectionString("ErmiyasDb")));
 
 
             // Register the app email service 
@@ -46,13 +53,13 @@ namespace CollectorsArchive.Server
             {
                 options.AddPolicy("AllowAll", builder =>
                 {
-                    builder
-                        .AllowAnyOrigin()
+                    var allowedOrigins = Configuration["AllowedOrigins"];
+
+                    builder.WithOrigins(allowedOrigins)
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 });
             });
-
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -65,6 +72,8 @@ namespace CollectorsArchive.Server
             }
 
             app.UseHttpsRedirection();
+            app.UseHostFiltering();
+
 
             app.UseRouting();
 
@@ -79,3 +88,4 @@ namespace CollectorsArchive.Server
         }
     }
 }
+
