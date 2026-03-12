@@ -18,7 +18,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
                     console.log("Scan result:", result);
 
                     try {
-                        const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CVSearch", { //url/api/CVSearch
+                        const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch", { //url/api/CVSearch
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
