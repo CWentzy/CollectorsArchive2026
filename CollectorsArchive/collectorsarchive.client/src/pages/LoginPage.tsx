@@ -25,6 +25,7 @@ const RegisterNewUserURL = "https://collectorsarchive.azurewebsites.net/api/Auth
 const LoginUsingGoogleURL = "https://collectorsarchive.azurewebsites.net/api/Auth/LoginUsingGoogle"
 
 const RequestForTempCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/RequestForTempCode"
+const RegistrationForNonGoogleUsers = "https://collectorsarchive.azurewebsites.net/api/Auth/ForNonGoogleNewUser"
 
 // this variable i will be using it for after user recieved an email with the code
 const VerfyingTemporaryCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/VerfyingTemporaryCode"
@@ -117,14 +118,14 @@ export default function LoginPage(props: PaperProps) {
 
 						// here if user clicks register then i send the user name and email for registration
 						if (type === "register") {
-							const registerResponse = await fetch(RegisterNewUserURL, {
+							const registerResponse = await fetch(RegistrationForNonGoogleUsers, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
-								// CORRECT
+
 								body: JSON.stringify({
 									email,
 									name: parseEmailUsername(email), // this creates a username from email prefix
-									GoogleSubject: null, // optional, explicitly null for non-Google users
+									GoogleSubject: null,
 								}),
 							})
 							console.log({ nonGoogleUsers }, "Non Google user name ")
