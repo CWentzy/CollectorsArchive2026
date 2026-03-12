@@ -3,44 +3,141 @@
 //import { useEffect, useRef } from "react";
 //import { useCamera } from "./useCamera";
 //import { useCameraPermission } from "./useCameraPermission";
+import { useState } from "react";
+import { Button, Group, SimpleGrid, Text } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+import CardItem from "../../pages/CardItem";
 import YgoScanner from "./YgoScanner";
 
 interface CardScanOverlayProps {
     onClose?: () => void;
 }
 
+type SearchOutputPrinting = {
+    printID: string;
+    setCode: string;
+    cardRarity: string;
+};
+
+type SearchOutputCard = {
+    cardID: string;
+    cardName: string;
+    printInfo: SearchOutputPrinting;
+};
+
 export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
+    const navigate = useNavigate();
+    const [results, setResults] = useState<SearchOutputCard[] | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    async function handleScanComplete(result: {
+        passcode: string;
+        setCode: string;
+        name: string;
+    }) {
+        console.log("Scan result:", result);
+
+        try {
+            setLoading(true);
+            setErrorMessage("");
+
+            const payload = {
+                cardName: result.name,
+                cardID: result.passcode,
+                setIndex: result.setCode,
+            };
+
+            console.log("Payload being sent:", payload);
+
+            const response = await fetch(
+                "https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to send scan result.");
+            }
+
+            const data: SearchOutputCard[] = await response.json();
+            console.log("Backend response:", data);
+
+            setResults(data);
+        } catch (error) {
+            console.error("POST failed, but scan still worked:", error);
+            setErrorMessage("Could not load card matches.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function handleRescan() {
+        setResults(null);
+        setErrorMessage("");
+    }
+
     return (
         <div className="card-scan-overlay">
-            <YgoScanner
-                onClose={onClose}
-                onScanComplete={async (result) => {
-                    console.log("Scan result:", result);
+            {!results && (
+                <YgoScanner
+                    onClose={onClose}
+                    onScanComplete={handleScanComplete}
+                />
+            )}
 
-                    try {
-                        const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch", { //url/api/CVSearch
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                cardName: result.name,
-                                cardID: result.passcode,
-                                setIndex: result.setCode
-                            }),
-                        });
+            {loading && (
+                <div style={{ padding: 24 }}>
+                    <Text>Searching for matching cards...</Text>
+                </div>
+            )}
 
-                        if (!response.ok) {
-                            throw new Error("Failed to send scan result.");
-                        }
+            {!loading && results && (
+                <div style={{ padding: 24 }}>
+                    <Group justify="space-between" mb="md">
+                        <Text fw={700} size="lg">
+                            Scan Results
+                        </Text>
 
-                        const data = await response.json();
-                        console.log("Backend response:", data);
-                    } catch (error) {
-                        console.error("POST failed, but scan still worked:", error);
-                    }
-                }}
-            />
+                        <Group>
+                            <Button variant="default" onClick={handleRescan}>
+                                Rescan
+                            </Button>
+                            <Button variant="light" onClick={onClose}>
+                                Close
+                            </Button>
+                        </Group>
+                    </Group>
+
+                    {results.length === 0 && (
+                        <Text>No matches found.</Text>
+                    )}
+
+                    {results.length > 0 && (
+                        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
+                            {results.map((card) => (
+                                <CardItem
+                                    key={`${card.cardID}-${card.printInfo.setCode}`}
+                                    id={card.cardID}
+                                    name={card.cardName}
+                                    navigate={navigate}
+                                />
+                            ))}
+                        </SimpleGrid>
+                    )}
+                </div>
+            )}
+
+            {!loading && errorMessage && !results && (
+                <div style={{ padding: 24 }}>
+                    <Text c="red">{errorMessage}</Text>
+                </div>
+            )}
         </div>
     );
 }
