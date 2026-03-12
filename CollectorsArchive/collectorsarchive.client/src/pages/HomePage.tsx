@@ -1,4 +1,4 @@
-import { Box, Button, Combobox, Flex, Grid, Group, Input, Stack, Text, useCombobox, Card, Image } from "@mantine/core"
+import { Box, Button, Combobox, Flex, Grid, Group, Input, Stack, Text, useCombobox } from "@mantine/core"
 import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from "lucide-react"
 import { useState } from "react"
 //import { useLocation } from "react-router-dom"
