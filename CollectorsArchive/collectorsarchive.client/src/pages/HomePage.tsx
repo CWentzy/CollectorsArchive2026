@@ -7,8 +7,8 @@ import sampleImage from "../assets/singleCardSample.png"
 import CardItem from "../pages/CardItem"
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
 interface CardData {
-	CardID: string
-	CardName: string
+	cardID: string
+	cardName: string
 	
 }
 export default function HomePage() {
@@ -108,8 +108,8 @@ export default function HomePage() {
 				) : (
 					<Grid gutter="lg" justify="center" w="75%">
 						{cards.map((card) => (
-							<Grid.Col key={card.CardID} span="content">
-								<CardItem id={card.CardID} name={card.CardName} navigate={navigate} />
+							<Grid.Col key={card.cardID} span="content">
+								<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
 							</Grid.Col>
 						))}
 					</Grid>
