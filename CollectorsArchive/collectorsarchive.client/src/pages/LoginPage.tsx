@@ -22,7 +22,7 @@ const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 const RegisterNewUserURL = "/api/Auth/RegisterNewUser"
 
-const LoginUsingGoogleURL = "/api/Auth/LoginUsingGoogle"
+const LoginUsingGoogleURL = "https://collectorsarchive.azurewebsites.net/Auth/LoginUsingGoogle"
 
 const RequestForTempCodeURL = "/api/Auth/RequestForTempCode"
 
