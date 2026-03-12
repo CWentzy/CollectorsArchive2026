@@ -20,11 +20,13 @@ namespace CollectorsArchive.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // this is my local host name and pc name urs might be different if u go through an issue (FROM ERMI)
+            // UPDATED FOR DEPLOYMENT: allow ONLY the Azure backend domain
             services.AddHostFiltering(options =>
             {
                 options.AllowedHosts = new[]
                 {
-                    "collectorsarchive.azurewebsites.net" // backend domain
+                    "collectorsarchive.azurewebsites.net" 
                 };
             });
 
@@ -44,20 +46,26 @@ namespace CollectorsArchive.Server
             {
                 options.AddPolicy("AllowAll", builder =>
                 {
-                    var allowedOrigins = Configuration["AllowedOrigins"];
-
-                    builder.WithOrigins(allowedOrigins)
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
+                    builder.WithOrigins("https://calm-meadow-02809691e.6.azurestaticapps.net")
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
                 });
             });
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            
+            // ENABLE SWAGGER IN PRODUCTION
             app.UseSwagger();
             app.UseSwaggerUI();
+
+            //GOOGLE POPUP ISSUE (COOP header)
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
+                await next();
+            });
 
             app.UseHttpsRedirection();
             app.UseHostFiltering();
