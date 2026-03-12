@@ -72,7 +72,7 @@ namespace CollectorsArchive.Server.Controllers
 
             if (user == null)
             {
-                return NotFound(new { message = "User not found. Please register first." });
+                return Ok(new { message = "User not found. Please register first." });
             }
 
             return Ok(new

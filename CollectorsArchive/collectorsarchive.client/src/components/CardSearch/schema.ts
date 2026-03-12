@@ -42,11 +42,29 @@ export const LanguageNames: Record<Language, string> = {
 	pt: "Portuguese",
 }
 
+// Server response types
+export interface CardServerResponse {
+	cardID: string
+	cardName: string
+	printInfo: {
+		printID: string
+		setCode: string
+		cardRarity: string
+	}
+}
+
+// Client-side types
+export interface Print {
+	id: string
+	setCode: string
+	cardRarity: string
+	imageUrl?: string
+}
+
 export interface Card {
 	id: string
 	name: string
-	set: string
-	imageUrl?: string
+	printInfo?: Print
 }
 
 export interface Set {
@@ -57,5 +75,5 @@ export interface Set {
 
 export interface SearchResult {
 	type: SearchType
-	data: Card | Set
+	data: Card | Card[]
 }

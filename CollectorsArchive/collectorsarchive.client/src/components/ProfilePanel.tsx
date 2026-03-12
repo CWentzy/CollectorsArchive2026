@@ -45,7 +45,7 @@ type UserProfile = {
     joinDate: string
 }
 
-const API_BASE = "https://localhost:7053/api/UserProfile"
+const API_BASE = "https://collectorsarchive.azurewebsites.net/api/UserProfile"
 const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", { month: "long", year: "numeric" })
 }
