@@ -20,11 +20,11 @@ import { useState } from "react"
 
 const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
-const RegisterNewUserURL = "/api/Auth/RegisterNewUser"
+const RegisterNewUserURL = "https://collectorsarchive.azurewebsites.net/api/Auth/RegisterNewUser"
 
-const LoginUsingGoogleURL = "https://collectorsarchive.azurewebsites.net/Auth/LoginUsingGoogle"
+const LoginUsingGoogleURL = "https://collectorsarchive.azurewebsites.net/api/Auth/LoginUsingGoogle"
 
-const RequestForTempCodeURL = "/api/Auth/RequestForTempCode"
+const RequestForTempCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/RequestForTempCode"
 
 // this variable i will be using it for after user recieved an email with the code
 const VerfyingTemporaryCodeURL = "/api/Auth/VerfyingTemporaryCode"

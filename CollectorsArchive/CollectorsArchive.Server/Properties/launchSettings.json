@@ -2,11 +2,13 @@
   "profiles": {
     "https": {
       "commandName": "Project",
+      "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://collectorsarchive.azurewebsites.net/"
+      "applicationUrl": "https://localhost:7053"
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json"
