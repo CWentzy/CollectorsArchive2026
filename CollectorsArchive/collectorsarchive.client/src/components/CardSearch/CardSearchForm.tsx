@@ -37,35 +37,40 @@ import {
 	type CardSearchFormValues,
 } from "./CardSearchFormContext"
 import { buildGameValidators, getGameDefaults, getGameFieldKeys } from "./gameFilterConfigs"
+import { formatCard } from "./mapper"
 import {
 	Game,
 	SEARCH_QUERY_MAX_LENGTH,
 	SEARCH_QUERY_MIN_LENGTH,
 	SearchType,
 	type Card,
+	type CardServerResponse,
 	type SearchResult,
-	type Set,
 } from "./schema"
 
 const gameValidators = buildGameValidators()
 
 const initialFormValues: CardSearchFormValues = {
 	query: "" as string,
-	searchType: SearchType.card as SearchType,
-	game: undefined as Game | undefined,
+	searchType: SearchType.set as SearchType,
+	game: Game.ygo as Game | undefined,
 }
 
-const dummyResults: SearchResult[] = [
-	{
-		type: SearchType.card,
-		data: {
+const dummyResult: SearchResult = {
+	type: SearchType.card,
+	data: [
+		{
 			id: "17589298",
-			name: "Sword of Dark Rites",
-			set: "Force of the Breaker",
-			imageUrl: "assets/images/17589298.jpg",
+			name: "Test Card",
+			printInfo: {
+				id: "abcd",
+				setCode: "Force of the Breaker",
+				cardRarity: "Super Rare",
+				imageUrl: "assets/images/card_placeholder_ygo.jpg",
+			},
 		},
-	},
-]
+	],
+}
 
 function QuerySection() {
 	const form = useCardSearchFormContext()
@@ -216,50 +221,35 @@ function AdvancedFiltersSection() {
 	)
 }
 
-interface SearchResultsProps {
-	results: SearchResult[]
+interface SearchResultProps {
+	result: SearchResult
 }
 
-function SearchResults({ results }: SearchResultsProps) {
+function SearchResult({ result }: SearchResultProps) {
+	if (!result || (Array.isArray(result.data) && result.data.length === 0)) {
+		return <Text c="dimmed">No results to display.</Text>
+	}
+
 	return (
 		<Stack gap="md">
-			{results.length === 0 ? (
-				<Text c="dimmed">No results to display.</Text>
-			) : (
-				results.map((result) => {
-					if (result.type === SearchType.card) {
-						const cardData = result.data as Card
+			{(result.data as Card[]).map((item) => {
+				const cardData = item as Card
+				const imageUrl = cardData.printInfo?.imageUrl || "assets/images/card_placeholder_ygo.jpg" // TODO: Should be game-aware
 
-						return (
-							<MantineCard key={cardData.id} padding="md" withBorder>
-								<Group align="center">
-									{cardData.imageUrl && <Image src={cardData.imageUrl} alt={cardData.name} h="100%" w={128} />}
-									<div>
-										<Text fw={500}>{cardData.name}</Text>
-										<Text c="dimmed" size="sm">
-											{cardData.set}
-										</Text>
-									</div>
-								</Group>
-							</MantineCard>
-						)
-					} else if (result.type === SearchType.set) {
-						const setData = result.data as Set
-						return (
-							<MantineCard key={setData.id} padding="md" withBorder>
-								<Group>
-									<div>
-										<Text fw={500}>{setData.name}</Text>
-										<Text c="dimmed" size="sm">
-											Game: {setData.game}
-										</Text>
-									</div>
-								</Group>
-							</MantineCard>
-						)
-					}
-				})
-			)}
+				return (
+					<MantineCard key={cardData.id} padding="md" withBorder>
+						<Group align="center">
+							{imageUrl && <Image src={imageUrl} alt={cardData.name} h="100%" w={128} />}
+							<div>
+								<Text fw={500}>{cardData.name}</Text>
+								<Text c="dimmed" size="xs">
+									{cardData.printInfo?.setCode} - Rarity: {cardData.printInfo?.cardRarity}
+								</Text>
+							</div>
+						</Group>
+					</MantineCard>
+				)
+			})}
 		</Stack>
 	)
 }
@@ -270,6 +260,7 @@ export default function CardSearchForm() {
 
 	const [accordionValue, setAccordionValue] = useState<string | null>("search")
 	const [searching, setSearching] = useState(false)
+	const [searchResult, setSearchResult] = useState<SearchResult>()
 
 	const [debugValues, setDebugValues] = useState<typeof form.values>(initialFormValues) // for debugging - TODO: remove
 
@@ -302,8 +293,28 @@ export default function CardSearchForm() {
 		try {
 			setSearching(true)
 
-			// TODO: implement actual search logic
-			await new Promise((resolve) => setTimeout(resolve, 250))
+			// Search - get from /api/AdvancedSearchSet
+			const response = await fetch(import.meta.env.VITE_SERVER_URL + "/api/CardSearch/AdvancedSearchSet", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					advancedFilters: {}, // TODO: include advanced filters in the request body
+					...values,
+				}),
+			})
+
+			if (!response.ok) {
+				throw new Error(`Search failed with status ${response.status}`)
+			}
+
+			const cardsList: CardServerResponse[] = await response.json()
+
+			setSearchResult({
+				type: SearchType.card,
+				data: cardsList.map(formatCard),
+			})
 		} catch (error) {
 			console.error("Error during search:", error)
 		} finally {
@@ -359,7 +370,7 @@ export default function CardSearchForm() {
 			{/* Search Results */}
 			<Paper pos="relative">
 				<LoadingOverlay visible={searching} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
-				<SearchResults results={dummyResults} />
+				<SearchResult result={searchResult || dummyResult} />
 			</Paper>
 		</Stack>
 	)
