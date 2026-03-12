@@ -18,6 +18,7 @@ import SingleCardDisplay from "./pages/SingleCardDisplay"
 import MembersPage from "./pages/MembersPage"
 import ProfilePage from "./pages/ProfilePage"
 import NotFound from "./pages/NotFound"
+import SearchPage from "./pages/SearchPage"
 
 const accentColor: MantineColorsTuple = [
 	"#e8fcf5",
@@ -62,6 +63,7 @@ function App() {
 							<Route path="/home" element={<HomePage />} />
 
 							<Route path="/login" element={<LoginPage />} />
+							<Route path="/search" element={<SearchPage />} />
 							<Route path="/members" element={<MembersPage />} />
 							<Route path="/profile/:userId" element={<ProfilePage />} />
 
