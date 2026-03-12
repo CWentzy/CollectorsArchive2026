@@ -111,14 +111,16 @@ export default function LoginPage(props: PaperProps) {
 				{/* Here only works for non google users so their will get temp code and they have to provide it from their email  */}
 				<form
 					onSubmit={form.onSubmit(async (values) => {
-						const { email, name } = values
+						const { email } = values
+
+						const nonGoogleUsers = parseEmailUsername(email)
 
 						// here if user clicks register then i send the user name and email for registration
 						if (type === "register") {
 							const registerResponse = await fetch(RegisterNewUserURL, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
-								body: JSON.stringify({ email, name }),
+								body: JSON.stringify({ email, nonGoogleUsers }),
 							})
 
 							if (!registerResponse.ok) {
@@ -154,15 +156,6 @@ export default function LoginPage(props: PaperProps) {
 					})}
 				>
 					<Stack>
-						{type === "register" && (
-							<TextInput
-								required
-								label="Name"
-								value={form.values.name}
-								onChange={(event) => form.setFieldValue("name", event.currentTarget.value)}
-							/>
-						)}
-
 						<TextInput
 							required
 							label="Email (for non-Google login)"
@@ -170,7 +163,7 @@ export default function LoginPage(props: PaperProps) {
 							onChange={(event) => form.setFieldValue("email", event.currentTarget.value)}
 							error={form.errors.email && "Invalid email"}
 						/>
-
+						const
 						{/* This input will be displayed  only after user submits email and backend sends temp code */}
 						{isCodeStep && (
 							<TextInput label="Enter the code we emailed you" value={code} onChange={(e) => setCode(e.target.value)} />
