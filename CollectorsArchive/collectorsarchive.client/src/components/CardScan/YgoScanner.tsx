@@ -907,13 +907,18 @@ function cleanPasscode(text: string): string {
 }
 
 function cleanSetCode(text: string): string {
-    return text
+    const cleaned = text
         .toUpperCase()
-        .replace(/O/g, "0")  //Will break O's when acc needed.... all my test cards use 0's so.... fix later
+        .replace(/O/g, "0")  // Will break real O's but fine for demo
         .replace(/[_—–]/g, "-")
         .replace(/[^A-Z0-9-]/g, "")
         .replace(/--+/g, "-")
+        .replace(/-+$/g, "") // remove trailing dash
         .trim();
+
+    const match = cleaned.match(/[A-Z0-9]{4}-[A-Z]{2}[0-9]{3}/);
+
+    return match ? match[0] : "";
 }
 
 function cleanCardName(text: string): string {
