@@ -124,8 +124,7 @@ export default function LoginPage(props: PaperProps) {
 
 								body: JSON.stringify({
 									email,
-									name: parseEmailUsername(email), // this creates a username from email prefix
-									GoogleSubject: null,
+									name: parseEmailUsername(email),
 								}),
 							})
 							console.log({ nonGoogleUsers }, "Non Google user name ")
