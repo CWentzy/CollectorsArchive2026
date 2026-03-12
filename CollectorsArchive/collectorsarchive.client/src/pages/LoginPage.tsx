@@ -27,7 +27,7 @@ const LoginUsingGoogleURL = "https://collectorsarchive.azurewebsites.net/api/Aut
 const RequestForTempCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/RequestForTempCode"
 
 // this variable i will be using it for after user recieved an email with the code
-const VerfyingTemporaryCodeURL = "/api/Auth/VerfyingTemporaryCode"
+const VerfyingTemporaryCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/VerfyingTemporaryCode"
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])
