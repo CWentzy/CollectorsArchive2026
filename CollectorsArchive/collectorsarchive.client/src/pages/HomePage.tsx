@@ -41,7 +41,7 @@ export default function HomePage() {
 				if (!response.ok) throw new Error("Failed to fetch collection")
 
 				const data = await response.json()
-
+				console.log("Backend response:", data) //CHECKING THE BACKEND RESPONSE
 				// Cards are nested under "collection" in the response
 				setCards(data.collection)
 			} catch (err) {
