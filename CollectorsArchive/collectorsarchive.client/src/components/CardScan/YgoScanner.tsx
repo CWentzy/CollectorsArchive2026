@@ -8,9 +8,9 @@ import "./scanner.css";
 import { CloseButton } from "@mantine/core";
 
 type YgoScanResult = {
+    name: string;
     passcode: string;
     setCode: string;
-    name: string;
 };
 
 type YgoLiveScannerProps = {
@@ -454,7 +454,7 @@ export default function YgoLiveScanner({
             // What we check before capturing a fram**********************************************************************
             //************************************************************************************************************
             const brightnessGood = avgBrightness >= 70 && avgBrightness <= 190;
-            const sharpnessGood = sharpnessScore >= 17;
+            const sharpnessGood = sharpnessScore >= 16;
 
             if (brightnessGood && sharpnessGood) {
                 goodFrameCountRef.current++;
