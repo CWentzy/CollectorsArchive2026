@@ -530,7 +530,6 @@ export default function YgoLiveScanner({
         <section className="scanner">
             <CloseButton
                 variant="transparent"
-                c="white"
                 size="xl"
                 radius="xl"
                 onClick={onClose}
