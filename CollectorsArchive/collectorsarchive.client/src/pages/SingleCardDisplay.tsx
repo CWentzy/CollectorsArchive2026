@@ -9,10 +9,8 @@ import {
 	Grid,
 	Badge,
 	Divider,
-	Paper,
 	Title,
 	UnstyledButton,
-	rem,
 } from "@mantine/core"
 import { IconChevronLeft, IconInfoCircle, IconTimeline, IconCards } from "@tabler/icons-react"
 
