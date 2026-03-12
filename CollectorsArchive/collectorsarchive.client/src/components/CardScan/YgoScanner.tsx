@@ -8,9 +8,9 @@ import "./scanner.css";
 import { CloseButton } from "@mantine/core";
 
 type YgoScanResult = {
+    name: string;
     passcode: string;
     setCode: string;
-    name: string;
 };
 
 type YgoLiveScannerProps = {
@@ -454,7 +454,7 @@ export default function YgoLiveScanner({
             // What we check before capturing a fram**********************************************************************
             //************************************************************************************************************
             const brightnessGood = avgBrightness >= 70 && avgBrightness <= 190;
-            const sharpnessGood = sharpnessScore >= 17;
+            const sharpnessGood = sharpnessScore >= 16;
 
             if (brightnessGood && sharpnessGood) {
                 goodFrameCountRef.current++;
@@ -907,13 +907,18 @@ function cleanPasscode(text: string): string {
 }
 
 function cleanSetCode(text: string): string {
-    return text
+    const cleaned = text
         .toUpperCase()
-        .replace(/O/g, "0")  //Will break O's when acc needed.... all my test cards use 0's so.... fix later
+        .replace(/O/g, "0")  // Will break real O's but fine for demo
         .replace(/[_—–]/g, "-")
         .replace(/[^A-Z0-9-]/g, "")
         .replace(/--+/g, "-")
+        .replace(/-+$/g, "") // remove trailing dash
         .trim();
+
+    const match = cleaned.match(/[A-Z0-9]{4}-[A-Z]{2}[0-9]{3}/);
+
+    return match ? match[0] : "";
 }
 
 function cleanCardName(text: string): string {

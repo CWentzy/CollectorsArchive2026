@@ -18,12 +18,16 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
                     console.log("Scan result:", result);
 
                     try {
-                        const response = await fetch("/api/cardscan/ygo", {
+                        const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CVSearch", { //url/api/CVSearch
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                             },
-                            body: JSON.stringify(result),
+                            body: JSON.stringify({
+                                cardName: result.name,
+                                cardID: result.passcode,
+                                setIndex: result.setCode
+                            }),
                         });
 
                         if (!response.ok) {
