@@ -13,10 +13,8 @@ import {
 	Divider,
 	Flex,
 	Group,
-	Image,
 	JsonInput,
 	LoadingOverlay,
-	Card as MantineCard,
 	Paper,
 	SegmentedControl,
 	Select,
@@ -29,6 +27,7 @@ import {
 import { useMediaQuery } from "@mantine/hooks"
 import { DicesIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
 import { useState } from "react"
+import CardYGO from "../Cards/CardYGO"
 import AdvancedFilters from "./AdvancedFilters"
 import {
 	CardSearchFormProvider,
@@ -234,21 +233,7 @@ function SearchResult({ result }: SearchResultProps) {
 		<Stack gap="md">
 			{(result.data as Card[]).map((item) => {
 				const cardData = item as Card
-				const imageUrl = cardData.printInfo?.imageUrl || "assets/images/card_placeholder_ygo.jpg" // TODO: Should be game-aware
-
-				return (
-					<MantineCard key={cardData.id} padding="md" withBorder>
-						<Group align="center">
-							{imageUrl && <Image src={imageUrl} alt={cardData.name} h="100%" w={128} />}
-							<div>
-								<Text fw={500}>{cardData.name}</Text>
-								<Text c="dimmed" size="xs">
-									{cardData.printInfo?.setCode} - Rarity: {cardData.printInfo?.cardRarity}
-								</Text>
-							</div>
-						</Group>
-					</MantineCard>
-				)
+				return <CardYGO key={cardData.id} cardData={cardData} />
 			})}
 		</Stack>
 	)
