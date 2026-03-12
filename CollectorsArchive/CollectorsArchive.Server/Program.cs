@@ -12,12 +12,9 @@ var startup = new Startup(builder.Configuration);
 // Register services
 startup.ConfigureServices(builder.Services);
 
-
 var app = builder.Build();
 
 // this is where we will configure the HTTP request pipeline, we will use the Configure method from the Startup class to do that.
 startup.Configure(app, app.Environment);
-
-
 
 app.Run();

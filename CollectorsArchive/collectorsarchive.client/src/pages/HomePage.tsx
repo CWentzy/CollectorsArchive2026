@@ -1,20 +1,10 @@
-import {
-	Box,
-	Button,
-	Combobox,
-	Flex,
-	Grid,
-	Group,
-	Input,
-	Select,
-	Skeleton,
-	Stack,
-	Text,
-	useCombobox,
-} from "@mantine/core"
+import { Box, Button, Combobox, Flex, Grid, Group, Input, Stack, Text, useCombobox } from "@mantine/core"
 import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from "lucide-react"
 import { useState } from "react"
 //import { useLocation } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
+import sampleImage from "../assets/singleCardSample.png"
+import CardItem from "../pages/CardItem"
 
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
@@ -22,6 +12,7 @@ export default function HomePage() {
 	// when the user lands on the homepage.
 	const user = JSON.parse(localStorage.getItem("user") || "{}")
 	const userName = user.userName
+	const navigate = useNavigate()
 
 	return (
 		<Box mih="100vh" w="100%" py="md">
@@ -44,7 +35,7 @@ export default function HomePage() {
 
 			<Stack gap="xl" mt="xl" align="center">
 				<Flex justify="flex-end" align="flex-end" w="100%">
-					<DropDownListForSearching />
+					<DropDownListForSearching navigate={navigate} />
 				</Flex>
 
 				<Flex justify="flex-start" gap="md" wrap="wrap">
@@ -60,10 +51,11 @@ export default function HomePage() {
 				</Flex>
 
 				{/* CARD GRID */}
+
 				<Grid gutter="lg" justify="center" w="75%">
-					{[...Array(8)].map((_, index) => (
+					{[...Array(12)].map((_, index) => (
 						<Grid.Col key={index} span="content">
-							<Skeleton height={250} w={200} radius="md" animate />
+							<CardItem id={index} navigate={navigate} />
 						</Grid.Col>
 					))}
 				</Grid>
@@ -75,8 +67,8 @@ export default function HomePage() {
 const GameTypes = ["Yu Gi Oh", "Pokémon", "Magic"]
 
 // I am importing this function for user to search game easly, can be with the rarity or alphabets or any other criteria, this can be
-// modified later inspiredd by mantine lool
-function DropDownListForSearching() {
+// modified later inspired by mantine lool
+function DropDownListForSearching({ navigate }: { navigate: any }) {
 	const combobox = useCombobox({
 		onDropdownClose: () => combobox.resetSelectedOption(),
 	})
@@ -85,7 +77,10 @@ function DropDownListForSearching() {
 
 	const options = GameTypes.map((item) => (
 		<Combobox.Option value={item} key={item}>
-			{item}
+			<Group gap="sm">
+				<img src={sampleImage} alt={item} style={{ width: 24, height: 24, borderRadius: 4 }} />
+				<Text>{item}</Text>
+			</Group>
 		</Combobox.Option>
 	))
 
@@ -98,17 +93,17 @@ function DropDownListForSearching() {
 			}}
 		>
 			<Combobox.Target>
-				<Select
-					miw={150}
-					component="button"
-					type="button"
-					pointer
-					rightSection={<Combobox.Chevron />}
-					rightSectionPointerEvents="none"
-					onClick={() => combobox.toggleDropdown()}
+				<Button
+					variant="default"
+					// navigate to SingleCardDisplay when dropdown button is clicked
+					onClick={() => navigate("/SingleCardDisplay")}
+					style={{ width: 150 }}
 				>
-					{value || <Input.Placeholder>Display Games</Input.Placeholder>}
-				</Select>
+					<Group gap="sm">
+						{value && <img src={sampleImage} alt={value} style={{ width: 20, height: 20, borderRadius: 4 }} />}
+						{value || "Display Games"}
+					</Group>
+				</Button>
 			</Combobox.Target>
 
 			<Combobox.Dropdown>

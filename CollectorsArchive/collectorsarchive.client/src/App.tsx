@@ -14,6 +14,7 @@ import { Layout } from "./Layout"
 import HomePage from "./pages/HomePage"
 import LandingPage from "./pages/LandingPage"
 import LoginPage from "./pages/LoginPage"
+import SingleCardDisplay from "./pages/SingleCardDisplay"
 import MembersPage from "./pages/MembersPage"
 import ProfilePage from "./pages/ProfilePage"
 import NotFound from "./pages/NotFound"
@@ -64,6 +65,8 @@ function App() {
 							<Route path="/members" element={<MembersPage />} />
 							<Route path="/profile/:userId" element={<ProfilePage />} />
 
+							{/* we need a card id to able to display the exact card this might come from backkkendd  */}
+							<Route path="/card/:id" element={<SingleCardDisplay />} />
 							{/* Should be the last route */}
 							<Route path="*" element={<NotFound />} />
 						</Route>
