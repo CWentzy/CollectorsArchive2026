@@ -1,23 +1,23 @@
-import { useEffect, useState } from "react"
 import {
-	Box,
-	Card,
-	Image,
-	Text,
-	Button,
-	Stack,
-	Group,
-	Grid,
 	Badge,
+	Box,
+	Button,
+	Card,
+	Center,
 	Divider,
+	Grid,
+	Group,
+	Image,
+	Loader,
+	Stack,
+	Text,
 	Title,
 	UnstyledButton,
-	Loader,
-	Center,
 } from "@mantine/core"
-import { IconChevronLeft, IconInfoCircle, IconTimeline, IconCards } from "@tabler/icons-react"
+import { IconCards, IconChevronLeft, IconInfoCircle, IconTimeline } from "@tabler/icons-react"
+import { useEffect, useState } from "react"
 
-import sampleImage from "assets\images\card_placeholder_ygo.jpg"
+const placeholderImageUrl = "assets/images/card_placeholder_ygo.jpg"
 
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection"
 //import { Link } from "react-router-dom"
@@ -67,12 +67,7 @@ export default function UserCollection() {
 
 	// If a card is selected, show the detail view
 	if (selectedCard) {
-		return (
-			<SingleCardDetail
-				card={selectedCard}
-				onBack={() => setSelectedCard(null)}
-			/>
-		)
+		return <SingleCardDetail card={selectedCard} onBack={() => setSelectedCard(null)} />
 	}
 
 	if (loading) {
@@ -120,7 +115,7 @@ export default function UserCollection() {
 							{/* TODO: Replace sampleImage with card.imageUrl once backend provides it
 								Change to: <Image src={card.imageUrl} alt={card.name} ... />
 							*/}
-							<Image src={sampleImage} alt={card.name} radius="sm" fit="contain" h={200} />
+							<Image src={placeholderImageUrl} alt={card.name} radius="sm" fit="contain" h={200} />
 
 							{/* Card name from backend */}
 							<Text fw={600} size="sm" ta="center" mt="xs" lineClamp={1}>
@@ -142,13 +137,7 @@ export default function UserCollection() {
 // ─────────────────────────────────────────────
 // SINGLE CARD DETAIL VIEW
 // ─────────────────────────────────────────────
-function SingleCardDetail({
-	card,
-	onBack,
-}: {
-	card: CardItem
-	onBack: () => void
-}) {
+function SingleCardDetail({ card, onBack }: { card: CardItem; onBack: () => void }) {
 	// TODO: Once backend returns full card details by ID, fetch them here using card.id
 	// e.g. GET /api/Cards/{card.id} → replace the placeholder values below with real data
 
@@ -180,7 +169,7 @@ function SingleCardDetail({
 							}}
 						>
 							{/* TODO: Replace sampleImage with real card image once backend provides it */}
-							<Image src={sampleImage} alt={card.name} radius="md" fit="contain" h={520} />
+							<Image src={placeholderImageUrl} alt={card.name} radius="md" fit="contain" h={520} />
 						</Card>
 					</Grid.Col>
 
