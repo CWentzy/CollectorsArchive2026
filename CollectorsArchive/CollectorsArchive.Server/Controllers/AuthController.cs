@@ -33,8 +33,7 @@ namespace CollectorsArchive.Server.Controllers
             // non google users dont have no googles subject
             var existingUser = await _db.UserInformation
             .FirstOrDefaultAsync(u =>
-                u.Email == request.Email ||
-                (!string.IsNullOrEmpty(request.GoogleSubject) && u.GoogleSubject == request.GoogleSubject)
+                u.Email == request.Email 
             );
             
 
