@@ -1,11 +1,16 @@
-import { Box, Button, Combobox, Flex, Grid, Group, Input, Stack, Text, useCombobox } from "@mantine/core"
+import { Box, Button, Combobox, Flex, Grid, Group, Input, Stack, Text, useCombobox, Loader, Center } from "@mantine/core"
 import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 //import { useLocation } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
 import sampleImage from "../assets/singleCardSample.png"
 import CardItem from "../pages/CardItem"
-
+const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection"
+interface CardData {
+	id: string
+	name: string
+	
+}
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
 	// react-router stores that info in "location.state", so this lets me pull it out
@@ -14,6 +19,35 @@ export default function HomePage() {
 	const userName = user.userName
 	const navigate = useNavigate()
 
+	const [cards, setCards] = useState<CardData[]>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState("")
+
+	useEffect(() => {
+		if (!userName) {
+			setError("No user found. Please log in.")
+			setLoading(false)
+			return
+		}
+
+		const fetchCollection = async () => {
+			try {
+				const response = await fetch(`${GET_USER_COLLECTION_URL}/${userName}`)
+
+				if (!response.ok) throw new Error("Failed to fetch collection")
+
+				const data: CardData[] = await response.json()
+				setCards(data)
+			} catch (err) {
+				setError("Could not load cards. Please try again later.")
+				console.error(err)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchCollection()
+	}, [userName])
 	return (
 		<Box mih="100vh" w="100%" py="md">
 			{/* this box is for header part  */}
@@ -52,13 +86,28 @@ export default function HomePage() {
 
 				{/* CARD GRID */}
 
-				<Grid gutter="lg" justify="center" w="75%">
-					{[...Array(12)].map((_, index) => (
-						<Grid.Col key={index} span="content">
-							<CardItem id={index} navigate={navigate} />
-						</Grid.Col>
-					))}
-				</Grid>
+				{loading ? (
+					<Center mt="xl">
+						<Loader size="lg" />
+					</Center>
+				) : error ? (
+					<Center mt="xl">
+						<Text c="red">{error}</Text>
+					</Center>
+				) : cards.length === 0 ? (
+					<Center mt="xl">
+						<Text c="dimmed">No cards found in your collection.</Text>
+					</Center>
+				) : (
+					<Grid gutter="lg" justify="center" w="75%">
+						{cards.map((card) => (
+							<Grid.Col key={card.id} span="content">
+								{/* Passing real id and name from backend */}
+								<CardItem id={card.id} name={card.name} navigate={navigate} />
+							</Grid.Col>
+						))}
+					</Grid>
+				)}
 			</Stack>
 		</Box>
 	)

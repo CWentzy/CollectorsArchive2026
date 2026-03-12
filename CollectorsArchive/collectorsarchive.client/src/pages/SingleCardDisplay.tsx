@@ -15,145 +15,30 @@ import {
 	UnstyledButton,
 } from "@mantine/core"
 import { IconCards, IconChevronLeft, IconInfoCircle, IconTimeline } from "@tabler/icons-react"
-import { useEffect, useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
 
 const placeholderImageUrl = "assets/images/card_placeholder_ygo.jpg"
 
-const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection"
-//import { Link } from "react-router-dom"
-
-interface CardItem {
-	id: string
-	name: string
-	// TODO: Add more fields here when backend returns them -- imageUrl, rarity, type, attribute
-}
-//COLELCTION GRID VIEW
-
-export default function UserCollection() {
-	const [cards, setCards] = useState<CardItem[]>([])
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState("")
-	const [selectedCard, setSelectedCard] = useState<CardItem | null>(null)
-
-	// Read username from localStorage (set during login)
-	const storedUser = localStorage.getItem("user")
-	const userName = storedUser ? JSON.parse(storedUser).userName : null
-
-	useEffect(() => {
-		if (!userName) {
-			setError("No user found. Please log in.")
-			setLoading(false)
-			return
-		}
-
-		const fetchCollection = async () => {
-			try {
-				const response = await fetch(`${GET_USER_COLLECTION_URL}/${userName}`)
-
-				if (!response.ok) throw new Error("Failed to fetch collection")
-
-				const data: CardItem[] = await response.json()
-				setCards(data)
-			} catch (err) {
-				setError("Could not load your collection. Please try again later.")
-				console.error(err)
-			} finally {
-				setLoading(false)
-			}
-		}
-
-		fetchCollection()
-	}, [userName])
-
-	// If a card is selected, show the detail view
-	if (selectedCard) {
-		return <SingleCardDetail card={selectedCard} onBack={() => setSelectedCard(null)} />
-	}
-
-	if (loading) {
-		return (
-			<Center h="100vh">
-				<Loader size="lg" />
-			</Center>
-		)
-	}
-
-	if (error) {
-		return (
-			<Center h="100vh">
-				<Text c="red">{error}</Text>
-			</Center>
-		)
-	}
-
-	if (cards.length === 0) {
-		return (
-			<Center h="100vh">
-				<Text c="dimmed">Your collection is empty. Start adding cards!</Text>
-			</Center>
-		)
-	}
-
-	return (
-		<Box bg="gray.0" style={{ minHeight: "100vh" }} p="xl">
-			<Title order={2} mb="xl">
-				{userName}'s Collection
-			</Title>
-
-			{/* 4 columns x 3 rows grid */}
-			<Grid gutter="lg">
-				{cards.map((card) => (
-					<Grid.Col key={card.id} span={{ base: 6, sm: 4, md: 3 }}>
-						<Card
-							shadow="sm"
-							radius="md"
-							padding="sm"
-							withBorder
-							style={{ cursor: "pointer" }}
-							onClick={() => setSelectedCard(card)}
-						>
-							{/* TODO: Replace sampleImage with card.imageUrl once backend provides it
-								Change to: <Image src={card.imageUrl} alt={card.name} ... />
-							*/}
-							<Image src={placeholderImageUrl} alt={card.name} radius="sm" fit="contain" h={200} />
-
-							{/* Card name from backend */}
-							<Text fw={600} size="sm" ta="center" mt="xs" lineClamp={1}>
-								{card.name}
-							</Text>
-
-							{/* TODO: Uncomment when backend returns rarity
-							<Badge size="xs" variant="dot" color="yellow" mt={4}>
-								{card.rarity}
-							</Badge> */}
-						</Card>
-					</Grid.Col>
-				))}
-			</Grid>
-		</Box>
-	)
-}
-
-// ─────────────────────────────────────────────
-// SINGLE CARD DETAIL VIEW
-// ─────────────────────────────────────────────
-function SingleCardDetail({ card, onBack }: { card: CardItem; onBack: () => void }) {
-	// TODO: Once backend returns full card details by ID, fetch them here using card.id
-	// e.g. GET /api/Cards/{card.id} → replace the placeholder values below with real data
-
+export default function SingleCardDisplay() {
+	const { id, name } = useParams<{ id: string; name: string }>()
+	const navigate = useNavigate()
+ 
+	// TODO: Once backend returns full card details by ID, fetch them here using id
+	// e.g. GET /api/Cards/{id} → replace all TBD placeholders below with real data
+ 
 	return (
 		<Box bg="gray.0" style={{ minHeight: "100vh" }}>
 			<Box maw={1100} mx="auto" p="xl">
-				{/* Back to collection */}
-				<UnstyledButton mb="xl" onClick={onBack}>
+				{/* Back to HomePage */}
+				<UnstyledButton mb="xl" onClick={() => navigate("/home")}>
 					<Group gap={4} c="dimmed">
 						<IconChevronLeft size={16} />
 						<Text size="sm" fw={600}>
-							Back to Collection
+							Back to Home
 						</Text>
 					</Group>
 				</UnstyledButton>
-
+ 
 				<Grid gutter={40}>
 					{/* Card Image Column */}
 					<Grid.Col span={{ base: 12, md: 5 }}>
@@ -168,19 +53,22 @@ function SingleCardDetail({ card, onBack }: { card: CardItem; onBack: () => void
 								position: "sticky",
 							}}
 						>
-							{/* TODO: Replace sampleImage with real card image once backend provides it */}
-							<Image src={placeholderImageUrl} alt={card.name} radius="md" fit="contain" h={520} />
+							{/* TODO: Replace placeholderImageUrl with real card image from backend */}
+							<Image src={placeholderImageUrl} alt={name} radius="md" fit="contain" h={520} />
 						</Card>
 					</Grid.Col>
-
+ 
 					{/* Details Column */}
 					<Grid.Col span={{ base: 12, md: 7 }}>
 						<Stack gap="xl">
-							{/* Header — name comes from backend, rest is placeholder for now */}
+							{/* Header — name and id come from route params */}
 							<Box>
 								<Title order={1} fz={44} fw={900} lts={-1.5} lh={1}>
-									{card.name}
+									{name ?? "Unknown Card"}
 								</Title>
+								<Text size="sm" c="dimmed" mt={4}>
+									ID: {id}
+								</Text>
 								<Group mt="md" gap="xs">
 									{/* TODO: Replace placeholder badges with real data from backend */}
 									<Badge variant="dot" size="lg" color="blue">
@@ -194,9 +82,9 @@ function SingleCardDetail({ card, onBack }: { card: CardItem; onBack: () => void
 									</Badge>
 								</Group>
 							</Box>
-
+ 
 							<Divider />
-
+ 
 							{/* Description — placeholder until backend returns it */}
 							<Stack gap="xs">
 								<Group gap="xs" c="dimmed">
@@ -210,7 +98,7 @@ function SingleCardDetail({ card, onBack }: { card: CardItem; onBack: () => void
 									No description available yet.
 								</Text>
 							</Stack>
-
+ 
 							{/* Printing Info — placeholder */}
 							<Stack gap="xs">
 								<Group gap="xs" c="dimmed">
@@ -224,8 +112,8 @@ function SingleCardDetail({ card, onBack }: { card: CardItem; onBack: () => void
 									No printing information available yet.
 								</Text>
 							</Stack>
-
-							{/* Card Specifications Grid — placeholder */}
+ 
+							{/* Card Specifications — placeholder */}
 							<Card withBorder radius="lg" p="xl" shadow="sm">
 								<Group gap="xs" mb="lg">
 									<IconCards size={20} />
@@ -233,7 +121,7 @@ function SingleCardDetail({ card, onBack }: { card: CardItem; onBack: () => void
 										Card Specifications
 									</Text>
 								</Group>
-
+ 
 								<Grid gutter={30}>
 									{[
 										{ label: "Type", value: "TBD" },
@@ -253,7 +141,7 @@ function SingleCardDetail({ card, onBack }: { card: CardItem; onBack: () => void
 									))}
 								</Grid>
 							</Card>
-
+ 
 							<Group justify="space-between" grow>
 								<Button size="xl" radius="md" h={60} fz="md" variant="filled" color="green">
 									Add to Your Collection
