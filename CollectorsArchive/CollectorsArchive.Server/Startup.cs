@@ -18,31 +18,22 @@ namespace CollectorsArchive.Server
             Configuration = configuration;
         }
 
-
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddHostFiltering(options =>
             {
-                var hosts = Configuration["AllowedHosts"].Split(';', StringSplitOptions.RemoveEmptyEntries);
-                options.AllowedHosts = hosts;
+                options.AllowedHosts = new[]
+                {
+                    "collectorsarchive.azurewebsites.net" // backend domain
+                };
             });
 
-            // so this is important! 
-            // this will be the email settings that we will use to send the email to the user for the email confirmation service,
-            // we will get the values from the appsettings.json file and bind it to the CollectorArchiveEmailSettings class
-            // that we created in the Settings folder, this will allow us to easily access the email settings in our email service class.
             services.Configure<CollectorArchiveEmailSettings>(
                 Configuration.GetSection("CollectorArchiveEmailSettings"));
 
-            // this line will be for registering the AppDatabaseContents class as a service,
-            // and it will use the connection string from the appsetting json file to connect to the database,
-            // this will allow us to easily access the database context in our controllers and services.
             services.AddDbContext<AppDatabaseContents>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("ErmiyasDb")));
 
-
-            // Register the app email service 
             services.AddScoped<IEmailService, EmailConfirmationService>();
 
             services.AddControllers();
@@ -64,16 +55,12 @@ namespace CollectorsArchive.Server
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
             app.UseHostFiltering();
-
 
             app.UseRouting();
 
@@ -88,4 +75,3 @@ namespace CollectorsArchive.Server
         }
     }
 }
-
