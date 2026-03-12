@@ -5,10 +5,10 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import sampleImage from "../assets/singleCardSample.png"
 import CardItem from "../pages/CardItem"
-const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection"
+const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
 interface CardData {
-	id: string
-	name: string
+	CardID: string
+	CardName: string
 	
 }
 export default function HomePage() {
@@ -32,12 +32,18 @@ export default function HomePage() {
 
 		const fetchCollection = async () => {
 			try {
-				const response = await fetch(`${GET_USER_COLLECTION_URL}/${userName}`)
+				const response = await fetch(GET_USER_COLLECTION_URL, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ UserName: userName }),
+				})
 
 				if (!response.ok) throw new Error("Failed to fetch collection")
 
-				const data: CardData[] = await response.json()
-				setCards(data)
+				const data = await response.json()
+
+				// Cards are nested under "collection" in the response
+				setCards(data.collection)
 			} catch (err) {
 				setError("Could not load cards. Please try again later.")
 				console.error(err)
@@ -101,9 +107,8 @@ export default function HomePage() {
 				) : (
 					<Grid gutter="lg" justify="center" w="75%">
 						{cards.map((card) => (
-							<Grid.Col key={card.id} span="content">
-								{/* Passing real id and name from backend */}
-								<CardItem id={card.id} name={card.name} navigate={navigate} />
+							<Grid.Col key={card.CardID} span="content">
+								<CardItem id={card.CardID} name={card.CardName} navigate={navigate} />
 							</Grid.Col>
 						))}
 					</Grid>
