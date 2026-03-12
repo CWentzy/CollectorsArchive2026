@@ -163,7 +163,7 @@ export default function LoginPage(props: PaperProps) {
 							onChange={(event) => form.setFieldValue("email", event.currentTarget.value)}
 							error={form.errors.email && "Invalid email"}
 						/>
-						const
+
 						{/* This input will be displayed  only after user submits email and backend sends temp code */}
 						{isCodeStep && (
 							<TextInput label="Enter the code we emailed you" value={code} onChange={(e) => setCode(e.target.value)} />
