@@ -115,6 +115,43 @@ namespace CollectorsArchive.Server.Controllers
         }
 
 
+        [HttpPost("CVSearch")]
+        public IEnumerable<SearchOutputCard> CVSearch([FromBody] CVSearchYGO parameters)
+        {
+            List<SearchOutputCard> results = new();
+            SqlCommand cmd = new SqlCommand();
+
+
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ErmiyasDB")))
+            {
+                conn.Open();
+                cmd.CommandText = "CVSearch";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@CardID", parameters.cardID);
+                cmd.Connection = conn;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    results.Add(new SearchOutputCard
+                    {
+                        CardID = reader.GetString(0),
+                        CardName = reader.GetString(1),
+                        PrintInfo = new SearchOutputPrinting
+                        {
+                            PrintID = "Test",
+                            SetCode = reader.GetString(2),
+                            CardRarity = reader.GetString(3)
+                        }
+                    });
+                }
+            }
+
+            return results;
+        }
+
+
         // ----------------------------------- QUERY CREATION (WIP) ---------------------------------- //
 
         /// <summary>
