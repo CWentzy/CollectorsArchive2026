@@ -15,8 +15,6 @@ export function Layout() {
 	// Check login state
 	const user = JSON.parse(localStorage.getItem("user") || "null")
 	const isLoggedIn = !!user
-
-	// Logout handler
 	
 	const ProfileMenu = () => (
 		<Avatar
