@@ -17,9 +17,15 @@ import {
 } from "@mantine/core"
 import { IconCalendar, IconCards, IconChevronLeft, IconLayoutList, IconUsers } from "@tabler/icons-react"
 import { GalleryHorizontalEndIcon, LayoutListIcon, Users2Icon } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
+import CardItem from "../pages/CardItem"
+const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
 
+interface CardData {
+	cardID: string
+	cardName: string
+}
 type Member = {
 	userId: number
 	userName: string
@@ -33,10 +39,40 @@ const formatDate = (dateStr: string | null) => {
 }
 
 export default function MemberProfilePage() {
+	const user = JSON.parse(localStorage.getItem("user") || "{}")
+	const userName = user.userName
 	const location = useLocation()
 	const navigate = useNavigate()
 	const member = location.state?.member as Member | undefined
 
+	const [cards, setCards] = useState<CardData[]>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState("")
+	useEffect(() => {
+		const fetchCollection = async () => {
+			try {
+				const response = await fetch(GET_USER_COLLECTION_URL, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ UserName: member?.userName })
+				})
+
+				if (!response.ok) throw new Error("Failed to fetch collection")
+
+				const data = await response.json()
+				
+				// Cards are nested under "collection" in the response
+				setCards(data.collection)
+			} catch (err) {
+				setError("Could not load cards. Please try again later.")
+				console.error(err)
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		fetchCollection()
+	}, [member])
 	// If someone navigates here directly without state, show a fallback
 	if (!member) {
 		return (
@@ -123,7 +159,7 @@ export default function MemberProfilePage() {
 							<Group gap="xs">
 								<IconCards size={14} color="var(--mantine-color-spell-green-5)" />
 								<Text size="sm">Cards Collected</Text>
-								<Text size="sm" fw={700} ml="xs" c="spell-green">--</Text>
+								<Text size="sm" fw={700} ml="xs" c="spell-green">{cards.length}</Text>
 							</Group>
 							<Group gap="xs">
 								<IconLayoutList size={14} color="var(--mantine-color-spell-green-5)" />
@@ -161,13 +197,23 @@ export default function MemberProfilePage() {
 				</Stack>
 
 				{/* Card grid */}
-				<Grid gutter="lg" justify="center" w="75%" mx="auto">
-					{[...Array(8)].map((_, i) => (
-						<Grid.Col key={i} span="content">
-							<Skeleton height={250} w={200} radius="md" animate />
-						</Grid.Col>
-					))}
-				</Grid>
+				{loading ? (
+					<Grid gutter="lg" justify="center" w="75%" mx="auto">
+						{[...Array(8)].map((_, i) => (
+							<Grid.Col key={i} span="content">
+								<Skeleton height={250} w={200} radius="md" animate />
+							</Grid.Col>
+						))}
+					</Grid>
+				) : (
+					<Grid gutter="lg" justify="center" w="75%" mx="auto">
+						{cards.map((card) => (
+							<Grid.Col key={card.cardID} span="content">
+								<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
+							</Grid.Col>
+						))}
+					</Grid>
+				)}
 
 			</Stack>
 		</Box>
