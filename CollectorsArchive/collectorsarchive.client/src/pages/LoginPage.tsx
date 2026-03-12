@@ -122,6 +122,7 @@ export default function LoginPage(props: PaperProps) {
 								headers: { "Content-Type": "application/json" },
 								body: JSON.stringify({ email, nonGoogleUsers }),
 							})
+							console.log({ nonGoogleUsers }, "Non Google user name ")
 
 							if (!registerResponse.ok) {
 								console.log("Registration failed")
@@ -148,7 +149,7 @@ export default function LoginPage(props: PaperProps) {
 								body: JSON.stringify({ email }),
 							})
 
-							console.log("Temp code sent for login.")
+							console.log({ email }, "Email must be non google email")
 						}
 
 						setSavedEmail(email)

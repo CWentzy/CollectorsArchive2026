@@ -24,21 +24,26 @@ namespace CollectorsArchive.Server.Controllers
         public async Task<IActionResult> Register([FromBody] GoogleAuthRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.Name) ||
-                string.IsNullOrWhiteSpace(request.GoogleSubject))
+                string.IsNullOrWhiteSpace(request.Name))
             {
-                return BadRequest(new { message = "Email, Name, and Google Subject are required." });
+                return BadRequest(new { message = "Email and Name are required." });
             }
 
-            // Check if user already exists by Google Subject or Email
+            // Check if user already exists check by email and user name no google subject cus 
+            // non google users dont have no googles subject
             var existingUser = await _db.UserInformation
-                .FirstOrDefaultAsync(u => u.UserName == request.Name || u.Email == request.Email);
+            .FirstOrDefaultAsync(u =>
+                u.Email == request.Email ||
+                (!string.IsNullOrEmpty(request.GoogleSubject) && u.GoogleSubject == request.GoogleSubject)
+            );
+            
 
             if (existingUser != null)
             {
                 return Conflict(new { message = "A user with this email or Google account already exists." });
             }
 
+            // register the user 
             var newUser = new UserInformation
             {
                 Email = request.Email,
