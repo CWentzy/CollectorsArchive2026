@@ -33,9 +33,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        builder.WithOrigins("https://calm-meadow-02809691e.6.azurestaticapps.net")
+        policy.WithOrigins("https://calm-meadow-02809691e.6.azurestaticapps.net")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();
@@ -44,16 +44,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ENABLE SWAGGER IN PRODUCTION
-app.UseSwagger();
-app.UseSwaggerUI();
-
 // GOOGLE POPUP ISSUE (COOP header)
 app.Use(async (context, next) =>
 {
     context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
     await next();
 });
+
+// ENABLE SWAGGER IN PRODUCTION
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseHostFiltering();
