@@ -50,6 +50,7 @@ export default function LoginPage(props: PaperProps) {
 				const email = userData.email
 				const userName = parseEmailUsername(email)
 				const googleSubject = userData.sub
+				const photoUrl = userData.picture
 
 				// here i am adding a request for backend
 
@@ -57,10 +58,12 @@ export default function LoginPage(props: PaperProps) {
 				const backendResponse = await fetch(LoginUsingGoogleURL, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ googleSubject }),
+					body: JSON.stringify({googleSubject, photoUrl}),
 				})
 
-				if (backendResponse.status === 404) {
+				const loginData = await backendResponse.json()
+
+				if (loginData.message === "User not found. Please register first.") {
 					await fetch(RegisterNewUserURL, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
@@ -68,11 +71,16 @@ export default function LoginPage(props: PaperProps) {
 							email,
 							name: userName,
 							googleSubject,
+							photoUrl,
 						}),
 					})
 				}
 
-				localStorage.setItem("user", JSON.stringify({ userName, email }))
+				localStorage.setItem("user", JSON.stringify({
+					userName,
+					email,
+                    photoUrl: loginData.photoUrl ?? photoUrl, //'??' used just in case if the backend doesn't return photoUrl 
+				}))
 				navigate("/home")
 			} catch (error) {
 				console.error("Failed to fetch user info from Google:", error)
@@ -201,6 +209,7 @@ export default function LoginPage(props: PaperProps) {
 											JSON.stringify({
 												userName: data.userName,
 												email: data.email,
+												
 											})
 										)
 
