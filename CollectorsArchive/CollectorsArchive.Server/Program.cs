@@ -44,10 +44,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// GOOGLE POPUP ISSUE (COOP header)
+// GOOGLE POPUP ISSUE for the cor headerr 
 app.Use(async (context, next) =>
 {
     context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
+    context.Response.Headers["Cross-Origin-Embedder-Policy"] = "unsafe-none";
     await next();
 });
 
