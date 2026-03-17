@@ -1,7 +1,8 @@
 using CollectorsArchive.Server.Models;
+using CollectorsArchive.Server.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CollectorsArchive.Server.Service;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace CollectorsArchive.Server.Controllers
@@ -47,6 +48,15 @@ namespace CollectorsArchive.Server.Controllers
             };
 
             _db.UserInformation.Add(newUser);
+            await _db.SaveChangesAsync();
+
+            var newProfile = new UserProfile
+            {
+                UserId = newUser.UserId,
+                PhotoUrl = request.PhotoUrl,
+                JoinDate = DateTime.UtcNow
+            };
+            _db.UserProfiles.Add(newProfile);
             await _db.SaveChangesAsync();
 
             return Ok(new
@@ -110,12 +120,25 @@ namespace CollectorsArchive.Server.Controllers
                 return Ok(new { message = "User not found. Please register first." });
             }
 
+            var profile = await _db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.UserId);
+
+            if (!string.IsNullOrWhiteSpace(request.PhotoUrl))
+            {
+                //var profile = await _db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.UserId);
+                if(profile != null && profile.PhotoUrl != request.PhotoUrl)
+                {
+                    profile.PhotoUrl = request.PhotoUrl;
+                    await _db.SaveChangesAsync();
+                }
+            }
+
             return Ok(new
             {
                 message = "Login successful.",
                 userId = user.UserId,
                 email = user.Email,
-                userName = user.UserName
+                userName = user.UserName,
+                photoUrl = profile?.PhotoUrl
             });
         }
 
@@ -200,6 +223,7 @@ namespace CollectorsArchive.Server.Controllers
         public string Email { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string GoogleSubject { get; set; } = string.Empty;
+        public string? PhotoUrl { get; set; }
     }
 }
 
