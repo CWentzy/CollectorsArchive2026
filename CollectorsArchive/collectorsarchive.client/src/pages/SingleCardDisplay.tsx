@@ -46,18 +46,18 @@ export default function SingleCardDisplay() {
 						<Stack gap="xl">
 							{/* Header — name and id come from route params */}
 							<Stack>
-								<Group gap="xs" align="flex-end">
-									<Title order={1} fz={44} fw={900} lts={-1.5} lh={1}>
-										{/* the name of the card here as a title  */}
-										<Text>Card Name :{cardDetails?.name}</Text>
+								<Stack gap={4}>
+									<Title order={1} fz={52} fw={900} lts={-1.5} lh={1}>
+										{cardDetails?.name ?? "Unknown Card"}
 									</Title>
-									<Text size="xs" fw={700}>
+
+									<Text size="sm" fw={600} c="dimmed">
 										ID: {cardDetails?.cardID}
 									</Text>
-								</Group>
+								</Stack>
 
 								<Group gap="sm" align="center">
-									<Badge size="lg" radius="sm" variant="filled" color="orange" fw={700}>
+									<Badge size="lg" radius="sm" variant="filled" color="spell-green" fw={700}>
 										Super Type
 									</Badge>
 
