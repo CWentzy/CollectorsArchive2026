@@ -10,10 +10,11 @@ namespace CollectorsArchive.Server.Models.CardDisplays
 {
     public class CardDisplayYGO
     {
-        public string name { get; set; }
-        public string superType { get; set; }
-        public string subType { get; set; }
-        public string cardText { get; set; }
+        public string CardID { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty ;
+        public string superType { get; set; } = string .Empty ;
+        public string subType { get; set; } = string.Empty;
+        public string cardText { get; set; } = string.Empty;
         public string? attribute { get; set; }
         public string[]? classifications { get; set; }
         public int? level { get; set; }
