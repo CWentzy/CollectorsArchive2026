@@ -22,8 +22,8 @@ export default function SingleCardDisplay() {
 			})
 
 			const data = await response.json()
-			setCard(data.cardDetails)
-			console.log("CARD RESPONSE:", data.CardDetails)
+			setCard(data.card)
+			console.log("CARD RESPONSE:", data.card)
 		}
 
 		fetchCard()
@@ -49,7 +49,7 @@ export default function SingleCardDisplay() {
 								<Group gap="xs" align="flex-end">
 									<Title order={1} fz={44} fw={900} lts={-1.5} lh={1}>
 										{/* the name of the card here as a title  */}
-										<Text>Card Name :{cardDetails?.cardName}</Text>
+										<Text>Card Name :{cardDetails?.name}</Text>
 									</Title>
 									<Text size="xs" fw={700}>
 										ID: {cardDetails?.cardID}
@@ -68,7 +68,7 @@ export default function SingleCardDisplay() {
 										gradient={{ from: "yellow", to: "orange", deg: 45 }}
 										fw={600}
 									>
-										{cardDetails?.SuperType ?? "Unknown"}
+										{cardDetails?.superType ?? "Unknown"}
 									</Badge>
 								</Group>
 							</Stack>
@@ -98,10 +98,10 @@ export default function SingleCardDisplay() {
 
 								<Grid gutter={30}>
 									{[
-										{ label: "Super Type", value: cardDetails?.SuperType },
-										{ label: "Sub Type", value: cardDetails?.SubType },
+										{ label: "Super Type", value: cardDetails?.superType },
+										{ label: "Sub Type", value: cardDetails?.subType },
 										{ label: "Card ID ", value: cardDetails?.cardID },
-										{ label: "Card Name ", value: cardDetails?.cardName },
+										{ label: "Card Name ", value: cardDetails?.name },
 										{ label: "Release Date", value: "TBD" },
 									].map((item) => (
 										<Grid.Col span={6} key={item.label}>
