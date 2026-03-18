@@ -68,7 +68,7 @@ export function Layout() {
 									</Button>
 								)}
 							</Group>
-							{/* Mobile navigation */}
+							{/* Mobile navigation this has a bug  */}
 							<Group hiddenFrom="sm" gap="xs" justify="flex-end">
 								<CardScanButton onClick={open} iconOnly />
 								{isLoggedIn ? (
