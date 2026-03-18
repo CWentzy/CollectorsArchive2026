@@ -83,9 +83,6 @@ export default function SingleCardDisplay() {
 										Description :{cardDetails?.cardText}
 									</Text>
 								</Group>
-
-								{/* incase if the description comes null?? we will do it later  */}
-								<Text size="md">No description available yet.</Text>
 							</Stack>
 							{/* Card Specifications */}
 							<Card withBorder radius="md" p="lg">
