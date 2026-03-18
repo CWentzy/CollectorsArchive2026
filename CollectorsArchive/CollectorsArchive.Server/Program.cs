@@ -1,20 +1,71 @@
 using CollectorsArchive.Server;
-
-using IEmailService = CollectorsArchive.Server.Service.IEmailService;
+using CollectorsArchive.Server.Service;
+using CollectorsArchive.Server.Settings;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// i created a startup class to handle the configuration of services and the HTTP request pipeline,
-// so here i am calling the constructor of the Startup class and passing the configuration from the builder to it,
-// so that we can use it in the ConfigureServices method to register our services and in the Configure method to configure the HTTP request pipeline.
-var startup = new Startup(builder.Configuration);
+// this is my local host name and pc name urs might be different if u go through an issue (FROM ERMI)
+// UPDATED FOR DEPLOYMENT: allow ONLY the Azure backend domain
+builder.Services.AddHostFiltering(options =>
+{
+    options.AllowedHosts = new[]
+    {
+        "collectorsarchive.azurewebsites.net"
+    };
+});
 
-// Register services
-startup.ConfigureServices(builder.Services);
+builder.Services.Configure<CollectorArchiveEmailSettings>(
+    builder.Configuration.GetSection("CollectorArchiveEmailSettings"));
+
+builder.Services.AddDbContext<AppDatabaseContents>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ErmiyasDb")));
+
+builder.Services.AddScoped<IEmailService, EmailConfirmationService>();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.WithOrigins("https://calm-meadow-02809691e.6.azurestaticapps.net")
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
-// this is where we will configure the HTTP request pipeline, we will use the Configure method from the Startup class to do that.
-startup.Configure(app, app.Environment);
+// GOOGLE POPUP ISSUE for the cor headerr 
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
+    context.Response.Headers["Cross-Origin-Embedder-Policy"] = "unsafe-none";
+    await next();
+});
 
+// ENABLE SWAGGER IN PRODUCTION
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
+app.UseHostFiltering();
+
+app.UseRouting();
+
+app.UseCors("AllowAll");
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+// this is where the application starts listening for incoming HTTP requests
 app.Run();

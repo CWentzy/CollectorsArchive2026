@@ -50,6 +50,15 @@ namespace CollectorsArchive.Server.Controllers
             _db.UserInformation.Add(newUser);
             await _db.SaveChangesAsync();
 
+            var newProfile = new UserProfile
+            {
+                UserId = newUser.UserId,
+                PhotoUrl = request.PhotoUrl,
+                JoinDate = DateTime.UtcNow
+            };
+            _db.UserProfiles.Add(newProfile);
+            await _db.SaveChangesAsync();
+
             return Ok(new
             {
                 message = "Registration successful.",
