@@ -1,7 +1,8 @@
 using CollectorsArchive.Server.Models;
+using CollectorsArchive.Server.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CollectorsArchive.Server.Service;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace CollectorsArchive.Server.Controllers
@@ -109,13 +110,33 @@ namespace CollectorsArchive.Server.Controllers
             {
                 return Ok(new { message = "User not found. Please register first." });
             }
+            //FOR THE ALREADY SIGNED IN USERS WHO DO NOT HAVE THE UserProfile IN THE DATABASE YET
+            var profile = await _db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.UserId);
+            if(profile == null)
+            {
+                profile = new UserProfile
+                {
+                    UserId = user.UserId,
+                    PhotoUrl = request.PhotoUrl,
+                    JoinDate = DateTime.UtcNow
+                };
+                //Added the above info in database
+                _db.UserProfiles.Add(profile);
+                await _db.SaveChangesAsync();
+            }
+            else if(!string.IsNullOrWhiteSpace(request.PhotoUrl) && profile.PhotoUrl != request.PhotoUrl)
+            {
 
+                profile.PhotoUrl = request.PhotoUrl;
+                await _db.SaveChangesAsync();
+            }
             return Ok(new
             {
                 message = "Login successful.",
                 userId = user.UserId,
                 email = user.Email,
-                userName = user.UserName
+                userName = user.UserName,
+                photoUrl = profile.PhotoUrl
             });
         }
 
@@ -200,6 +221,7 @@ namespace CollectorsArchive.Server.Controllers
         public string Email { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string GoogleSubject { get; set; } = string.Empty;
+        public string? PhotoUrl { get; set; }
     }
 }
 

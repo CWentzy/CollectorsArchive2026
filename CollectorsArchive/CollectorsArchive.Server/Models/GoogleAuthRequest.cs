@@ -7,6 +7,9 @@ namespace CollectorsArchive.Server.Models
         // Adding this attribute makes it bulletproof
         [JsonPropertyName("googleIDToken")]
         public string GoogleIDToken { get; set; } = string.Empty;
+
+        [JsonPropertyName("photoUrl")]
+        public string? PhotoUrl { get; set; }
     }
 
 
