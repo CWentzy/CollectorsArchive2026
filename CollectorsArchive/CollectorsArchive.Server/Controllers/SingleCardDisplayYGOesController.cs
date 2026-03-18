@@ -48,16 +48,29 @@ namespace CollectorsArchive.Server.Controllers
                             superType = reader["SuperType"].ToString(),
                             subType = reader["SubType"].ToString(),
                             cardText = reader["CardText"].ToString(),
-                            attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
-                            classifications = reader["Classifications"] == DBNull.Value
+
+                            attribute = reader["Attribute"] == DBNull.Value
                                 ? null
-                                : reader["Classifications"].ToString().Split(','),
-                            level = reader["Level"] == DBNull.Value ? null : Convert.ToInt32(reader["Level"]),
-                            Atk = reader["Atk"] == DBNull.Value ? null : Convert.ToInt32(reader["Atk"]),
-                            Def = reader["Def"] == DBNull.Value ? null : Convert.ToInt32(reader["Def"])
+                                : reader["Attribute"].ToString(),
+
+                            // Stored procedure does NOT return Classifications
+                            classifications = null,
+
+                            level = reader["CardLevel"] == DBNull.Value
+                                ? null
+                                : Convert.ToInt32(reader["CardLevel"]),
+
+                            Atk = reader["AttackValue"] == DBNull.Value
+                                ? null
+                                : Convert.ToInt32(reader["AttackValue"]),
+
+                            Def = reader["DefenseValue"] == DBNull.Value
+                                ? null
+                                : Convert.ToInt32(reader["DefenseValue"])
                         });
                     }
                 }
+
             }
 
             if (cardDisplayYGO.Count == 0)
