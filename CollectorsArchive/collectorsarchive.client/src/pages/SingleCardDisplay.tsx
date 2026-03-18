@@ -1,14 +1,31 @@
 import { Badge, Box, Button, Card, Divider, Grid, Group, Image, Stack, Text, Title } from "@mantine/core"
 import { IconCards, IconInfoCircle, IconTimeline } from "@tabler/icons-react"
 import { useParams } from "react-router-dom"
+import { useEffect, useState } from "react"
+// importing the interface here
+import type { SingleCardDetailsForYGOes } from "../types/SingleCardDisplayForYGOes"
 
 const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
+const SingleCardDisplayYGO = "https://collectorsarchive.azurewebsites.net/api/Auth/SingleCardDisplayYGO"
 
 export default function SingleCardDisplay() {
-	const { id } = useParams<{ id: string; }>()
+	const { id } = useParams<{ id: string }>()
+	const [cardDetails, setCard] = useState<SingleCardDetailsForYGOes | null>(null)
 
-	// TODO: Once backend returns full card details by ID, fetch them here using id
-	// e.g. GET /api/Cards/{id} → replace all TBD placeholders below with real data
+	useEffect(() => {
+		async function fetchCard() {
+			const response = await fetch(SingleCardDisplayYGO, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ cardID: id }),
+			})
+
+			const data = await response.json()
+			setCard(data.cardDetails)
+		}
+
+		fetchCard()
+	}, [id])
 
 	return (
 		<Box mih="100vh">
@@ -29,56 +46,46 @@ export default function SingleCardDisplay() {
 							<Stack>
 								<Group gap="xs" align="flex-end">
 									<Title order={1} fz={44} fw={900} lts={-1.5} lh={1}>
-										{/*{name ?? "Unknown Card"}*/}
+										{/* the name of the card here as a title  */}
+										<Text>Card Name :{cardDetails?.cardName}</Text>
 									</Title>
-									<Text size="xs" c="dimmed">
-										ID: {id}
+									<Text size="xs" fw={700}>
+										ID: {cardDetails?.cardID}
 									</Text>
 								</Group>
 
-								<Group gap="xs">
-									{/* TODO: Replace placeholder badges with real data from backend */}
-									<Badge variant="dot" size="lg" color="blue">
-										Type TBD
+								<Group gap="sm" align="center">
+									<Badge size="lg" radius="sm" variant="filled" color="orange" fw={700}>
+										Super Type
 									</Badge>
-									<Badge variant="dot" size="lg" color="orange">
-										Attribute TBD
-									</Badge>
-									<Badge variant="gradient" size="lg" gradient={{ from: "yellow", to: "orange", deg: 45 }}>
-										Rarity TBD
+
+									<Badge
+										size="lg"
+										radius="sm"
+										variant="gradient"
+										gradient={{ from: "yellow", to: "orange", deg: 45 }}
+										fw={600}
+									>
+										{cardDetails?.SuperType ?? "Unknown"}
 									</Badge>
 								</Group>
 							</Stack>
 
 							<Divider />
 
-							{/* Description — placeholder until backend returns it */}
+							{/* Description — card Text is a descriiption of the card */}
 							<Stack gap="xs">
 								<Group gap="xs" c="dimmed">
 									<IconInfoCircle size={18} />
 									<Text fw={700} size="xs" tt="uppercase" lts={1}>
-										Description
+										Description :{cardDetails?.cardText}
 									</Text>
 								</Group>
 
-								{/* TODO: Replace with real description from backend */}
+								{/* incase if the description comes null?? we will do it later  */}
 								<Text size="md">No description available yet.</Text>
 							</Stack>
-
-							{/* Printing Info — placeholder */}
-							<Stack gap="xs">
-								<Group gap="xs" c="dimmed">
-									<IconTimeline size={18} />
-									<Text fw={700} size="xs" tt="uppercase" lts={1}>
-										Printing Information
-									</Text>
-								</Group>
-
-								{/* TODO: Replace with real printing info from backend */}
-								<Text size="md">No printing information available yet.</Text>
-							</Stack>
-
-							{/* Card Specifications — placeholder */}
+							{/* Card Specifications */}
 							<Card withBorder radius="md" p="lg">
 								<Group gap="xs" mb="lg">
 									<IconCards size={20} />
@@ -89,11 +96,11 @@ export default function SingleCardDisplay() {
 
 								<Grid gutter={30}>
 									{[
-										{ label: "Type", value: "TBD" },
-										{ label: "Attribute", value: "TBD" },
-										{ label: "Rarity", value: "TBD" },
+										{ label: "Super Type", value: cardDetails?.SuperType },
+										{ label: "Sub Type", value: cardDetails?.SubType },
+										{ label: "Card ID ", value: cardDetails?.cardID },
+										{ label: "Card Name ", value: cardDetails?.cardName },
 										{ label: "Release Date", value: "TBD" },
-										// TODO: Replace all "TBD" values with real fields from backend
 									].map((item) => (
 										<Grid.Col span={6} key={item.label}>
 											<Text size="xs" c="dimmed" fw={500} tt="uppercase" mb={4}>
@@ -121,4 +128,7 @@ export default function SingleCardDisplay() {
 			</Box>
 		</Box>
 	)
+}
+function setCard(card: any) {
+	throw new Error("Function not implemented.")
 }
