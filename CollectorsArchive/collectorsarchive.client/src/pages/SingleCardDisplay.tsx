@@ -6,7 +6,8 @@ import { useEffect, useState } from "react"
 import type { SingleCardDetailsForYGOes } from "../types/SingleCardDisplayForYGOes"
 
 const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
-const SingleCardDisplayYGO = "https://collectorsarchive.azurewebsites.net/api/Auth/SingleCardDisplayYGO"
+const SingleCardDisplayYGO =
+	"https://collectorsarchive.azurewebsites.net/api/SingleCardDisplayYGOes/SingleCardDisplayYGO"
 
 export default function SingleCardDisplay() {
 	const { id } = useParams<{ id: string }>()
