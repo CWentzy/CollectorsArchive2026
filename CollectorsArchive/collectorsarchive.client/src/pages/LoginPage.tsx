@@ -79,6 +79,7 @@ export default function LoginPage(props: PaperProps) {
 				localStorage.setItem("user", JSON.stringify({
 					userName,
 					email,
+					userId: loginData.userId,
                     photoUrl: loginData.photoUrl ?? photoUrl, //'??' used just in case if the backend doesn't return photoUrl 
 				}))
 				navigate("/home")
