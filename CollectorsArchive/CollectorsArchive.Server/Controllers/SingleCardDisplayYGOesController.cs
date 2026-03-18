@@ -24,65 +24,57 @@ namespace CollectorsArchive.Server.Controllers
                 return BadRequest(new { message = "The ID of the YGO card is required." });
             }
 
-            string procedureName = "DisplayCardYGO";
-            List<CardDisplayYGO> cardDisplayYGO = new List<CardDisplayYGO>();
-
-            string connectionString = _configuration.GetConnectionString("ErmiyasDb");
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            using (SqlCommand command = new SqlCommand(procedureName, conn))
+            try
             {
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@CardID", request.CardID);
+                string procedureName = "DisplayCardYGO";
+                List<CardDisplayYGO> cardDisplayYGO = new List<CardDisplayYGO>();
+                string connectionString = _configuration.GetConnectionString("ErmiyasDb");
 
-                await conn.OpenAsync();
-
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand command = new SqlCommand(procedureName, conn))
                 {
-                    while (await reader.ReadAsync())
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@CardID", request.CardID);
+
+                    await conn.OpenAsync();
+
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
                     {
-                        cardDisplayYGO.Add(new CardDisplayYGO
+                        while (await reader.ReadAsync())
                         {
-                            CardID = reader["CardID"].ToString(),
-                            name = reader["CardName"].ToString(),
-                            superType = reader["SuperType"].ToString(),
-                            subType = reader["SubType"].ToString(),
-                            cardText = reader["CardText"].ToString(),
-
-                            attribute = reader["Attribute"] == DBNull.Value
-                                ? null
-                                : reader["Attribute"].ToString(),
-
-                            // Stored procedure does NOT return Classifications
-                            classifications = null,
-
-                            level = reader["CardLevel"] == DBNull.Value
-                                ? null
-                                : Convert.ToInt32(reader["CardLevel"]),
-
-                            Atk = reader["AttackValue"] == DBNull.Value
-                                ? null
-                                : Convert.ToInt32(reader["AttackValue"]),
-
-                            Def = reader["DefenseValue"] == DBNull.Value
-                                ? null
-                                : Convert.ToInt32(reader["DefenseValue"])
-                        });
+                            cardDisplayYGO.Add(new CardDisplayYGO
+                            {
+                                CardID = reader["CardID"]?.ToString() ?? string.Empty,
+                                name = reader["CardName"]?.ToString() ?? string.Empty,
+                                superType = reader["SuperType"]?.ToString() ?? string.Empty,
+                                subType = reader["SubType"]?.ToString() ?? string.Empty,
+                                cardText = reader["CardText"]?.ToString() ?? "No description available.",
+                                attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
+                                level = reader["CardLevel"] as int?,
+                                Atk = reader["AttackValue"] as int?,
+                                Def = reader["DefenseValue"] as int?,
+                                PendulumScale = reader["PendulumScale"] as int?,
+                                LinkRating = reader["LinkRating"] as int?
+                            });
+                        }
                     }
                 }
 
-            }
+                if (cardDisplayYGO.Count == 0)
+                {
+                    return NotFound(new { message = "No card detail information found for this Card ID." });
+                }
 
-            if (cardDisplayYGO.Count == 0)
-            {
-                return NotFound(new { message = "No card detail information found for this Card ID." });
+                return Ok(new
+                {
+                    message = "Here is the card detail information.",
+                    card = cardDisplayYGO.First()
+                });
             }
-
-            return Ok(new
+            catch (Exception ex)
             {
-                message = "Here is the card detail information.",
-                card = cardDisplayYGO.First()
-            });
+                return StatusCode(500, new { message = "An error occurred while retrieving card data.", error = ex.Message });
+            }
         }
     }
 }
