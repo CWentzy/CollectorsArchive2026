@@ -79,8 +79,11 @@ export default function SingleCardDisplay() {
 							<Stack gap="xs">
 								<Group gap="xs" c="dimmed">
 									<IconInfoCircle size={18} />
-									<Text fw={700} size="xs" tt="uppercase" lts={1}>
-										Description :{cardDetails?.cardText}
+									<Text fw={700} size="md" tt="uppercase" lts={1}>
+										Description :
+									</Text>
+									<Text fw={500} size="sm">
+										{cardDetails?.cardText}
 									</Text>
 								</Group>
 							</Stack>
