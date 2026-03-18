@@ -23,6 +23,7 @@ export default function SingleCardDisplay() {
 
 			const data = await response.json()
 			setCard(data.cardDetails)
+			console.log("CARD RESPONSE:", data.CardDetails)
 		}
 
 		fetchCard()
