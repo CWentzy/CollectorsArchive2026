@@ -46,6 +46,7 @@ type UserProfile = {
 }
 
 const API_BASE = "https://collectorsarchive.azurewebsites.net/api/UserProfile"
+const GET_USER_COLLECTION = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
 const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", { month: "long", year: "numeric" })
 }
@@ -55,6 +56,7 @@ const formatDate = (dateStr: string) => {
 
         const [profile, setProfile] = useState<UserProfile | null>(null)
         const [loading, setLoading] = useState(false)
+        const [cards, setCards] = useState<{ cardID: string; cardName: string }[]>([])
         const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
         const { colorScheme, toggleColorScheme } = useMantineColorScheme()
@@ -82,7 +84,14 @@ const formatDate = (dateStr: string) => {
                         stored.userName = data.userName
                         localStorage.setItem("user", JSON.stringify(stored))
                     }
+                    return fetch(GET_USER_COLLECTION, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ UserName: data.userName })
+                    })
                 })
+                .then(res => res.json())
+                .then(col => setCards(col.collection ?? []))
                 .catch(() => setProfile(null))
                 .finally(() => setLoading(false))
         }, [opened, userId])
@@ -255,7 +264,7 @@ const formatDate = (dateStr: string) => {
                                         <Group gap="xs" align="center">
                                             <IconCards size={14} color="var(--mantine-color-spell-green-5)" />
                                             <Text size="sm">Cards Collected</Text>
-                                            <Text size="sm" fw={600} ml="auto" c="spell-green">--</Text>
+                                                <Text size="sm" fw={600} ml="auto" c="spell-green">{cards.length}</Text>
                                         </Group>
 
                                         <Group gap="xs" align="center">

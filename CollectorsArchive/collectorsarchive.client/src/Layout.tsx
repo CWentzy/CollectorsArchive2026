@@ -25,7 +25,8 @@ export function Layout() {
 			variant="filled"
 			onClick={toggleProfile}
 		>
-			{user?.userName?.[0]?.toUpperCase() ?? <IconUser size={16} />}
+			{/*Profile URL can be viewwed on the header now as well*/}
+			{!user?.photoUrl && (user?.userName?.[0]?.toUpperCase() ?? <IconUser size={16} />)}
 		</Avatar>
 	)
 
