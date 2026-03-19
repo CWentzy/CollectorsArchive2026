@@ -18,6 +18,8 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import sampleImage from "../assets/singleCardSample.png"
 import CardItem from "../pages/CardItem"
+import CardYGO from "../components/Cards/CardYGO"
+import type { Card } from "../components/CardSearch/schema"
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
 interface CardData {
 	cardID: string
@@ -31,7 +33,8 @@ export default function HomePage() {
 	const userName = user.userName
 	const navigate = useNavigate()
 
-	const [cards, setCards] = useState<CardData[]>([])
+	// const [cards, setCards] = useState<CardData[]>([])
+	const [cards, setCards] = useState<Card[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState("")
 
@@ -127,13 +130,19 @@ export default function HomePage() {
 						<Text c="dimmed">No cards found in your collection.</Text>
 					</Center>
 				) : (
-					<Grid gutter="lg" justify="center" w="75%">
-						{cards.map((card) => (
-							<Grid.Col key={card.cardID} span="content">
-								<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
-							</Grid.Col>
-						))}
-					</Grid>
+					//<Grid gutter="lg" justify="center" w="75%">
+					//	{cards.map((card) => (
+					//		<Grid.Col key={card.cardID} span="content">
+					//			<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
+					//		</Grid.Col>
+					//	))}
+					//</Grid>
+					<Stack gap="md">
+						{(cards as Card[]).map((item) => {
+							const cardData = item as Card
+							return <CardYGO key={cardData.id} cardData={cardData} />
+						})}
+					</Stack>
 				)}
 			</Stack>
 		</Box>

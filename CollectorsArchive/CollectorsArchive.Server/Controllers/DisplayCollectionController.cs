@@ -48,8 +48,11 @@ namespace CollectorsArchive.Server.Controllers
                     {
                         cardCollection.Add(new DisplayCollectionModel
                         {
+                            PrintID = reader.GetInt32("PrintID"),
                             CardID = reader["CardID"].ToString(),
-                            CardName = reader["CardName"].ToString()
+                            CardName = reader["CardName"].ToString(),
+                            SetCode = reader["SetCode"].ToString(),
+                            CardRarity = reader["CardRarity"].ToString()
                         });
                     }
                 }
