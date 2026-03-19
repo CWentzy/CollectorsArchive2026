@@ -106,7 +106,6 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 	}
 
 	const handleSave = async () => {
-		// Save to backend
 		await fetch(`${API_BASE}/${userId}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
@@ -116,29 +115,16 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 				photoUrl: form.values.photoUrl || null,
 			}),
 		})
-
-		// Re-fetch updated profile
+		// Re-fetch profile to reflect saved changes
 		const res = await fetch(`${API_BASE}/${userId}`)
 		const updated: UserProfile = await res.json()
-
-		// Update profile state
 		setProfile(updated)
-
-		// Sync form values with updated profile
-		form.setValues({
-			userName: updated.userName ?? "",
-			bio: updated.bio ?? "",
-			photoUrl: updated.photoUrl ?? "",
-		})
-
 		// Update localStorage username
 		const stored = JSON.parse(localStorage.getItem("user") || "null")
 		if (stored) {
 			stored.userName = updated.userName
 			localStorage.setItem("user", JSON.stringify(stored))
 		}
-
-		// Close edit modal
 		closeEdit()
 	}
 
