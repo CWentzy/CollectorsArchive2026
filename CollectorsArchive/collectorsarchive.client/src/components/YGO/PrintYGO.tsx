@@ -5,10 +5,9 @@ import QuantityPicker from "../QuantityPicker"
 interface PrintYGOProps {
 	printData: Print
 	cardData?: Card
-	displayName?: boolean
 }
 
-export default function PrintYGO({ printData, cardData, displayName }: PrintYGOProps) {
+export default function PrintYGO({ printData, cardData }: PrintYGOProps) {
 	const imageUrl = printData.imageUrl || "/assets/images/card_placeholder_ygo.jpg"
 	const releaseDate = printData.releaseDate ? new Date(printData.releaseDate).toLocaleDateString() : "Unknown"
 
@@ -19,19 +18,10 @@ export default function PrintYGO({ printData, cardData, displayName }: PrintYGOP
 					{imageUrl && <Image src={imageUrl} w={64} />}
 
 					<div>
-						{displayName && cardData?.name ? (
-							<Text size="sm" fw={600}>
-								{cardData?.name}
-							</Text>
-						) : (
-							<Text size="sm" fw={600}>
-								{printData.id}
-							</Text>
-						)}
-
-						<Text c="dimmed" size="xs">
-							{displayName && cardData?.name ? "Print ID: " : ""} <b>{printData.id}</b>
+						<Text size="sm" fw={600}>
+							{cardData?.name}
 						</Text>
+
 						<Text c="dimmed" size="xs">
 							Rarity: <b>{printData.cardRarity}</b>
 						</Text>

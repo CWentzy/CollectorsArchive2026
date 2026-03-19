@@ -147,7 +147,7 @@ export default function HomePage() {
 						{prints.map((print: PrintWithCard) => {
 							const printData = print.print
 							const cardData = print.card
-							return <PrintYGO key={printData.id} printData={printData} cardData={cardData} displayName />
+							return <PrintYGO key={printData.id} printData={printData} cardData={cardData} />
 						})}
 					</Stack>
 				)}
