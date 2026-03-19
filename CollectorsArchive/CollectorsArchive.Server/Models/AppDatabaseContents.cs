@@ -55,6 +55,16 @@ namespace CollectorsArchive.Server
                 entity.Property(e => e.PhotoUrl).HasColumnName("PhotoURL");
                 entity.Property(e => e.JoinDate).HasColumnName("JoinDate");
             });
+            modelBuilder.Entity<UserCard>(entity =>
+            {
+                entity.ToTable("UserCard");
+                entity.HasKey(e => e.UserCardID);
+                entity.Property(e => e.UserCardID).HasColumnName("UserCardID");
+                entity.Property(e => e.UserID).HasColumnName("UserID");
+                entity.Property(e => e.PrintID).HasColumnName("PrintID");
+                entity.Property(e => e.Quantity).HasColumnName("Quantity");
+                entity.Property(e => e.CardEditionID).HasColumnName("CardEditionID");
+            });
         }
         
 
