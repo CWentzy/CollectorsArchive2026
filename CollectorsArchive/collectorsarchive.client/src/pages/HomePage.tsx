@@ -83,11 +83,11 @@ export default function HomePage() {
 				<Group align="center" gap="xs" w="100%">
 					<Button
 						component="a"
-						href="/SearchPage"
+						href="/search"
 						size="lg"
 						variant="light"
 						color="green"
-						leftSection={<Users2Icon size={18} />}
+						leftSection={<SearchIcon size={18} />}
 					>
 						{" "}
 						Search Page{" "}
