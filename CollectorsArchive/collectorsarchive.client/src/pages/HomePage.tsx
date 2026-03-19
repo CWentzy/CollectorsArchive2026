@@ -1,4 +1,17 @@
-import { Box, Button, Combobox, Flex, Grid, Group, Input, Stack, Text, useCombobox, Loader, Center } from "@mantine/core"
+import {
+	Box,
+	Button,
+	Combobox,
+	Flex,
+	Grid,
+	Group,
+	Input,
+	Stack,
+	Text,
+	useCombobox,
+	Loader,
+	Center,
+} from "@mantine/core"
 import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from "lucide-react"
 import { useState, useEffect } from "react"
 //import { useLocation } from "react-router-dom"
@@ -9,7 +22,6 @@ const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api
 interface CardData {
 	cardID: string
 	cardName: string
-	
 }
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
@@ -69,8 +81,17 @@ export default function HomePage() {
 
 				{/* Search */}
 				<Group align="center" gap="xs" w="100%">
-					<Input miw={250} leftSection={<SearchIcon size={16} />} placeholder="Enter card name..." />
-					<Button variant="light">Search</Button>
+					<Button
+						component="a"
+						href="/SearchPage"
+						size="lg"
+						variant="light"
+						color="green"
+						leftSection={<Users2Icon size={18} />}
+					>
+						{" "}
+						Search Page{" "}
+					</Button>
 				</Group>
 			</Stack>
 
