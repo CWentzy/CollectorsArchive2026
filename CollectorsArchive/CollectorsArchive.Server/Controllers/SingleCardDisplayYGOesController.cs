@@ -26,49 +26,76 @@ namespace CollectorsArchive.Server.Controllers
 
             try
             {
-                string procedureName = "DisplayCardYGO";
-                List<CardDisplayYGO> cardDisplayYGO = new List<CardDisplayYGO>();
                 string connectionString = _configuration.GetConnectionString("ErmiyasDb");
 
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                using (SqlCommand command = new SqlCommand(procedureName, conn))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@CardID", request.CardID);
+                List<CardDisplayYGO> cardDisplayYGO = new();
+                List<PrintInfoDisplayDetails> printInfoDisplayDetails = new();
 
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
                     await conn.OpenAsync();
 
-                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    // calling the procedure that Get card details here 
+                    using (SqlCommand cmdForDisplayCardDetails = new SqlCommand("DisplayCardYGO", conn))
                     {
-                        while (await reader.ReadAsync())
+                        cmdForDisplayCardDetails.CommandType = CommandType.StoredProcedure;
+                        cmdForDisplayCardDetails.Parameters.AddWithValue("@CardID", request.CardID);
+
+                        using (SqlDataReader reader = await cmdForDisplayCardDetails.ExecuteReaderAsync())
                         {
-                            cardDisplayYGO.Add(new CardDisplayYGO
+                            while (await reader.ReadAsync())
                             {
-                                CardID = reader["CardID"]?.ToString() ?? string.Empty,
-                                name = reader["CardName"]?.ToString() ?? string.Empty,
-                                superType = reader["SuperType"]?.ToString() ?? string.Empty,
-                                subType = reader["SubType"]?.ToString() ?? string.Empty,
-                                cardText = reader["CardText"]?.ToString() ?? "No description available.",
-                                attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
-                                level = reader["CardLevel"] as int?,
-                                Atk = reader["AttackValue"] as int?,
-                                Def = reader["DefenseValue"] as int?,
-                                PendulumScale = reader["PendulumScale"] as int?,
-                                LinkRating = reader["LinkRating"] as int?
-                            });
+                                cardDisplayYGO.Add(new CardDisplayYGO
+                                {
+                                    CardID = reader["CardID"]?.ToString() ?? string.Empty,
+                                    name = reader["CardName"]?.ToString() ?? string.Empty,
+                                    superType = reader["SuperType"]?.ToString() ?? string.Empty,
+                                    subType = reader["SubType"]?.ToString() ?? string.Empty,
+                                    cardText = reader["CardText"]?.ToString() ?? "No description available.",
+                                    attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
+                                    level = reader["CardLevel"] as int?,
+                                    Atk = reader["AttackValue"] as int?,
+                                    Def = reader["DefenseValue"] as int?,
+                                    PendulumScale = reader["PendulumScale"] as int?,
+                                    LinkRating = reader["LinkRating"] as int?
+                                });
+                            }
                         }
                     }
-                }
 
-                if (cardDisplayYGO.Count == 0)
-                {
-                    return NotFound(new { message = "No card detail information found for this Card ID." });
+                    if (cardDisplayYGO.Count == 0)
+                    {
+                        return NotFound(new { message = "No card detail information found for this Card ID." });
+                    }
+
+                    // calling the second procedure that call the printing 
+                    using (SqlCommand cmdGetPrintingDetails = new SqlCommand("DisplayCardPrintings", conn))
+                    {
+                        cmdGetPrintingDetails.CommandType = CommandType.StoredProcedure;
+                        cmdGetPrintingDetails.Parameters.AddWithValue("@CardID", request.CardID);
+
+                        using (SqlDataReader reader = await cmdGetPrintingDetails.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                printInfoDisplayDetails.Add(new PrintInfoDisplayDetails
+                                {
+                                    PrintID = reader["PrintID"]?.ToString() ?? string.Empty,
+                                    SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
+                                    SetName = reader["SetName"]?.ToString() ?? string.Empty,
+                                    CardRarity = reader["CardRarity"]?.ToString() ?? string.Empty,
+                                    ReleaseDate = reader["ReleaseDate"] as DateTime? ?? DateTime.Now
+                                });
+                            }
+                        }
+                    }
                 }
 
                 return Ok(new
                 {
                     message = "Here is the card detail information.",
-                    card = cardDisplayYGO.First()
+                    card = cardDisplayYGO.First(),
+                    printings = printInfoDisplayDetails
                 });
             }
             catch (Exception ex)

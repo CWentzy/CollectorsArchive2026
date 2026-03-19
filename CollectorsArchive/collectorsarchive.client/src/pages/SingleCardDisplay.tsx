@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
 // importing the interface here
 import type { SingleCardDetailsForYGOes } from "../types/SingleCardDisplayForYGOes"
+import type { PrintingDetails } from "../types/PrintingDetailsDisplay"
 
 const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
 const SingleCardDisplayYGO =
@@ -12,6 +13,7 @@ const SingleCardDisplayYGO =
 export default function SingleCardDisplay() {
 	const { id } = useParams<{ id: string }>()
 	const [cardDetails, setCard] = useState<SingleCardDetailsForYGOes | null>(null)
+	const [printDetails, setPrintDetails] = useState<PrintingDetails[] | null>(null)
 
 	useEffect(() => {
 		async function fetchCard() {
@@ -23,7 +25,9 @@ export default function SingleCardDisplay() {
 
 			const data = await response.json()
 			setCard(data.card)
+			setCard(data.printings)
 			console.log("CARD RESPONSE:", data.card)
+			console.log("Printing Info:", data.Printings)
 		}
 
 		fetchCard()
@@ -80,7 +84,7 @@ export default function SingleCardDisplay() {
 								<Group gap="xs" c="dimmed">
 									<IconInfoCircle size={18} />
 									<Text fw={700} size="md" tt="uppercase" lts={1}>
-										Description :
+										Description
 									</Text>
 									<Text fw={500} size="sm">
 										{cardDetails?.cardText}
@@ -121,7 +125,17 @@ export default function SingleCardDisplay() {
 									Add to Collection
 								</Button>
 								<Button size="lg" radius="md" fz="md" variant="light">
-									Add to Wishlist
+									Add to Wishlist :
+									<Text>
+										{printDetails?.map((p) => (
+											<div key={p.PrintID}>
+												<p>Set: {p.SetName}</p>
+												<p>Code: {p.SetCode}</p>
+												<p>Rarity: {p.CardRarity}</p>
+												<p>Release: {new Date(p.ReleaseDate).toLocaleDateString()}</p>
+											</div>
+										))}
+									</Text>
 								</Button>
 							</Group>
 						</Stack>
