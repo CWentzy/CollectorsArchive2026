@@ -1,5 +1,5 @@
 export interface PrintingDetails {
-	PrintID: string
+	PrintID: number
 	SetCode: string
 	SetName: string
 	CardRarity: string

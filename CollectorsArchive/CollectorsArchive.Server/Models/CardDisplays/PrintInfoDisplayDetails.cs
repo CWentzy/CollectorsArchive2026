@@ -2,7 +2,7 @@
 {
     public class PrintInfoDisplayDetails
     {
-        public string PrintID { get; set; }
+        public int PrintID { get; set; }
         public string SetCode { get; set; }
         public string SetName { get; set; }
 

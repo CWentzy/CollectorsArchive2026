@@ -5,7 +5,7 @@ import { useState } from "react"
 const ADD_TO_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/UserCard/AddToCollection"
 
 interface QuantityPickerProps {
-    printID?: string
+    printID?: number
     onChange?: (quantity: number) => void
 }
 export default function QuantityPicker({ printID, onChange }: QuantityPickerProps) {

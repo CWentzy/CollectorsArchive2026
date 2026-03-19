@@ -24,7 +24,7 @@ export default function CardYGO({ cardData }: CardYGOProps) {
 					</Text>
 				</div>
 				<QuantityPicker
-					printID={cardData.printInfo?.id ?? ""}
+					printID={(cardData.printInfo?.id) ?? undefined}
 					onChange={(q) => console.log("quantity changed:", q)} />
 			</Group>
 		</MantineCard>

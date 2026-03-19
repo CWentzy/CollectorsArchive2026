@@ -47,7 +47,7 @@ export interface CardServerResponse {
 	cardID: string
 	cardName: string
 	printInfo: {
-		printID: string
+		printID: number
 		setCode: string
 		cardRarity: string
 	}
@@ -55,7 +55,7 @@ export interface CardServerResponse {
 
 // Client-side types
 export interface Print {
-	id: string
+	id: number
 	setCode: string
 	cardRarity: string
 	imageUrl?: string

@@ -18,8 +18,8 @@ namespace CollectorsArchive.Server.Controllers
         [HttpPost("AddToCollection")]
         public async Task<IActionResult> AddToCollection([FromBody] AddToCollectionRequest request)
         {
-            if (request.UserId == 0 || string.IsNullOrWhiteSpace(request.PrintID))
-                return BadRequest(new { message = "UserID and PrintID are required." });
+            //if (request.UserId == 0 || string.IsNullOrWhiteSpace(request.PrintID))
+            //    return BadRequest(new { message = "UserID and PrintID are required." });
 
             // check if this print already exists in their collection
             var existing = await _db.UserCards
@@ -28,7 +28,7 @@ namespace CollectorsArchive.Server.Controllers
             if (existing != null)
             {
                 // already have it, just bump the quantity
-                existing.Quantity = request.Quantity;
+                existing.Quantity =+ request.Quantity;
                 await _db.SaveChangesAsync();
                 return Ok(new { message = "Quantity updated.", quantity = existing.Quantity });
             }
@@ -51,7 +51,7 @@ namespace CollectorsArchive.Server.Controllers
     public class AddToCollectionRequest
     {
         public int UserId { get; set; }
-        public string PrintID { get; set; } = string.Empty;
+        public int PrintID { get; set; }
         public int Quantity { get; set; } = 1;
     }
 }

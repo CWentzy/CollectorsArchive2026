@@ -10,7 +10,7 @@ namespace CollectorsArchive.Server.Models.CardSearch
 {
     public class SearchOutputPrinting
     {
-        public required string PrintID { get; set; }
+        public required int PrintID { get; set; }
         public required string SetCode { get; set; }
         public required string CardRarity { get; set; }
     }
