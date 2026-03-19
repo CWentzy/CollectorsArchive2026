@@ -1,4 +1,4 @@
-import { Group, Image, Card as MantineCard, Text } from "@mantine/core"
+import { Anchor, Group, Image, Card as MantineCard, Text } from "@mantine/core"
 import type { Card } from "../../types/ygo/schema"
 import QuantityPicker from "../QuantityPicker"
 
@@ -12,9 +12,12 @@ export default function CardYGO({ cardData }: CardYGOProps) {
 	return (
 		<MantineCard key={cardData.id} padding="md" withBorder>
 			<Group align="center">
-				{imageUrl && <Image src={imageUrl} alt={cardData.name} h="100%" w={128} />}
+				{imageUrl && <Image src={imageUrl} alt={cardData.name} w={64} />}
 				<div>
-					<Text fw={500}>{cardData.name}</Text>
+					<Anchor href={`/card/${cardData?.id}`} target="_blank">
+						<Text fw={500}>{cardData.name}</Text>
+					</Anchor>
+
 					<Text c="dimmed" size="xs">
 						{cardData.printInfo?.setCode} - Rarity: {cardData.printInfo?.cardRarity}
 					</Text>

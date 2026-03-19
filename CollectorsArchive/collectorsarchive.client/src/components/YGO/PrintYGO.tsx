@@ -1,4 +1,4 @@
-import { Flex, Group, Image, Card as MantineCard, SimpleGrid, Text } from "@mantine/core"
+import { Anchor, Flex, Group, Image, Card as MantineCard, SimpleGrid, Text } from "@mantine/core"
 import type { Card, Print } from "../../types/ygo/schema"
 import QuantityPicker from "../QuantityPicker"
 
@@ -18,9 +18,11 @@ export default function PrintYGO({ printData, cardData }: PrintYGOProps) {
 					{imageUrl && <Image src={imageUrl} w={64} />}
 
 					<div>
-						<Text size="sm" fw={600}>
-							{cardData?.name}
-						</Text>
+						<Anchor href={`/card/${cardData?.id}`} target="_blank">
+							<Text size="sm" fw={600}>
+								{cardData?.name}
+							</Text>
+						</Anchor>
 
 						<Text c="dimmed" size="xs">
 							Rarity: <b>{printData.cardRarity}</b>
