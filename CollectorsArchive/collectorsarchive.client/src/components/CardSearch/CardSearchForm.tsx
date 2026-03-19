@@ -62,7 +62,7 @@ const dummyResult: SearchResult = {
 			id: "17589298",
 			name: "Test Card",
 			printInfo: {
-				id: "abcd",
+				id: 0,
 				setCode: "Force of the Breaker",
 				cardRarity: "Super Rare",
 				imageUrl: "assets/images/card_placeholder_ygo.jpg",
