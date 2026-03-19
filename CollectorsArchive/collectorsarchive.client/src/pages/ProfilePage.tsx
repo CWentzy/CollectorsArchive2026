@@ -4,28 +4,24 @@ import {
 	Box,
 	Button,
 	Card,
-	Combobox,
 	Divider,
 	Flex,
-	Grid,
 	Group,
-	Select,
-	Skeleton,
+	LoadingOverlay,
+	Paper,
+	ScrollArea,
 	Stack,
 	Text,
-	useCombobox,
 } from "@mantine/core"
 import { IconCalendar, IconCards, IconChevronLeft, IconLayoutList, IconUsers } from "@tabler/icons-react"
 import { GalleryHorizontalEndIcon, LayoutListIcon, Users2Icon } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import CardItem from "../pages/CardItem"
+import PrintYGO from "../components/YGO/PrintYGO"
+import { formatDisplayCollectionPrint } from "../types/mapper"
+import type { DisplayCollectionPrint, PrintWithCard } from "../types/ygo/schema"
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
 
-interface CardData {
-	cardID: string
-	cardName: string
-}
 type Member = {
 	userId: number
 	userName: string
@@ -39,32 +35,40 @@ const formatDate = (dateStr: string | null) => {
 }
 
 export default function MemberProfilePage() {
-	const user = JSON.parse(localStorage.getItem("user") || "{}")
-	const userName = user.userName
 	const location = useLocation()
 	const navigate = useNavigate()
 	const member = location.state?.member as Member | undefined
 
-	const [cards, setCards] = useState<CardData[]>([])
+	const [prints, setPrints] = useState<PrintWithCard[]>([])
 	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState("")
+
 	useEffect(() => {
 		const fetchCollection = async () => {
 			try {
 				const response = await fetch(GET_USER_COLLECTION_URL, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ UserName: member?.userName })
+					body: JSON.stringify({ UserName: member?.userName }),
 				})
 
 				if (!response.ok) throw new Error("Failed to fetch collection")
 
 				const data = await response.json()
-				
+
 				// Cards are nested under "collection" in the response
-				setCards(data.collection)
+				const prints: PrintWithCard[] = data.collection.map((print: DisplayCollectionPrint) => {
+					const printWithCard: PrintWithCard = {
+						print: formatDisplayCollectionPrint(print),
+						card: {
+							id: print.cardID,
+							name: print.cardName,
+						},
+					}
+					return printWithCard
+				})
+
+				setPrints(prints)
 			} catch (err) {
-				setError("Could not load cards. Please try again later.")
 				console.error(err)
 			} finally {
 				setLoading(false)
@@ -97,7 +101,6 @@ export default function MemberProfilePage() {
 	return (
 		<Box mih="100vh" w="100%" py="md" px="xl">
 			<Stack gap="xl">
-
 				{/* Back button */}
 				<Button
 					variant="subtle"
@@ -113,7 +116,6 @@ export default function MemberProfilePage() {
 				{/* Profile header */}
 				<Card shadow="sm" padding="xl" radius="md" withBorder>
 					<Group align="flex-start" gap="xl" wrap="wrap">
-
 						{/* Avatar */}
 						<Avatar
 							src={member.photoUrl ?? undefined}
@@ -159,20 +161,25 @@ export default function MemberProfilePage() {
 							<Group gap="xs">
 								<IconCards size={14} color="var(--mantine-color-spell-green-5)" />
 								<Text size="sm">Cards Collected</Text>
-								<Text size="sm" fw={700} ml="xs" c="spell-green">{cards.length}</Text>
+								<Text size="sm" fw={700} ml="xs" c="spell-green">
+									{prints.length}
+								</Text>
 							</Group>
 							<Group gap="xs">
 								<IconLayoutList size={14} color="var(--mantine-color-spell-green-5)" />
 								<Text size="sm">Card Lists</Text>
-								<Text size="sm" fw={700} ml="xs" c="spell-green">--</Text>
+								<Text size="sm" fw={700} ml="xs" c="spell-green">
+									--
+								</Text>
 							</Group>
 							<Group gap="xs">
 								<IconUsers size={14} color="var(--mantine-color-spell-green-5)" />
 								<Text size="sm">Friends</Text>
-								<Text size="sm" fw={700} ml="xs" c="spell-green">--</Text>
+								<Text size="sm" fw={700} ml="xs" c="spell-green">
+									--
+								</Text>
 							</Group>
 						</Stack>
-
 					</Group>
 				</Card>
 
@@ -180,9 +187,9 @@ export default function MemberProfilePage() {
 
 				{/* Filter + category buttons */}
 				<Stack gap="md">
-					<Flex justify="flex-end" w="100%">
+					{/* <Flex justify="flex-end" w="100%">
 						<DropDownListForSearching />
-					</Flex>
+					</Flex> */}
 					<Flex justify="flex-start" gap="md" wrap="wrap">
 						<Button variant="light" color="green" leftSection={<GalleryHorizontalEndIcon size={16} />}>
 							Collected Cards
@@ -196,31 +203,30 @@ export default function MemberProfilePage() {
 					</Flex>
 				</Stack>
 
-				{/* Card grid */}
-				{loading ? (
-					<Grid gutter="lg" justify="center" w="75%" mx="auto">
-						{[...Array(8)].map((_, i) => (
-							<Grid.Col key={i} span="content">
-								<Skeleton height={250} w={200} radius="md" animate />
-							</Grid.Col>
-						))}
-					</Grid>
-				) : (
-					<Grid gutter="lg" justify="center" w="75%" mx="auto">
-						{cards.map((card) => (
-							<Grid.Col key={card.cardID} span="content">
-								<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
-							</Grid.Col>
-						))}
-					</Grid>
-				)}
+				{/* Collection */}
+				<Paper shadow="sm" p="md" radius="md" withBorder>
+					<Text size="lg" fw={600} mb="md">
+						My Collection
+					</Text>
 
+					<ScrollArea style={{ height: "50vh" }} offsetScrollbars pos="relative">
+						<LoadingOverlay visible={loading} overlayProps={{ radius: "md", blur: 2 }} loaderProps={{ type: "dots" }} />
+
+						<Stack w="100%">
+							{prints.map((print: PrintWithCard) => {
+								const printData = print.print
+								const cardData = print.card
+								return <PrintYGO key={printData.id} printData={printData} cardData={cardData} />
+							})}
+						</Stack>
+					</ScrollArea>
+				</Paper>
 			</Stack>
 		</Box>
 	)
 }
 
-const GameTypes = ["Yu Gi Oh", "Pokémon", "Magic"]
+/* const GameTypes = ["Yu Gi Oh", "Pokémon", "Magic"]
 
 function DropDownListForSearching() {
 	const combobox = useCombobox({
@@ -258,4 +264,4 @@ function DropDownListForSearching() {
 			</Combobox.Dropdown>
 		</Combobox>
 	)
-}
+} */

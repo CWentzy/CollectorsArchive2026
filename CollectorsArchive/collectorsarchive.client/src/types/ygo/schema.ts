@@ -53,3 +53,8 @@ export interface Print {
 	releaseDate?: Date
 	imageUrl?: string
 }
+
+export interface PrintWithCard {
+	print: Print
+	card?: Card
+}

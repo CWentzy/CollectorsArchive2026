@@ -6,17 +6,12 @@ import { useNavigate } from "react-router-dom"
 import sampleImage from "../assets/singleCardSample.png"
 import PrintYGO from "../components/YGO/PrintYGO"
 import { formatDisplayCollectionPrint } from "../types/mapper"
-import type { Card, DisplayCollectionPrint, Print } from "../types/ygo/schema"
+import type { DisplayCollectionPrint, PrintWithCard } from "../types/ygo/schema"
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
 //interface CardData {
 //	cardID: string
 //	cardName: string
 //}
-
-interface PrintWithCard {
-	print: Print
-	card?: Card
-}
 
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
