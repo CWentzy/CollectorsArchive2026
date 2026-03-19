@@ -1,7 +1,13 @@
 export interface SingleCardDetailsForYGOes {
 	cardID: string
-	cardName: string
+	name: string
 	cardText: string
-	SuperType: string
-	SubType: string
+	superType: string
+	subType: string
+	attribute?: string
+	level?: number
+	atk?: number
+	def?: number
+	pendulumScale?: number
+	linkRating?: number
 }
