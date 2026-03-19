@@ -168,38 +168,42 @@ namespace CollectorsArchive.Server.Controllers
         [HttpPost("RequestForTempCode")]
         public async Task<IActionResult> RequestTempCode([FromBody] TempCodeRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email))
-                return BadRequest("Email is required");
-
-            //  this will generate 6-digit code when every time users request it 
-            var code = new Random().Next(100000, 999999).ToString();
-
-            // this will save the code in our database but im not sure if we actually need to save every generated code. 
-            var tempCode = new TempLoginCode
-            {
-                Email = request.Email,
-                Code = code,
-                Expiration = DateTime.UtcNow.AddMinutes(10)
-            };
-
-            _db.TempLoginCodes.Add(tempCode);
-            await _db.SaveChangesAsync();
-
-            // Send email , im sending an email by plugin the email servive the class i create that send email 
             try
             {
+                if (string.IsNullOrWhiteSpace(request.Email))
+                    return BadRequest(new { message = "Email is required" });
+
+                var code = new Random().Next(100000, 999999).ToString();
+
+                var tempCode = new TempLoginCode
+                {
+                    Email = request.Email,
+                    Code = code,
+                    Expiration = DateTime.UtcNow.AddMinutes(10)
+                };
+
+                _db.TempLoginCodes.Add(tempCode);
+                await _db.SaveChangesAsync();
+
+                // Send email
                 await _emailService.SendAsync(
                     request.Email,
                     "This is your Collector's Archive Login Code",
                     $"Your login code is: {code} This code will expire within 10 minutes."
                 );
+
+                return Ok(new { message = "Temporary login code sent" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Failed to send email", error = ex.Message });
+                // RETURN THE ACTUAL ERROR TO FRONTEND
+                return StatusCode(500, new
+                {
+                    message = "SERVER ERROR",
+                    error = ex.Message,
+                    stack = ex.StackTrace
+                });
             }
-
-            return Ok(new { message = "Temporary login code sent" });
         }
 
         [HttpPost("VerfyingTemporaryCode")]
