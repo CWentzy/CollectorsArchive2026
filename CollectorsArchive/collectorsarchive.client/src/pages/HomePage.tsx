@@ -21,10 +21,12 @@ import CardItem from "../pages/CardItem"
 import CardYGO from "../components/Cards/CardYGO"
 import type { Card } from "../components/CardSearch/schema"
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
-interface CardData {
-	cardID: string
-	cardName: string
-}
+//interface CardData {
+//	cardID: string
+//	cardName: string
+//}
+
+
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
 	// react-router stores that info in "location.state", so this lets me pull it out
@@ -137,7 +139,7 @@ export default function HomePage() {
 					//		</Grid.Col>
 					//	))}
 					//</Grid>
-					<Stack gap="md">
+					<Stack w="100%">
 						{(cards as Card[]).map((item) => {
 							const cardData = item as Card
 							return <CardYGO key={cardData.id} cardData={cardData} />
