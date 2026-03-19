@@ -28,7 +28,7 @@ namespace CollectorsArchive.Server.Controllers
             if (existing != null)
             {
                 // already have it, just bump the quantity
-                existing.Quantity =+ request.Quantity;
+                existing.Quantity += request.Quantity;
                 await _db.SaveChangesAsync();
                 return Ok(new { message = "Quantity updated.", quantity = existing.Quantity });
             }
