@@ -9,7 +9,15 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+//// this is my local host name and pc name urs might be different if u go through an issue (FROM ERMI)
+//// UPDATED FOR DEPLOYMENT: allow ONLY the Azure backend domain
+//builder.Services.AddHostFiltering(options =>
+//{
+//    options.AllowedHosts = new[]
+//    {
+//        "collectorsarchive.azurewebsites.net"
+//    };
+//});
 
 builder.Services.Configure<CollectorArchiveEmailSettings>(
     builder.Configuration.GetSection("CollectorArchiveEmailSettings"));

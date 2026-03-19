@@ -58,7 +58,7 @@ export default function LoginPage(props: PaperProps) {
 				const backendResponse = await fetch(LoginUsingGoogleURL, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({googleSubject, photoUrl}),
+					body: JSON.stringify({ googleSubject, photoUrl }),
 				})
 
 				const loginData = await backendResponse.json()
@@ -76,12 +76,15 @@ export default function LoginPage(props: PaperProps) {
 					})
 				}
 
-				localStorage.setItem("user", JSON.stringify({
-					userName,
-					email,
-					userId: loginData.userId,
-                    photoUrl: loginData.photoUrl ?? photoUrl, //'??' used just in case if the backend doesn't return photoUrl 
-				}))
+				localStorage.setItem(
+					"user",
+					JSON.stringify({
+						userName,
+						email,
+						userId: loginData.userId,
+						photoUrl: loginData.photoUrl ?? photoUrl, //'??' used just in case if the backend doesn't return photoUrl
+					})
+				)
 				navigate("/home")
 			} catch (error) {
 				console.error("Failed to fetch user info from Google:", error)
@@ -149,10 +152,11 @@ export default function LoginPage(props: PaperProps) {
 							await fetch(RequestForTempCodeURL, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
-								body: JSON.stringify({ email }),
+								body: JSON.stringify({ email: email }),
 							})
 
 							console.log("Temp code sent after registration.")
+							console.log("email email ", { email })
 						}
 
 						// then this will be login mode also the
@@ -210,7 +214,6 @@ export default function LoginPage(props: PaperProps) {
 											JSON.stringify({
 												userName: data.userName,
 												email: data.email,
-												
 											})
 										)
 
