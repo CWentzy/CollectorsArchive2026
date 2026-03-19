@@ -3,145 +3,115 @@
 //import { useEffect, useRef } from "react";
 //import { useCamera } from "./useCamera";
 //import { useCameraPermission } from "./useCameraPermission";
-import { useState } from "react";
-import { Button, Group, SimpleGrid, Text } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
-import CardItem from "../../pages/CardItem";
-import YgoScanner from "./YgoScanner";
+import { Button, Group, Stack, Text } from "@mantine/core"
+import { useState } from "react"
+import { formatCard } from "../../types/mapper"
+import type { Card } from "../../types/ygo/schema"
+import type { CardServerResponse } from "../CardSearch/schema"
+import CardYGO from "../YGO/CardYGO"
+import YgoScanner from "./YgoScanner"
 
 interface CardScanOverlayProps {
-    onClose?: () => void;
+	onClose?: () => void
 }
-
-type SearchOutputPrinting = {
-    printID: number;
-    setCode: string;
-    cardRarity: string;
-};
-
-type SearchOutputCard = {
-    cardID: string;
-    cardName: string;
-    printInfo: SearchOutputPrinting;
-};
 
 export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
-    const navigate = useNavigate();
-    const [results, setResults] = useState<SearchOutputCard[] | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+	const [results, setResults] = useState<Card[] | null>(null)
+	const [loading, setLoading] = useState(false)
+	const [errorMessage, setErrorMessage] = useState("")
 
-    async function handleScanComplete(result: {
-        passcode: string;
-        setCode: string;
-        name: string;
-    }) {
-        console.log("Scan result:", result);
+	async function handleScanComplete(result: { passcode: string; setCode: string; name: string }) {
+		console.log("Scan result:", result)
 
-        try {
-            setLoading(true);
-            setErrorMessage("");
+		try {
+			setLoading(true)
+			setErrorMessage("")
 
-            const payload = {
-                cardName: result.name,
-                cardID: result.passcode,
-                setIndex: result.setCode,
-            };
+			const payload = {
+				cardName: result.name,
+				cardID: result.passcode,
+				setIndex: result.setCode,
+			}
 
-            console.log("Payload being sent:", payload);
+			console.log("Payload being sent:", payload)
 
-            const response = await fetch(
-                "https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
+			const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(payload),
+			})
 
-            if (!response.ok) {
-                throw new Error("Failed to send scan result.");
-            }
+			if (!response.ok) {
+				throw new Error("Failed to send scan result.")
+			}
 
-            const data: SearchOutputCard[] = await response.json();
-            console.log("Backend response:", data);
+			const cardsList: CardServerResponse[] = await response.json()
+			console.log("Backend response:", cardsList)
 
-            setResults(data);
-        } catch (error) {
-            console.error("POST failed, but scan still worked:", error);
-            setErrorMessage("Could not load card matches.");
-        } finally {
-            setLoading(false);
-        }
-    }
+			setResults(cardsList.map(formatCard))
+		} catch (error) {
+			console.error("POST failed, but scan still worked:", error)
+			setErrorMessage("Could not load card matches.")
+		} finally {
+			setLoading(false)
+		}
+	}
 
-    function handleRescan() {
-        setResults(null);
-        setErrorMessage("");
-    }
+	function handleRescan() {
+		setResults(null)
+		setErrorMessage("")
+	}
 
-    return (
-        <div className="card-scan-overlay">
-            {!results && (
-                <YgoScanner
-                    onClose={onClose}
-                    onScanComplete={handleScanComplete}
-                />
-            )}
+	return (
+		<div className="card-scan-overlay">
+			{!results && <YgoScanner onClose={onClose} onScanComplete={handleScanComplete} />}
 
-            {loading && (
-                <div style={{ padding: 24 }}>
-                    <Text>Searching for matching cards...</Text>
-                </div>
-            )}
+			{loading && (
+				<div style={{ padding: 24 }}>
+					<Text>Searching for matching cards...</Text>
+				</div>
+			)}
 
-            {!loading && results && (
-                <div style={{ padding: 24 }}>
-                    <Group justify="space-between" mb="md">
-                        <Text fw={700} size="lg">
-                            Scan Results
-                        </Text>
+			{!loading && results && (
+				<div style={{ padding: 24 }}>
+					<Group justify="space-between" mb="md">
+						<Text fw={700} size="lg">
+							Scan Results
+						</Text>
 
-                        <Group>
-                            <Button variant="default" onClick={handleRescan}>
-                                Rescan
-                            </Button>
-                            <Button variant="light" onClick={onClose}>
-                                Close
-                            </Button>
-                        </Group>
-                    </Group>
+						<Group>
+							<Button variant="default" onClick={handleRescan}>
+								Rescan
+							</Button>
+							<Button variant="light" onClick={onClose}>
+								Close
+							</Button>
+						</Group>
+					</Group>
 
-                    {results.length === 0 && (
-                        <Text>No matches found.</Text>
-                    )}
+					{results.length === 0 && <Text>No matches found.</Text>}
 
-                    {results.length > 0 && (
-                        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
-                            {results.map((card) => (
-                                <CardItem
-                                    key={`${card.cardID}-${card.printInfo.setCode}`}
-                                    id={card.cardID}
-                                    name={card.cardName}
-                                    navigate={navigate}
-                                />
-                            ))}
-                        </SimpleGrid>
-                    )}
-                </div>
-            )}
+					{results.length > 0 && (
+						<Stack gap="md">
+							{(results as Card[]).map((item) => {
+								const cardData = item as Card
+								return <CardYGO key={cardData.id} cardData={cardData} />
+							})}
+						</Stack>
+					)}
+				</div>
+			)}
 
-            {!loading && errorMessage && !results && (
-                <div style={{ padding: 24 }}>
-                    <Text c="red">{errorMessage}</Text>
-                </div>
-            )}
-        </div>
-    );
+			{!loading && errorMessage && !results && (
+				<div style={{ padding: 24 }}>
+					<Text c="red">{errorMessage}</Text>
+				</div>
+			)}
+		</div>
+	)
 }
-
 
 //export function CardScanOverlay({ onClose }: { onClose: () => void }) {
 //	const { stream, start, stop } = useCamera()
