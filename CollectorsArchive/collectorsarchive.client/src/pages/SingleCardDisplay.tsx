@@ -27,7 +27,7 @@ export default function SingleCardDisplay() {
 			setCard(data.card)
 			setCard(data.printings)
 			console.log("CARD RESPONSE:", data.card)
-			console.log("Printing Info:", data.Printings)
+			console.log("Printing Info:", data.printings)
 		}
 
 		fetchCard()
