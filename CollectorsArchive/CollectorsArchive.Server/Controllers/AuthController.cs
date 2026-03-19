@@ -74,24 +74,35 @@ namespace CollectorsArchive.Server.Controllers
             if (string.IsNullOrWhiteSpace(request.Email))
                 return BadRequest(new { message = "Email is required." });
 
-            // Check if user already exists by email
+            // Verify the temporary code
+            var record = await _db.TempLoginCodes
+                .FirstOrDefaultAsync(x => x.Email == request.Email && x.Code == request.Code);
+
+            if (record == null || record.Expiration < DateTime.UtcNow)
+                return BadRequest(new { message = "Invalid or expired code" });
+
+            // Check if user already exists
             var existingUser = await _db.UserInformation
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (existingUser != null)
                 return Conflict(new { message = "A user with this email already exists." });
 
-            // Register the non-Google user
+            // Create the user
             var newUser = new UserInformation
             {
                 Email = request.Email,
                 UserName = string.IsNullOrWhiteSpace(request.Name)
-                    ? request.Email.Split('@')[0] 
+                    ? request.Email.Split('@')[0]
                     : request.Name,
-                GoogleSubject = null 
+                GoogleSubject = null
             };
 
             _db.UserInformation.Add(newUser);
+            await _db.SaveChangesAsync();
+
+            // Remove used code
+            _db.TempLoginCodes.Remove(record);
             await _db.SaveChangesAsync();
 
             return Ok(new
@@ -102,6 +113,7 @@ namespace CollectorsArchive.Server.Controllers
                 userName = newUser.UserName
             });
         }
+
 
 
         [HttpPost("LoginUsingGoogle")]
