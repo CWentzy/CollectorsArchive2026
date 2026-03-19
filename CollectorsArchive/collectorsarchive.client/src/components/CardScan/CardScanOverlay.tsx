@@ -15,6 +15,7 @@ interface CardScanOverlayProps {
 
 type SearchOutputPrinting = {
     printID: string;
+    printID: number;
     setCode: string;
     cardRarity: string;
 };

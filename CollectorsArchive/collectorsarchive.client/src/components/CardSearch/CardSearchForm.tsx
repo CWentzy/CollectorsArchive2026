@@ -27,7 +27,9 @@ import {
 import { useMediaQuery } from "@mantine/hooks"
 import { DicesIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
 import { useState } from "react"
-import CardYGO from "../Cards/CardYGO"
+import { formatCard } from "../../types/mapper"
+import type { Card } from "../../types/ygo/schema"
+import CardYGO from "../YGO/CardYGO"
 import AdvancedFilters from "./AdvancedFilters"
 import {
 	CardSearchFormProvider,
@@ -36,13 +38,11 @@ import {
 	type CardSearchFormValues,
 } from "./CardSearchFormContext"
 import { buildGameValidators, getGameDefaults, getGameFieldKeys } from "./gameFilterConfigs"
-import { formatCard } from "./mapper"
 import {
 	Game,
 	SEARCH_QUERY_MAX_LENGTH,
 	SEARCH_QUERY_MIN_LENGTH,
 	SearchType,
-	type Card,
 	type CardServerResponse,
 	type SearchResult,
 } from "./schema"
