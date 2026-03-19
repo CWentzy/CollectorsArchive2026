@@ -18,6 +18,24 @@ type YgoLiveScannerProps = {
     onClose?: () => void;
 };
 
+type Point2 = {
+    x: number;
+    y: number;
+};
+
+type RectBounds = {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+};
+
+type EdgeSearchResult = {
+    bounds: RectBounds | null;
+    quadPoints?: Point2[] | null;
+    debugImageUrl?: string | null;
+};
+
 
 export default function YgoLiveScanner({
     onScanComplete,
@@ -167,8 +185,8 @@ export default function YgoLiveScanner({
         for (let i = 0; i < 5; i++) {
             const rawPasscode = await recognizeTextFromCanvasWithWorker(
                 worker,
-                //passcodeProcessedCanvas,
-                passcodeUpscaledCanvas,
+                passcodeProcessedCanvas,
+                //passcodeUpscaledCanvas,
                 //passcodeCanvas,
                 "0123456789"
             );
@@ -490,21 +508,53 @@ export default function YgoLiveScanner({
                         guideHeight
                     );
 
-                    const captured = croppedCanvas.toDataURL("image/png");
+                    const processedCanvas = processedCanvasRef.current;
+
+                    let finalCanvasForOcr: HTMLCanvasElement = croppedCanvas;
+
+                    if (processedCanvas) {
+                        const detection = findCardBoundsInsideGuide(croppedCanvas, processedCanvas);
+                        setProcessedImage(detection.debugImageUrl ?? null);
+
+                        if (detection.quadPoints && detection.quadPoints.length === 4) {
+                            const warpedCardCanvas = document.createElement("canvas");
+
+                            const warped = warpCardToCanvas(
+                                croppedCanvas,
+                                warpedCardCanvas,
+                                detection.quadPoints,
+                                900, //420
+                                1300  //610
+                            );
+
+                            if (warped) {
+                                finalCanvasForOcr = warpedCardCanvas;
+                                setStatus("Card detected and flattened!");
+                            } else if (detection.bounds) {
+                                const detectedCardCanvas = document.createElement("canvas");
+                                cropBoundsToCanvas(croppedCanvas, detectedCardCanvas, detection.bounds);
+                                finalCanvasForOcr = detectedCardCanvas;
+                                setStatus("Card detected and cropped.");
+                            } else {
+                                setStatus("Guide captured, warp failed.");
+                            }
+                        } else if (detection.bounds) {
+                            const detectedCardCanvas = document.createElement("canvas");
+                            cropBoundsToCanvas(croppedCanvas, detectedCardCanvas, detection.bounds);
+                            finalCanvasForOcr = detectedCardCanvas;
+                            setStatus("Card detected and cropped.");
+                        } else {
+                            setStatus("Guide captured, card bounds not refined.");
+                        }
+                    }
+
+                    const captured = finalCanvasForOcr.toDataURL("image/png");
                     setCapturedImage(captured);
 
-                    runYgoOcr(croppedCanvas).catch((error) => {
+                    runYgoOcr(finalCanvasForOcr).catch((error) => {
                         console.error("OCR failed:", error);
                         setScanStatus("OCR failed.");
                     });
-
-                    const processedCanvas = processedCanvasRef.current;
-                    if (processedCanvas) {
-                        const processed = processCapturedCardWithOpenCv(croppedCanvas, processedCanvas);
-                        setProcessedImage(processed);
-                    }
-
-                    setStatus("Frame captured!");
                 }
             } else {
                 goodFrameCountRef.current = 0;
@@ -769,39 +819,200 @@ function preprocessOcrCanvas(
     }
 }
 
-// OpenCV processing ***********************************************************************************
-function processCapturedCardWithOpenCv(
+
+function findCardBoundsInsideGuide(
     sourceCanvas: HTMLCanvasElement,
-    outputCanvas: HTMLCanvasElement
-): string | null {
+    outputCanvas?: HTMLCanvasElement
+): EdgeSearchResult {
     let src: any = null;
     let gray: any = null;
+    //let filtered: any = null;
     let blurred: any = null;
-    let edges: any = null;
+    let thresh: any = null;
+    let contours: any = null;
+    let hierarchy: any = null;
 
     try {
         src = cv.imread(sourceCanvas);
         gray = new cv.Mat();
+        //filtered = new cv.Mat();
         blurred = new cv.Mat();
-        edges = new cv.Mat();
+        thresh = new cv.Mat();
+        contours = new cv.MatVector();
+        hierarchy = new cv.Mat();
 
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+        //cv.bilateralFilter(gray, filtered, 9, 75, 75);
+
+        //cv.GaussianBlur(filtered, blurred, new cv.Size(5, 5), 0);
         cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
-        cv.Canny(blurred, edges, 75, 150);
 
-        cv.imshow(outputCanvas, edges);
+        cv.Canny(blurred, thresh, 75, 150);
 
-        return outputCanvas.toDataURL("image/png");
+        const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+        cv.dilate(thresh, thresh, kernel);
+        cv.dilate(thresh, thresh, kernel); //dilate again lol even crispier edges hopefully...
+
+        kernel.delete();
+
+        cv.findContours(
+            thresh,
+            contours,
+            hierarchy,
+            cv.RETR_LIST,
+            cv.CHAIN_APPROX_SIMPLE
+        );
+
+        const width = src.cols;
+        const height = src.rows;
+
+        let bestBounds: RectBounds | null = null;
+        let bestArea = 0;
+        let bestContour: any = null;
+        let bestQuadPoints: Point2[] | null = null;
+
+        for (let i = 0; i < contours.size(); i++) {
+            const contour = contours.get(i);
+            const area = cv.contourArea(contour);
+
+            // Skip small contours that probably arent the card... can tweak to get perfect later...
+            if (area < width * height * 0.10) {
+                contour.delete();
+                continue;
+            }
+
+            const peri = cv.arcLength(contour, true);
+            const approx = new cv.Mat();
+            cv.approxPolyDP(contour, approx, 0.03 * peri, true);
+
+            if (approx.rows >= 4 && approx.rows <= 6) {
+                const rect = cv.boundingRect(approx);
+                const aspect = rect.width / rect.height;
+
+                const centerX = rect.x + rect.width / 2;
+                const centerY = rect.y + rect.height / 2;
+
+                const frameCenterX = width / 2;
+                const frameCenterY = height / 2;
+
+                const distX = Math.abs(centerX - frameCenterX);
+                const distY = Math.abs(centerY - frameCenterY);
+
+                const nearCenter =
+                    distX <= width * 0.25 &&
+                    distY <= height * 0.25;
+
+                const bigEnough =
+                    rect.width > width * 0.20 &&
+                    rect.height > height * 0.30;
+
+                const cardAspect =
+                    aspect > 0.45 &&
+                    aspect < 0.95;
+
+                if (
+                    approx.rows >= 4 &&
+                    approx.rows <= 8 &&
+                    nearCenter &&
+                    bigEnough &&
+                    cardAspect &&
+                    area > bestArea
+                ) {
+                    bestArea = area;
+
+                    if (bestContour) bestContour.delete();
+                    bestContour = approx.clone();
+
+                    bestBounds = {
+                        x: rect.x,
+                        y: rect.y,
+                        w: rect.width,
+                        h: rect.height,
+                    };
+
+                    if (approx.rows === 4) {
+                        bestQuadPoints = contourToPoints(approx);
+                    } else {
+                        bestQuadPoints = null;
+                    }
+                }
+            }
+
+            approx.delete();
+            contour.delete();
+        }
+
+        if (outputCanvas) {
+            const debugMat = src.clone();
+
+            if (bestContour) {
+                const vec = new cv.MatVector();
+                vec.push_back(bestContour);
+
+                // Draw contour
+                cv.drawContours(debugMat, vec, 0, new cv.Scalar(0, 255, 0, 255), 3);
+
+                // Draw boundng box
+                if (bestBounds) {
+                    cv.rectangle(
+                        debugMat,
+                        new cv.Point(bestBounds.x, bestBounds.y),
+                        new cv.Point(
+                            bestBounds.x + bestBounds.w,
+                            bestBounds.y + bestBounds.h
+                        ),
+                        new cv.Scalar(255, 0, 0, 255),
+                        2
+                    );
+                }
+
+                vec.delete();
+            } else {
+                cv.imshow(outputCanvas, thresh);
+                return {
+                    bounds: null,
+                    quadPoints: null,
+                    debugImageUrl: outputCanvas.toDataURL("image/png"),
+                };
+            }
+
+            cv.imshow(outputCanvas, debugMat);
+
+            const debugImageUrl = outputCanvas.toDataURL("image/png");
+
+            if (bestContour) bestContour.delete();
+            debugMat.delete();
+
+            return {
+                bounds: bestBounds,
+                quadPoints: bestQuadPoints,
+                debugImageUrl,
+            };
+        }
+
+        if (bestContour) bestContour.delete();
+
+        return {
+            bounds: bestBounds,
+            quadPoints: bestQuadPoints,
+            debugImageUrl: null,
+        };
     } catch (error) {
-        console.error("OpenCV processing error:", error);
-        return null;
+        console.error("Contour detection error:", error);
+        return { bounds: null, quadPoints: null, debugImageUrl: null };
     } finally {
         if (src) src.delete();
         if (gray) gray.delete();
+        //if (filtered) filtered.delete(); //Filtered for background struggles... didnt really work, could remove later 
+        //(2 more lines above with all the processing features that can be removed too(filtered stuff))
         if (blurred) blurred.delete();
-        if (edges) edges.delete();
+        if (thresh) thresh.delete();
+        if (contours) contours.delete();
+        if (hierarchy) hierarchy.delete();
     }
 }
+
 
 // ROI for 3 key areas: name, passcode, and setcode *****************************************************************
 
@@ -829,6 +1040,31 @@ function cropNormalizedRoiToCanvas(
     if (!ctx) return;
 
     ctx.drawImage(sourceCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+}
+
+// 
+function cropBoundsToCanvas(
+    sourceCanvas: HTMLCanvasElement,
+    outputCanvas: HTMLCanvasElement,
+    bounds: RectBounds
+) {
+    outputCanvas.width = bounds.w;
+    outputCanvas.height = bounds.h;
+
+    const ctx = outputCanvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(
+        sourceCanvas,
+        bounds.x,
+        bounds.y,
+        bounds.w,
+        bounds.h,
+        0,
+        0,
+        bounds.w,
+        bounds.h
+    );
 }
 
 function upscaleCanvas(
@@ -860,25 +1096,126 @@ function upscaleCanvas(
     );
 }
 
+
+
+//Read the points from the contour we captured with CV
+function contourToPoints(contour: any): Point2[] {
+    const points: Point2[] = [];
+
+    for (let i = 0; i < contour.rows; i++) {
+        const point = contour.intPtr(i, 0);
+        points.push({
+            x: point[0],
+            y: point[1],
+        });
+    }
+
+    return points;
+}
+
+
+// Order the points before we move to wrap
+function orderCorners(points: Point2[]): Point2[] {
+    if (points.length !== 4) return points;
+
+    const sums = points.map((p) => p.x + p.y);
+    const diffs = points.map((p) => p.x - p.y);
+
+    const topLeft = points[sums.indexOf(Math.min(...sums))];
+    const bottomRight = points[sums.indexOf(Math.max(...sums))];
+    const topRight = points[diffs.indexOf(Math.max(...diffs))];
+    const bottomLeft = points[diffs.indexOf(Math.min(...diffs))];
+
+    return [topLeft, topRight, bottomRight, bottomLeft];
+}
+
+
+// Function to wrap the "card" to the canvas to read... to get perf ROIs
+function warpCardToCanvas(
+    sourceCanvas: HTMLCanvasElement,
+    outputCanvas: HTMLCanvasElement,
+    corners: Point2[],
+    outputWidth = 420,
+    outputHeight = 610
+): boolean {
+    let src: any = null;
+    let dst: any = null;
+    let srcTri: any = null;
+    let dstTri: any = null;
+    let transform: any = null;
+
+    try {
+        if (corners.length !== 4) return false;
+
+        src = cv.imread(sourceCanvas);
+        dst = new cv.Mat();
+
+        const ordered = orderCorners(corners);
+
+        srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+            ordered[0].x, ordered[0].y,
+            ordered[1].x, ordered[1].y,
+            ordered[2].x, ordered[2].y,
+            ordered[3].x, ordered[3].y,
+        ]);
+
+        dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+            0, 0,
+            outputWidth - 1, 0,
+            outputWidth - 1, outputHeight - 1,
+            0, outputHeight - 1,
+        ]);
+
+        transform = cv.getPerspectiveTransform(srcTri, dstTri);
+        cv.warpPerspective(
+            src,
+            dst,
+            transform,
+            new cv.Size(outputWidth, outputHeight),
+            //cv.INTER_LINEAR,
+            cv.INTER_CUBIC,
+            cv.BORDER_CONSTANT,
+            new cv.Scalar()
+        );
+
+        outputCanvas.width = outputWidth;
+        outputCanvas.height = outputHeight;
+        cv.imshow(outputCanvas, dst);
+
+        return true;
+    } catch (error) {
+        console.error("warpCardToCanvas error:", error);
+        return false;
+    } finally {
+        if (src) src.delete();
+        if (dst) dst.delete();
+        if (srcTri) srcTri.delete();
+        if (dstTri) dstTri.delete();
+        if (transform) transform.delete();
+    }
+}
+
+
+
 //ROI Sizing ******************************************************************************
 
 const NAME_ROI: NormalizedRoi = {
-    x: 0.005,
+    x: 0.03,
     y: 0.03,
-    w: 0.84,
-    h: 0.11,
+    w: 0.81,
+    h: 0.09,
 };
 
 const PASSCODE_ROI: NormalizedRoi = {
     x: 0.03,
-    y: 0.94,
-    w: 0.17,
+    y: 0.95,
+    w: 0.16,
     h: 0.03,
 };
 
 const SETCODE_ROI: NormalizedRoi = {
-    x: 0.70,
-    y: 0.70,
+    x: 0.705,
+    y: 0.71,
     w: 0.24,
     h: 0.03,
 };
