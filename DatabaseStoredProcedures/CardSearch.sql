@@ -36,7 +36,8 @@ CREATE OR ALTER PROCEDURE AdvancedSearchBySet
 AS
 BEGIN
 
-SELECT CardPrinting.CardID,
+SELECT CardPrinting.PrintID,
+    CardPrinting.CardID,
     CASE WHEN @GameID = 'ygo' THEN YGOCard.CardName
 		END AS 'CardName',
     CASE WHEN @GameID = 'ygo' THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex
