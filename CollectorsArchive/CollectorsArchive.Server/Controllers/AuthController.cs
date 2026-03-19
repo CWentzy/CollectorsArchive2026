@@ -67,19 +67,12 @@ namespace CollectorsArchive.Server.Controllers
                 userName = newUser.UserName
             });
         }
-
         [HttpPost("ForNonGoogleNewUser")]
         public async Task<IActionResult> RegisterNonGoogleUser([FromBody] NonGoogleUserRequestModel request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email))
-                return BadRequest(new { message = "Email is required." });
-
-            // Verify the temporary code
-            var record = await _db.TempLoginCodes
-                .FirstOrDefaultAsync(x => x.Email == request.Email && x.Code == request.Code);
-
-            if (record == null || record.Expiration < DateTime.UtcNow)
-                return BadRequest(new { message = "Invalid or expired code" });
+            // Validate input
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
+                return BadRequest(new { message = "Email and Code are required." });
 
             // Check if user already exists
             var existingUser = await _db.UserInformation
@@ -88,7 +81,17 @@ namespace CollectorsArchive.Server.Controllers
             if (existingUser != null)
                 return Conflict(new { message = "A user with this email already exists." });
 
-            // Create the user
+            // Verify temp code
+            var record = await _db.TempLoginCodes
+                .FirstOrDefaultAsync(x => x.Email == request.Email && x.Code == request.Code);
+
+            if (record == null)
+                return BadRequest(new { message = "Invalid code." });
+
+            if (record.Expiration < DateTime.UtcNow)
+                return BadRequest(new { message = "Code expired." });
+
+            // Create user
             var newUser = new UserInformation
             {
                 Email = request.Email,
@@ -105,6 +108,7 @@ namespace CollectorsArchive.Server.Controllers
             _db.TempLoginCodes.Remove(record);
             await _db.SaveChangesAsync();
 
+            // Return user
             return Ok(new
             {
                 message = "Registration successful",

@@ -52,9 +52,7 @@ export default function LoginPage(props: PaperProps) {
 				const googleSubject = userData.sub
 				const photoUrl = userData.picture
 
-				// here i am adding a request for backend
-
-				// we let user to try to login first
+				// try login first
 				const backendResponse = await fetch(LoginUsingGoogleURL, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -63,6 +61,7 @@ export default function LoginPage(props: PaperProps) {
 
 				const loginData = await backendResponse.json()
 
+				// if user not found then register
 				if (loginData.message === "User not found. Please register first.") {
 					await fetch(RegisterNewUserURL, {
 						method: "POST",
@@ -82,7 +81,7 @@ export default function LoginPage(props: PaperProps) {
 						userName,
 						email,
 						userId: loginData.userId,
-						photoUrl: loginData.photoUrl ?? photoUrl, //'??' used just in case if the backend doesn't return photoUrl
+						photoUrl: loginData.photoUrl ?? photoUrl,
 					})
 				)
 				navigate("/home")
@@ -121,55 +120,23 @@ export default function LoginPage(props: PaperProps) {
 
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
 
-				{/* Here only works for non google users so their will get temp code and they have to provide it from their email  */}
 				<form
 					onSubmit={form.onSubmit(async (values) => {
 						const { email } = values
 
-						const nonGoogleUsers = parseEmailUsername(email)
+						// S BOTH login and register request code
+						const response = await fetch(RequestForTempCodeURL, {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ email }),
+						})
 
-						// here if user clicks register then i send the user name and email for registration
-						if (type === "register") {
-							const registerResponse = await fetch(RegistrationForNonGoogleUsers, {
-								method: "POST",
-								headers: { "Content-Type": "application/json" },
-
-								body: JSON.stringify({
-									email,
-									name: parseEmailUsername(email),
-								}),
-							})
-							console.log({ nonGoogleUsers }, "Non Google user name ")
-
-							if (!registerResponse.ok) {
-								console.log("Registration failed")
-								return
-							}
-
-							console.log("User registered successfully.")
-
-							// then if the registration is success then i will request a code the  th user has to confirm that
-							await fetch(RequestForTempCodeURL, {
-								method: "POST",
-								headers: { "Content-Type": "application/json" },
-								body: JSON.stringify({ email: email }),
-							})
-
-							console.log("Temp code sent after registration.")
-							console.log("email email ", { email })
+						if (!response.ok) {
+							console.log("Failed to send code")
+							return
 						}
 
-						// then this will be login mode also the
-						else {
-							await fetch(RequestForTempCodeURL, {
-								method: "POST",
-								headers: { "Content-Type": "application/json" },
-								body: JSON.stringify({ email }),
-							})
-
-							console.log({ email }, "Email must be non google email")
-						}
-
+						// save email and move to code step
 						setSavedEmail(email)
 						setIsCodeStep(true)
 					})}
@@ -183,7 +150,7 @@ export default function LoginPage(props: PaperProps) {
 							error={form.errors.email && "Invalid email"}
 						/>
 
-						{/* This input will be displayed  only after user submits email and backend sends temp code */}
+						{/* show code input after email submitted */}
 						{isCodeStep && (
 							<TextInput label="Enter the code we emailed you" value={code} onChange={(e) => setCode(e.target.value)} />
 						)}
@@ -194,17 +161,35 @@ export default function LoginPage(props: PaperProps) {
 							{type === "register" ? "Already have an account? Login" : "Don't have an account? Register"}
 						</Anchor>
 
-						{/* If we are in code step, this button should verify the code instead of resending 
-						also the fetch URL is different cus the end point at the backend is different too */}
+						{/* VERIFY CODE */}
 						{isCodeStep ? (
 							<Button
 								type="button"
 								onClick={async () => {
-									const response = await fetch(VerfyingTemporaryCodeURL, {
-										method: "POST",
-										headers: { "Content-Type": "application/json" },
-										body: JSON.stringify({ email: savedEmail, code }),
-									})
+									let response
+
+									if (type === "register") {
+										// REGISTER create user
+										response = await fetch(RegistrationForNonGoogleUsers, {
+											method: "POST",
+											headers: { "Content-Type": "application/json" },
+											body: JSON.stringify({
+												email: savedEmail,
+												code,
+												name: parseEmailUsername(savedEmail),
+											}),
+										})
+									} else {
+										// LOGIN verify only
+										response = await fetch(VerfyingTemporaryCodeURL, {
+											method: "POST",
+											headers: { "Content-Type": "application/json" },
+											body: JSON.stringify({
+												email: savedEmail,
+												code,
+											}),
+										})
+									}
 
 									if (response.ok) {
 										const data = await response.json()
