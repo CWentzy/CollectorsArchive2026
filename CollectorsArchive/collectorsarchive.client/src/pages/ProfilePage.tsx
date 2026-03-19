@@ -206,7 +206,7 @@ export default function MemberProfilePage() {
 				{/* Collection */}
 				<Paper shadow="sm" p="md" radius="md" withBorder>
 					<Text size="lg" fw={600} mb="md">
-						My Collection
+						Collection
 					</Text>
 
 					<ScrollArea style={{ height: "50vh" }} offsetScrollbars pos="relative">
