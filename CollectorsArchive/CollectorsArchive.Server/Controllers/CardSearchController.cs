@@ -65,13 +65,13 @@ namespace CollectorsArchive.Server.Controllers
                 {
                     results.Add(new SearchOutputCard
                     {
-                        CardID = reader.GetString(0),
-                        CardName = reader.GetString(1),
+                        CardID = reader.GetString(1),
+                        CardName = reader.GetString(2),
                         PrintInfo = new SearchOutputPrinting
                         {
-                            PrintID = "Test",
-                            SetCode = reader.GetString(2),
-                            CardRarity = reader.GetString(3)
+                            PrintID = reader.GetString(0),
+                            SetCode = reader.GetString(3),
+                            CardRarity = reader.GetString(4)
                         }
                     });
                 }
@@ -136,13 +136,13 @@ namespace CollectorsArchive.Server.Controllers
                 {
                     results.Add(new SearchOutputCard
                     {
-                        CardID = reader.GetString(0),
-                        CardName = reader.GetString(1),
+                        CardID = reader.GetString(1),
+                        CardName = reader.GetString(2),
                         PrintInfo = new SearchOutputPrinting
                         {
-                            PrintID = "Test",
-                            SetCode = reader.GetString(2),
-                            CardRarity = reader.GetString(3)
+                            PrintID = reader.GetString(0),
+                            SetCode = reader.GetString(3),
+                            CardRarity = reader.GetString(4)
                         }
                     });
                 }

@@ -98,8 +98,8 @@ CREATE TABLE UserCard(
     UserID INT NOT NULL,
     PrintID INT NOT NULL,
     Quantity INT NOT NULL,
-    CardEditionID INT NOT NULL,
-    FOREIGN KEY (UserID) REFERENCES UserInformation(UserID),
+    CardEditionID INT,
+    FOREIGN KEY (UserID) REFERENCES [User](UserID),
     FOREIGN KEY (PrintID) REFERENCES CardPrinting(PrintID),
     FOREIGN KEY (CardEditionID) REFERENCES CardEdition(CardEditionID)
     );
