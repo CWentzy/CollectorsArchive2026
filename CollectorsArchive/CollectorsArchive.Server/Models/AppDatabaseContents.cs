@@ -12,6 +12,7 @@ namespace CollectorsArchive.Server
         public DbSet<UserInformation> UserInformation { get; set; }
         public DbSet<TempLoginCode> TempLoginCodes { get; set; }
         public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<UserCard> UserCards { get; set; }
 
         // here I am doing is creating a constructor for the AppDatabaseContents class that takes in DbContextOptions and passes it to the base class constructor
         public AppDatabaseContents(DbContextOptions<AppDatabaseContents> options) : base(options)

@@ -11,6 +11,7 @@ namespace CollectorsArchive.Server.Models.CardDisplays
     public class CardDisplayYGO
     {
         public string CardID { get; set; } = string.Empty;
+        public string? PrintID { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
         public string superType { get; set; } = string.Empty;
         public string subType { get; set; } = string.Empty;

@@ -45,6 +45,7 @@ namespace CollectorsArchive.Server.Controllers
                             cardDisplayYGO.Add(new CardDisplayYGO
                             {
                                 CardID = reader["CardID"]?.ToString() ?? string.Empty,
+                                PrintID = reader["PrintID"]?.ToString(), //PrintID is being read here.
                                 name = reader["CardName"]?.ToString() ?? string.Empty,
                                 superType = reader["SuperType"]?.ToString() ?? string.Empty,
                                 subType = reader["SubType"]?.ToString() ?? string.Empty,

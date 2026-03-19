@@ -1,4 +1,5 @@
-import { Group, Image, Card as MantineCard, Text } from "@mantine/core"
+import { Group, Image, Card as MantineCard, Text, Stack } from "@mantine/core"
+import QuantityPicker from "../QuantityPicker"
 import type { Card } from "../CardSearch/schema"
 
 interface CardYGOProps {
@@ -17,7 +18,14 @@ export default function CardYGO({ cardData }: CardYGOProps) {
 					<Text c="dimmed" size="xs">
 						{cardData.printInfo?.setCode} - Rarity: {cardData.printInfo?.cardRarity}
 					</Text>
+
+					<Text c="dimmed" size="xs">
+						Print ID: {cardData.printInfo?.id}  {/* COME BACK TO THIS ITS THE PRINTID WE SEE IN COMPONENT*/}
+					</Text>
 				</div>
+				<QuantityPicker
+					printID={cardData.printInfo?.id ?? ""}
+					onChange={(q) => console.log("quantity changed:", q)} />
 			</Group>
 		</MantineCard>
 	)
