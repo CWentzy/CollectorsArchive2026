@@ -1207,9 +1207,9 @@ const NAME_ROI: NormalizedRoi = {
 };
 
 const PASSCODE_ROI: NormalizedRoi = {
-    x: 0.03,
+    x: 0.042,
     y: 0.95,
-    w: 0.16,
+    w: 0.15,
     h: 0.03,
 };
 
