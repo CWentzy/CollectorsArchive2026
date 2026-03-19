@@ -10,7 +10,6 @@
 
 namespace CollectorsArchive.Server.Models.CardSearch
 {
-{
     public class AdvancedSearch
     {
         public required string query { get; set; }          // The name of the Card or Set
