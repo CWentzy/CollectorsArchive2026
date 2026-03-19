@@ -199,6 +199,7 @@ export default function LoginPage(props: PaperProps) {
 											JSON.stringify({
 												userName: data.userName,
 												email: data.email,
+												userId: data.userId,
 											})
 										)
 
