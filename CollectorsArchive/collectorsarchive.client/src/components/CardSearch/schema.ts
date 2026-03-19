@@ -6,6 +6,8 @@
  * 									components.
  */
 
+import type { Card } from "../../types/ygo/schema"
+
 export const SEARCH_QUERY_MIN_LENGTH = 3
 export const SEARCH_QUERY_MAX_LENGTH = 100
 
@@ -54,19 +56,6 @@ export interface CardServerResponse {
 }
 
 // Client-side types
-export interface Print {
-	id: number
-	setCode: string
-	cardRarity: string
-	imageUrl?: string
-}
-
-export interface Card {
-	id: string
-	name: string
-	printInfo?: Print
-}
-
 export interface Set {
 	id: string
 	name: string

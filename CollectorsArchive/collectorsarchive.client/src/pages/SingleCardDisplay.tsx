@@ -1,19 +1,23 @@
-import { Badge, Box, Button, Card, Divider, Grid, Group, Image, Stack, Text, Title } from "@mantine/core"
-import { IconCards, IconInfoCircle, IconTimeline } from "@tabler/icons-react"
-import { useParams } from "react-router-dom"
+import { Badge, Box, Grid, Group, Image, LoadingOverlay, Stack, Text, Title } from "@mantine/core"
 import { useEffect, useState } from "react"
-// importing the interface here
-import type { SingleCardDetailsForYGOes } from "../types/SingleCardDisplayForYGOes"
-import type { PrintingDetails } from "../types/PrintingDetailsDisplay"
+import { useParams } from "react-router-dom"
+import PrintYGO from "../components/YGO/PrintYGO"
+import { formatCardDetails, formatPrintingDetails } from "../types/mapper"
+import type { Card, Print, PrintDetails } from "../types/ygo/schema"
 
 const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
 const SingleCardDisplayYGO =
 	"https://collectorsarchive.azurewebsites.net/api/SingleCardDisplayYGOes/SingleCardDisplayYGO"
 
+interface CardAndPrints {
+	prints: Print[]
+	card?: Card
+}
+
 export default function SingleCardDisplay() {
 	const { id } = useParams<{ id: string }>()
-	const [cardDetails, setCard] = useState<SingleCardDetailsForYGOes | null>(null)
-	const [printDetails, setPrintDetails] = useState<PrintingDetails[] | null>(null)
+	const [cardAndPrints, setCardAndPrints] = useState<CardAndPrints | null>(null)
+	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
 		async function fetchCard() {
@@ -24,127 +28,102 @@ export default function SingleCardDisplay() {
 			})
 
 			const data = await response.json()
-			setCard(data.card)
-			setPrintDetails(data.printings)
-			console.log("CARD RESPONSE:", data.card)
-			console.log("Printing Info:", data.printings)
+
+			const prints = data.printings.map((print: PrintDetails) => formatPrintingDetails(print))
+			const card = data.card ? formatCardDetails(data.card) : undefined
+
+			setCardAndPrints({ card, prints })
+
+			console.log("Card:", card)
+			console.log("Printings:", data.printings)
+
+			setLoading(false)
 		}
 
 		fetchCard()
 	}, [id])
 
 	return (
-		<Box mih="100vh">
-			<Box maw={1100} mx="auto" p="xl">
-				<Grid gutter={40}>
+		<Box py="xl">
+			<Box mx="auto">
+				<Grid gutter={50} align="center">
 					{/* Card Image Column */}
-					<Grid.Col span={{ base: 12, md: 5 }}>
-						<Card shadow="xl" radius="md" p="xl">
-							{/* TODO: Replace with real card image from backend */}
-							<Image src={placeholderImageUrl} alt={"Card Iamge"} fit="contain" h={520} />
-						</Card>
+					<Grid.Col span="content">
+						{/* TODO: Replace with real card image from backend */}
+						<Image src={placeholderImageUrl} alt={"Card Iamge"} fit="contain" h={520} />
 					</Grid.Col>
 
 					{/* Details Column */}
-					<Grid.Col span={{ base: 12, md: 7 }}>
+					<Grid.Col span="auto" pos="relative">
+						<LoadingOverlay visible={loading} overlayProps={{ radius: "md", blur: 2 }} loaderProps={{ type: "dots" }} />
+
 						<Stack gap="xl">
-							{/* Header — name and id come from route params */}
-							<Stack>
-								<Stack gap={4}>
-									<Title order={1} fz={52} fw={900} lts={-1.5} lh={1}>
-										{cardDetails?.name ?? "Unknown Card"}
-									</Title>
+							<Stack gap="md">
+								{/* Header — name and id come from route params */}
+								<Title order={1} fz={42} fw={800}>
+									{cardAndPrints?.card?.name ?? "Unknown Card"}
+								</Title>
 
-									<Text size="sm" fw={600} c="dimmed">
-										ID: {cardDetails?.cardID}
-									</Text>
-								</Stack>
+								<Group gap="xs">
+									{cardAndPrints?.card?.superType && (
+										<Badge size="md" variant="gradient" gradient={{ from: "yellow", to: "red", deg: 45 }} fw={600}>
+											{cardAndPrints?.card?.superType}
+										</Badge>
+									)}
 
-								<Group gap="sm" align="center">
-									<Badge size="lg" radius="sm" variant="filled" color="spell-green" fw={700}>
-										Super Type
-									</Badge>
-
-									<Badge
-										size="lg"
-										radius="sm"
-										variant="gradient"
-										gradient={{ from: "yellow", to: "orange", deg: 45 }}
-										fw={600}
-									>
-										{cardDetails?.superType ?? "Unknown"}
-									</Badge>
+									{cardAndPrints?.card?.subType && (
+										<Badge size="md" variant="transparent" fw={600}>
+											{cardAndPrints?.card?.subType}
+										</Badge>
+									)}
 								</Group>
+
+								{/* Description — card Text is a descriiption of the card */}
+								<div>
+									<Text c="dimmed">
+										{cardAndPrints?.card?.description ?? "No description available for this card."}
+									</Text>
+
+									<Group justify="flex-end" w="100%">
+										<Text c="dimmed" size="xs">
+											ID: {cardAndPrints?.card?.id ?? "Unknown ID"}
+										</Text>
+									</Group>
+								</div>
 							</Stack>
 
-							<Divider />
-
-							{/* Description — card Text is a descriiption of the card */}
-							<Stack gap="xs">
-								<Group gap="xs" c="dimmed">
-									<IconInfoCircle size={18} />
-									<Text fw={700} size="md" tt="uppercase" lts={1}>
-										Description
-									</Text>
-									<Text fw={500} size="sm">
-										{cardDetails?.cardText}
-									</Text>
-								</Group>
-							</Stack>
-							{/* Card Specifications */}
-							<Card withBorder radius="md" p="lg">
-								<Group gap="xs" mb="lg">
-									<IconCards size={20} />
-									<Text fw={800} size="sm" tt="uppercase" lts={0.5}>
-										Card Specifications
-									</Text>
-								</Group>
-
-								<Grid gutter={30}>
-									{[
-										{ label: "Super Type", value: cardDetails?.superType },
-										{ label: "Sub Type", value: cardDetails?.subType },
-										{ label: "Card ID ", value: cardDetails?.cardID },
-										{ label: "Card Name ", value: cardDetails?.name },
-										{ label: "Release Date", value: "TBD" },
-									].map((item) => (
-										<Grid.Col span={6} key={item.label}>
-											<Text size="xs" c="dimmed" fw={500} tt="uppercase" mb={4}>
-												{item.label}
-											</Text>
-											<Text fw={600} size="md">
-												{item.value}
-											</Text>
-										</Grid.Col>
-									))}
-								</Grid>
-							</Card>
-
-							<Group justify="space-between" grow>
-								<Button size="lg" radius="md" fz="md" variant="light">
+							{/* <Group justify="space-between" grow>
+								<Button size="md" variant="light">
 									Add to Collection
 								</Button>
-								<Button size="lg" radius="md" fz="md" variant="light">
-									Add to Wishlist :
-									<Text>
-										{printDetails?.map((p) => (
-											<div key={p.PrintID}>
-												<p>Set: {p.SetName}</p>
-												<p>Code: {p.SetCode}</p>
-												<p>Rarity: {p.CardRarity}</p>
-												<p>Release: {new Date(p.ReleaseDate).toLocaleDateString()}</p>
-											</div>
-										))}
-									</Text>
+								<Button size="md" variant="light">
+									Add to Wishlist
 								</Button>
-							</Group>
+							</Group> */}
 						</Stack>
 					</Grid.Col>
 				</Grid>
 			</Box>
+
+			{!loading && (
+				<Stack gap="md" mt="xl">
+					<Text size="lg" fw={600}>
+						Printings
+					</Text>
+
+					<Stack gap="xs">
+						{cardAndPrints?.prints.length ? (
+							cardAndPrints.prints.map((print) => (
+								<PrintYGO key={print.id} printData={print} cardData={cardAndPrints.card} />
+							))
+						) : (
+							<Text c="dimmed" size="sm">
+								This card has no printings.
+							</Text>
+						)}
+					</Stack>
+				</Stack>
+			)}
 		</Box>
 	)
-}
-function setCard(card: any) {
-	throw new Error("Function not implemented.")
 }

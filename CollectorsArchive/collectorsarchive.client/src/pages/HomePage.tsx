@@ -1,31 +1,22 @@
-import {
-	Box,
-	Button,
-	Combobox,
-	Flex,
-	Grid,
-	Group,
-	Input,
-	Stack,
-	Text,
-	useCombobox,
-	Loader,
-	Center,
-} from "@mantine/core"
+import { Box, Button, Center, Combobox, Flex, Group, Loader, Stack, Text, useCombobox } from "@mantine/core"
 import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 //import { useLocation } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
 import sampleImage from "../assets/singleCardSample.png"
-import CardItem from "../pages/CardItem"
-import CardYGO from "../components/Cards/CardYGO"
-import type { Card } from "../components/CardSearch/schema"
+import PrintYGO from "../components/YGO/PrintYGO"
+import { formatDisplayCollectionPrint } from "../types/mapper"
+import type { Card, DisplayCollectionPrint, Print } from "../types/ygo/schema"
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
 //interface CardData {
 //	cardID: string
 //	cardName: string
 //}
 
+interface PrintWithCard {
+	print: Print
+	card?: Card
+}
 
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
@@ -36,7 +27,7 @@ export default function HomePage() {
 	const navigate = useNavigate()
 
 	// const [cards, setCards] = useState<CardData[]>([])
-	const [cards, setCards] = useState<Card[]>([])
+	const [prints, setPrints] = useState<PrintWithCard[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState("")
 
@@ -59,8 +50,21 @@ export default function HomePage() {
 
 				const data = await response.json()
 				console.log("Backend response:", data) //CHECKING THE BACKEND RESPONSE
+
 				// Cards are nested under "collection" in the response
-				setCards(data.collection)
+				const prints: PrintWithCard[] = data.collection.map((print: DisplayCollectionPrint) => {
+					const printWithCard: PrintWithCard = {
+						print: formatDisplayCollectionPrint(print),
+						card: {
+							id: print.cardID,
+							name: print.cardName,
+						},
+					}
+					return printWithCard
+				})
+
+				setPrints(prints)
+
 				console.log("First card:", data.collection[0])
 			} catch (err) {
 				setError("Could not load cards. Please try again later.")
@@ -127,7 +131,7 @@ export default function HomePage() {
 					<Center mt="xl">
 						<Text c="red">{error}</Text>
 					</Center>
-				) : cards.length === 0 ? (
+				) : prints.length === 0 ? (
 					<Center mt="xl">
 						<Text c="dimmed">No cards found in your collection.</Text>
 					</Center>
@@ -140,9 +144,10 @@ export default function HomePage() {
 					//	))}
 					//</Grid>
 					<Stack w="100%">
-						{(cards as Card[]).map((item) => {
-							const cardData = item as Card
-							return <CardYGO key={cardData.id} cardData={cardData} />
+						{prints.map((print: PrintWithCard) => {
+							const printData = print.print
+							const cardData = print.card
+							return <PrintYGO key={printData.id} printData={printData} cardData={cardData} displayName />
 						})}
 					</Stack>
 				)}
