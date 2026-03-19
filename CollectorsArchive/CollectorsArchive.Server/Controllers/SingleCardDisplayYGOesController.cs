@@ -80,7 +80,7 @@ namespace CollectorsArchive.Server.Controllers
                             {
                                 printInfoDisplayDetails.Add(new PrintInfoDisplayDetails
                                 {
-                                    PrintID = reader["PrintID"]?.ToString() ?? string.Empty,
+                                    PrintID = reader.GetInt32("PrintID"),
                                     SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
                                     SetName = reader["SetName"]?.ToString() ?? string.Empty,
                                     CardRarity = reader["CardRarity"]?.ToString() ?? string.Empty,

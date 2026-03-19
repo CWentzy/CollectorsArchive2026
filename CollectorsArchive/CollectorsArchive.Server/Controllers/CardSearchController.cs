@@ -69,7 +69,7 @@ namespace CollectorsArchive.Server.Controllers
                         CardName = reader["CardName"].ToString(),
                         PrintInfo = new SearchOutputPrinting
                         {
-                            PrintID = reader["PrintID"].ToString(),
+                            PrintID = reader.GetInt32(2),
                             SetCode = reader["SetCode"].ToString(),
                             CardRarity = reader["CardRarity"].ToString()
                         }
@@ -140,7 +140,7 @@ namespace CollectorsArchive.Server.Controllers
                         CardName = reader["CardName"].ToString(),
                         PrintInfo = new SearchOutputPrinting
                         {
-                            PrintID = reader["PrintID"].ToString(),
+                            PrintID = reader.GetInt32(2),
                             SetCode = reader["SetCode"].ToString(),
                             CardRarity = reader["CardRarity"].ToString()
                         }
