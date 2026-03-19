@@ -186,11 +186,18 @@ namespace CollectorsArchive.Server.Controllers
             await _db.SaveChangesAsync();
 
             // Send email , im sending an email by plugin the email servive the class i create that send email 
-            await _emailService.SendAsync(
-                request.Email,
-                "This is your Collector's Archive Login Code",
-                $"Your login code is: {code} This code will expire with in 10 minutes from the time you recieved this email"
-            );
+            try
+            {
+                await _emailService.SendAsync(
+                    request.Email,
+                    "This is your Collector's Archive Login Code",
+                    $"Your login code is: {code} This code will expire within 10 minutes."
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to send email", error = ex.Message });
+            }
 
             return Ok(new { message = "Temporary login code sent" });
         }
