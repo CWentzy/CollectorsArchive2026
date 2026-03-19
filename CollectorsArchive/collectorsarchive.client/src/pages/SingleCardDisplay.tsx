@@ -25,7 +25,7 @@ export default function SingleCardDisplay() {
 
 			const data = await response.json()
 			setCard(data.card)
-			setCard(data.printings)
+			setPrintDetails(data.printings)
 			console.log("CARD RESPONSE:", data.card)
 			console.log("Printing Info:", data.printings)
 		}
