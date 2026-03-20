@@ -1,16 +1,10 @@
-﻿using System.Text.Json.Serialization;
-
-namespace CollectorsArchive.Server.Models
+﻿namespace CollectorsArchive.Server.Models
 {
     public class GoogleAuthRequest
     {
-        // Adding this attribute makes it bulletproof
-        [JsonPropertyName("googleIDToken")]
-        public string GoogleIDToken { get; set; } = string.Empty;
-
-        [JsonPropertyName("photoUrl")]
+        public string Email { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string GoogleSubject { get; set; } = string.Empty;
         public string? PhotoUrl { get; set; }
     }
-
-
 }

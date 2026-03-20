@@ -1,5 +1,5 @@
 ﻿
-using CollectorsArchive.Server.Settings;
+using CollectorsArchive.Server.Models;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;

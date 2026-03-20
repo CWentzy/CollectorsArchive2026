@@ -3,15 +3,11 @@ import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from
 import { useEffect, useState } from "react"
 //import { useLocation } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
-import sampleImage from "../assets/singleCardSample.png"
 import PrintYGO from "../components/YGO/PrintYGO"
 import { formatDisplayCollectionPrint } from "../types/mapper"
 import type { DisplayCollectionPrint, PrintWithCard } from "../types/ygo/schema"
 const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
-//interface CardData {
-//	cardID: string
-//	cardName: string
-//}
+
 
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
@@ -165,7 +161,6 @@ function DropDownListForSearching({ navigate }: { navigate: any }) {
 	const options = GameTypes.map((item) => (
 		<Combobox.Option value={item} key={item}>
 			<Group gap="sm">
-				<img src={sampleImage} alt={item} style={{ width: 24, height: 24, borderRadius: 4 }} />
 				<Text>{item}</Text>
 			</Group>
 		</Combobox.Option>
@@ -183,7 +178,6 @@ function DropDownListForSearching({ navigate }: { navigate: any }) {
 			<Combobox.Target>
 				<Button variant="default" onClick={() => combobox.toggleDropdown()} style={{ width: 150 }}>
 					<Group gap="sm">
-						{value && <img src={sampleImage} alt={value} style={{ width: 20, height: 20, borderRadius: 4 }} />}
 						{value || "Display Games"}
 					</Group>
 				</Button>

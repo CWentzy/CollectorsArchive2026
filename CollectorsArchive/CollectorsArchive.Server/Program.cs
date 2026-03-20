@@ -1,6 +1,6 @@
 using CollectorsArchive.Server;
+using CollectorsArchive.Server.Models;
 using CollectorsArchive.Server.Service;
-using CollectorsArchive.Server.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

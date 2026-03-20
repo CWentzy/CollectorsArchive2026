@@ -250,14 +250,5 @@ namespace CollectorsArchive.Server.Controllers
         // I need to creating another endpoit when users gives me their non google email i will first search in the database and
         // then if the user is the db then i dont need to send them code again and again 
     }
-
-    // not sure about this I will CHECKKKKK LATERRR 
-    public class GoogleAuthRequest
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string GoogleSubject { get; set; } = string.Empty;
-        public string? PhotoUrl { get; set; }
-    }
 }
 

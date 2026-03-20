@@ -75,6 +75,36 @@ WHERE CardID = @CardID
 END
 
 
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- DESCRIPTION:		Returns the first 12 Yu-Gi-Oh cards (based on CardID) in a User's collection
+-- PARAMETERS:		@UserName
+CREATE OR ALTER PROCEDURE DisplayUserCollection
+    @UserName VARCHAR(100)
+AS
+BEGIN
+
+SELECT TOP 12 CardPrinting.PrintID,
+	YGOCard.CardID,
+	YGOCard.CardName,
+	CardSet.SetName,
+	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
+	CardPrinting.CardRarity,
+	UserCard.Quantity
+FROM UserCard
+	JOIN [User] ON UserCard.UserID = [User].UserID
+	JOIN CardPrinting ON UserCard.PrintID = CardPrinting.PrintID
+	JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
+	JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
+WHERE [User].UserName = @UserName
+    
+END
+
+
+
 
 
 -- ============================================================================================= --

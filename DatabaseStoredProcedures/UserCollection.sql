@@ -26,7 +26,7 @@ GO
 
 -- DESCRIPTION:		Returns the display information of a single Yu-Gi-Oh.
 -- PARAMETERS:		@CardID
-CREATE OR ALTER PROCEDURE AddCardToUser
+CREATE OR ALTER PROCEDURE AddToUserCollection
     @UserName VARCHAR(100),
     @PrintID INT
 AS

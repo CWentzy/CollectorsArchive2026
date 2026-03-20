@@ -36,10 +36,11 @@ CREATE OR ALTER PROCEDURE AdvancedSearchBySet
 AS
 BEGIN
 
-SELECT CardPrinting.PrintID,
+SELECT 
     CardPrinting.CardID,
     CASE WHEN @GameID = 'ygo' THEN YGOCard.CardName
 		END AS 'CardName',
+    CardPrinting.PrintID,
     CASE WHEN @GameID = 'ygo' THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex
         END AS 'SetCode',
     CardPrinting.CardRarity
@@ -66,8 +67,10 @@ CREATE OR ALTER PROCEDURE CVSearch
 AS
 BEGIN
 
-SELECT CardPrinting.CardID,
+SELECT 
+    YGOCard.CardID,
     YGOCard.CardName,
+    CardPrinting.PrintID,
 	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
     CardPrinting.CardRarity
 FROM CardPrinting
