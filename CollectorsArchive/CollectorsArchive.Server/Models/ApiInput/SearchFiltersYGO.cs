@@ -7,9 +7,9 @@
  *                  values.
  */
 
-namespace CollectorsArchive.Server.Models.CardSearch
+namespace CollectorsArchive.Server.Models.ApiInput
 {
-    public class AdvancedSearchFiltersYGO
+    public class SearchFiltersYGO
     {
         public string[]? superTypes { get; set; }
         public string[]? subTypes { get; set; }

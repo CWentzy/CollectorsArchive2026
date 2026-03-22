@@ -6,13 +6,16 @@
  *                  for a specific card printing.
  */
 
-namespace CollectorsArchive.Server.Models.CardSearch
+namespace CollectorsArchive.Server.Models.ApiInput
 {
+
+    // ---------------------------------------- YU-GI-OH --------------------------------------- //
+
     public class CVSearchYGO
     {
-        public string? cardName { get; set; }
+        // More values can be added when scans more often provide accurate values
+
         public string? cardID { get; set; }
-        public string? setIndex { get; set; }
     }
 }
 
