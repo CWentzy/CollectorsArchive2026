@@ -55,7 +55,7 @@ namespace CollectorsArchive.Server.Controllers
             return Ok(new
             {
                 message = "Registration successful.",
-                UserProfileId = newUser.UserId,
+                userId = newUser.UserId,
                 email = newUser.Email,
                 userName = newUser.UserName
             });
@@ -106,7 +106,7 @@ namespace CollectorsArchive.Server.Controllers
             return Ok(new
             {
                 message = "Registration successful",
-                UserProfileId = newUser.UserId,
+                userId = newUser.UserId,
                 email = newUser.Email,
                 userName = newUser.UserName
             });
@@ -138,7 +138,7 @@ namespace CollectorsArchive.Server.Controllers
             return Ok(new
             {
                 message = "Login successful.",
-                UserProfileId = user.UserId,
+                userId = user.UserId,
                 email = user.Email,
                 userName = user.UserName,
                 photoUrl = user.PhotoUrl
