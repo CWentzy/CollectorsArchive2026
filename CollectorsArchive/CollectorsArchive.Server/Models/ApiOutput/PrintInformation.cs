@@ -13,15 +13,15 @@ namespace CollectorsArchive.Server.Models.ApiOutput
         public required int GameID { get; set; }
 
         // Redundant Card Information
-        public required string CardID { get; set; }
-        public required string CardName { get; set; }
+        public string? CardID { get; set; }
+        public string? CardName { get; set; }
 
-        public required string PrintID { get; set; }
-        public required string SetID { get; set; }
+        public required int PrintID { get; set; }
+        public required int SetID { get; set; }
         public required string SetName { get; set; }
         public required string SetCode { get; set; }    // SetCode + SetIndex
         public required string Rarity { get; set; }
-        public required DateOnly ReleaseDate { get; set; }
+        public required DateTime ReleaseDate { get; set; }
 
         // Information about a specific user
         public int? UserID { get; set; }
