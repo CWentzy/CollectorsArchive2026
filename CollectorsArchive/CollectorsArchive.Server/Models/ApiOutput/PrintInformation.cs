@@ -12,6 +12,10 @@ namespace CollectorsArchive.Server.Models.ApiOutput
     {
         public required int GameID { get; set; }
 
+        // Redundant Card Information
+        public required string CardID { get; set; }
+        public required string CardName { get; set; }
+
         public required string PrintID { get; set; }
         public required string SetID { get; set; }
         public required string SetName { get; set; }

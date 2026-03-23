@@ -32,12 +32,12 @@ namespace CollectorsArchive.Server.Models.ApiOutput
         public string? Attribute { get; set; }
         public string? Classifications { get; set; }    // This is a created field
 
-        public string? Level { get; set; }              // This is also Rank (specifically for Xyz Monsters)
-        public string? Attack { get; set; }
-        public string? Defense { get; set; }
+        public int? Level { get; set; }              // This is also Rank (specifically for Xyz Monsters)
+        public int? Attack { get; set; }
+        public int? Defense { get; set; }
 
-        public string? PendulumScale { get; set; }      // Only used by Pendulum Monsters
-        public string? LinkRating { get; set; }         // Only used by Link Monsters
+        public int? PendulumScale { get; set; }      // Only used by Pendulum Monsters
+        public int? LinkRating { get; set; }         // Only used by Link Monsters
     }
 
 
