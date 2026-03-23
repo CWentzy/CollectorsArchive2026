@@ -75,12 +75,13 @@ export default function LoginPage(props: PaperProps) {
 					})
 				}
 
+				console.log(loginData)
 				localStorage.setItem(
 					"user",
 					JSON.stringify({
 						userId: loginData.userId,
-						email,
-						userName,
+						email: loginData.email,
+						userName: loginData.userName,
 						photoUrl: loginData.photoUrl ?? photoUrl,
 					})
 				)
