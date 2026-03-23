@@ -23,7 +23,7 @@ namespace CollectorsArchive.Server.Controllers
 
             // check if this print already exists in their collection
             var existing = await _db.UserCards
-                .FirstOrDefaultAsync(c => c.UserID == request.UserId && c.PrintID == request.PrintID);
+                .FirstOrDefaultAsync(c => c.UserProfileID == request.UserId && c.PrintID == request.PrintID);
 
             if (existing != null)
             {
@@ -36,7 +36,7 @@ namespace CollectorsArchive.Server.Controllers
             // first time adding this print
             var newCard = new UserCard
             {
-                UserID = request.UserId,
+                UserProfileID = request.UserId,
                 PrintID = request.PrintID,
                 Quantity = request.Quantity
             };

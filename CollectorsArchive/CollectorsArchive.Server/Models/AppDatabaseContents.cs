@@ -21,6 +21,7 @@ namespace CollectorsArchive.Server
 
         // this since we already has the database and the tables created in sql, we need to tell entity framework to use the existing database and tables instead of trying to create new ones.
         // So we will override the OnModelCreating method and specify the table name and column names for the User entity.
+        /*
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserInformation>(entity =>
@@ -48,7 +49,7 @@ namespace CollectorsArchive.Server
                        .HasColumnName("JoinDate");
 
             });
-            /*modelBuilder.Entity<UserProfile>(entity =>
+            modelBuilder.Entity<UserProfile>(entity =>
             {
                 entity.ToTable("UserProfile");
                 entity.HasKey(e => e.ProfileId);
@@ -57,18 +58,19 @@ namespace CollectorsArchive.Server
                 entity.Property(e => e.Bio).HasColumnName("Bio");
                 entity.Property(e => e.PhotoUrl).HasColumnName("PhotoURL");
                 entity.Property(e => e.JoinDate).HasColumnName("JoinDate");
-            });*/ //CAN BE SCRAPPED TOO
+            }); //CAN BE SCRAPPED TOO
             modelBuilder.Entity<UserCard>(entity =>
             {
                 entity.ToTable("UserCard");
                 entity.HasKey(e => e.UserCardID);
                 entity.Property(e => e.UserCardID).HasColumnName("UserCardID");
-                entity.Property(e => e.UserID).HasColumnName("UserID");
+                entity.Property(e => e.UserProfileID).HasColumnName("UserID");
                 entity.Property(e => e.PrintID).HasColumnName("PrintID");
                 entity.Property(e => e.Quantity).HasColumnName("Quantity");
                 entity.Property(e => e.CardEditionID).HasColumnName("CardEditionID");
             });
         }
+        */
         
 
     }

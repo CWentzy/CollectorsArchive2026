@@ -18,21 +18,21 @@ namespace CollectorsArchive.Server.Models
         // Email cannot be null and must be unique
         [Required]
         [MaxLength(255)]
-        [Column("email")]
         public string Email { get; set; } = string.Empty;
 
         // Username cannot be null and must be unique
         [Required]
         [MaxLength(100)]
-        [Column("username")]
         public string UserName { get; set; } = string.Empty;
 
         // GoogleSubject is optional (null for non‑Google users)
         [MaxLength(255)]
-        [Column("GoogleSubject")]
         public string? GoogleSubject { get; set; }
+        [MaxLength(500)]
         public string? Bio { get; set; }
+        [MaxLength(500)]
         public string? PhotoUrl { get; set; }
+        [Required]
         public DateTime JoinDate { get; set; }
     }
 }
