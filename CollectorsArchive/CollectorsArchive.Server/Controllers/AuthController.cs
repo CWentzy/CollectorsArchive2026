@@ -44,25 +44,18 @@ namespace CollectorsArchive.Server.Controllers
             {
                 Email = request.Email,
                 UserName = request.Name,
-                GoogleSubject = request.GoogleSubject
+                GoogleSubject = request.GoogleSubject,
+                PhotoUrl = request.PhotoUrl,    
+                JoinDate = DateTime.UtcNow
             };
 
             _db.UserInformation.Add(newUser);
             await _db.SaveChangesAsync();
 
-            var newProfile = new UserProfile
-            {
-                UserId = newUser.UserId,
-                PhotoUrl = request.PhotoUrl,
-                JoinDate = DateTime.UtcNow
-            };
-            _db.UserProfiles.Add(newProfile);
-            await _db.SaveChangesAsync();
-
             return Ok(new
             {
                 message = "Registration successful.",
-                userId = newUser.UserId,
+                UserProfileId = newUser.UserProfileId,
                 email = newUser.Email,
                 userName = newUser.UserName
             });
@@ -98,7 +91,8 @@ namespace CollectorsArchive.Server.Controllers
                 UserName = string.IsNullOrWhiteSpace(request.Name)
                     ? request.Email.Split('@')[0]
                     : request.Name,
-                GoogleSubject = null
+                GoogleSubject = null,
+                JoinDate = DateTime.UtcNow
             };
 
             _db.UserInformation.Add(newUser);
@@ -112,7 +106,7 @@ namespace CollectorsArchive.Server.Controllers
             return Ok(new
             {
                 message = "Registration successful",
-                userId = newUser.UserId,
+                UserProfileId = newUser.UserProfileId,
                 email = newUser.Email,
                 userName = newUser.UserName
             });
@@ -135,33 +129,19 @@ namespace CollectorsArchive.Server.Controllers
             {
                 return Ok(new { message = "User not found. Please register first." });
             }
-            //FOR THE ALREADY SIGNED IN USERS WHO DO NOT HAVE THE UserProfile IN THE DATABASE YET
-            var profile = await _db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.UserId);
-            if(profile == null)
-            {
-                profile = new UserProfile
-                {
-                    UserId = user.UserId,
-                    PhotoUrl = request.PhotoUrl,
-                    JoinDate = DateTime.UtcNow
-                };
-                //Added the above info in database
-                _db.UserProfiles.Add(profile);
-                await _db.SaveChangesAsync();
-            }
-            else if(!string.IsNullOrWhiteSpace(request.PhotoUrl) && profile.PhotoUrl != request.PhotoUrl)
+            if(!string.IsNullOrWhiteSpace(request.PhotoUrl) && user.PhotoUrl != request.PhotoUrl)
             {
 
-                profile.PhotoUrl = request.PhotoUrl;
+                user.PhotoUrl = request.PhotoUrl;
                 await _db.SaveChangesAsync();
             }
             return Ok(new
             {
                 message = "Login successful.",
-                userId = user.UserId,
+                UserProfileId = user.UserProfileId,
                 email = user.Email,
                 userName = user.UserName,
-                photoUrl = profile.PhotoUrl
+                photoUrl = user.PhotoUrl
             });
         }
 
@@ -227,7 +207,8 @@ namespace CollectorsArchive.Server.Controllers
                 {
                     Email = request.Email,
                     UserName = request.Email.Split('@')[0],
-                    GoogleSubject = null
+                    GoogleSubject = null,
+                    JoinDate = DateTime.UtcNow
                 };
 
                 _db.UserInformation.Add(user);

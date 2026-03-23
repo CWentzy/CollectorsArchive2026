@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CollectorsArchive.Server.Models
 {
-    [Table("User")]
+    [Table("UserProfile")]
 
     // Enforce uniqueness at the database level
     [Index(nameof(Email), IsUnique = true)]
@@ -12,8 +12,8 @@ namespace CollectorsArchive.Server.Models
     public class UserInformation
     {
         [Key]
-        [Column("UserID")]
-        public int UserId { get; set; }
+        [Column("UserProfileID")]
+        public int UserProfileId { get; set; }
 
         // Email cannot be null and must be unique
         [Required]
@@ -31,7 +31,8 @@ namespace CollectorsArchive.Server.Models
         [MaxLength(255)]
         [Column("GoogleSubject")]
         public string? GoogleSubject { get; set; }
-        // Navigation property — links to this user's profile (nullable if not yet created)
-        public UserProfile? Profile { get; set; }
+        public string? Bio { get; set; }
+        public string? PhotoUrl { get; set; }
+        public DateTime JoinDate { get; set; }
     }
 }

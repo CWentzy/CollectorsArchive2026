@@ -50,7 +50,7 @@ namespace CollectorsArchive.Server.Controllers
 
     public class AddToCollectionRequest
     {
-        public int UserId { get; set; }
+        public int UserId { get; set; }//THIS NEEDS CHANGE
         public int PrintID { get; set; }
         public int Quantity { get; set; } = 1;
     }

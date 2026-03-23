@@ -37,7 +37,6 @@ interface ProfilePanelProps {
 }
 
 type UserProfile = {
-	profileId: number
 	userId: number
 	userName: string
 	bio: string | null

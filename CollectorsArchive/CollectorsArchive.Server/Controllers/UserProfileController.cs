@@ -20,21 +20,19 @@ namespace CollectorsArchive.Server.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetProfile(int userId)
         {
-            var profile = await _db.UserProfiles
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+            var user = await _db.UserInformation
+                .FirstOrDefaultAsync(u => u.UserProfileId == userId);
 
-            if (profile == null)
+            if (user == null)
                 return NotFound(new { message = "Profile not found." });
 
             return Ok(new
             {
-                profileId = profile.ProfileId,
-                userId = profile.UserId,
-                userName = profile.User?.UserName,
-                bio = profile.Bio,
-                photoUrl = profile.PhotoUrl,
-                joinDate = profile.JoinDate,
+                userId = user.UserProfileId,
+                userName = user.UserName,
+                bio = user.Bio,
+                photoUrl = user.PhotoUrl,
+                joinDate = user.JoinDate,
             });
         }
 
@@ -43,23 +41,22 @@ namespace CollectorsArchive.Server.Controllers
         [HttpPut("{userId}")]
         public async Task<IActionResult> UpdateProfile(int userId, [FromBody] UpdateProfileRequest request)
         {
-            var profile = await _db.UserProfiles
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+            var user = await _db.UserInformation
+                .FirstOrDefaultAsync(u => u.UserProfileId == userId);
 
-            if (profile == null)
+            if (user == null)
                 return NotFound(new { message = "Profile not found." });
 
             // Update bio and photo on the UserProfile table
             if (request.Bio != null)
-                profile.Bio = request.Bio;
+                user.Bio = request.Bio;
 
             if (request.PhotoUrl != null)
-                profile.PhotoUrl = request.PhotoUrl;
+                user.PhotoUrl = request.PhotoUrl;
 
             // Update username on the User table
-            if (request.UserName != null && profile.User != null)
-                profile.User.UserName = request.UserName;
+            if (request.UserName != null)
+                user.UserName = request.UserName;
 
             await _db.SaveChangesAsync();
 
@@ -67,7 +64,7 @@ namespace CollectorsArchive.Server.Controllers
         }
     }
 
-    public class UpdateProfileRequest
+    public class UpdateProfileRequest//THIS NEEDS CHANGE
     {
         public string? Bio { get; set; }
         public string? PhotoUrl { get; set; }

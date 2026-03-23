@@ -11,7 +11,7 @@ namespace CollectorsArchive.Server
         // user name will be the email id of the user without @domain part this is the class that we created in Models/User.cs
         public DbSet<UserInformation> UserInformation { get; set; }
         public DbSet<TempLoginCode> TempLoginCodes { get; set; }
-        public DbSet<UserProfile> UserProfiles { get; set; }
+        // public DbSet<UserProfile> UserProfiles { get; set; } THIS CAN BE SCRAPPED TOO
         public DbSet<UserCard> UserCards { get; set; }
 
         // here I am doing is creating a constructor for the AppDatabaseContents class that takes in DbContextOptions and passes it to the base class constructor
@@ -25,27 +25,30 @@ namespace CollectorsArchive.Server
         {
             modelBuilder.Entity<UserInformation>(entity =>
             {
-                entity.ToTable("User");
+                entity.ToTable("UserProfile");
 
-                entity.HasKey(e => e.UserId);
+                entity.HasKey(e => e.UserProfileId);
 
-                entity.Property(e => e.UserId)
-                      .HasColumnName("UserID");
+                entity.Property(e => e.UserProfileId)
+                      .HasColumnName("UserProfileID");
 
                 entity.Property(e => e.Email)
-                      .HasColumnName("email");
+                      .HasColumnName("Email");
 
                 entity.Property(e => e.UserName)
-                      .HasColumnName("username");
+                      .HasColumnName("Username");
 
                 entity.Property(e => e.GoogleSubject)
                       .HasColumnName("GoogleSubject");
-                // One-to-one relationship: each user has at most one profile
-                entity.HasOne<UserProfile>(u => u.Profile)
-                      .WithOne(p => p.User)
-                      .HasForeignKey<UserProfile>(p => p.UserId);
+                entity.Property(e => e.Bio)
+                       .HasColumnName("Bio");
+                entity.Property(e => e.PhotoUrl)
+                       .HasColumnName("PhotoURL");
+                entity.Property(e => e.JoinDate)
+                       .HasColumnName("JoinDate");
+
             });
-            modelBuilder.Entity<UserProfile>(entity =>
+            /*modelBuilder.Entity<UserProfile>(entity =>
             {
                 entity.ToTable("UserProfile");
                 entity.HasKey(e => e.ProfileId);
@@ -54,7 +57,7 @@ namespace CollectorsArchive.Server
                 entity.Property(e => e.Bio).HasColumnName("Bio");
                 entity.Property(e => e.PhotoUrl).HasColumnName("PhotoURL");
                 entity.Property(e => e.JoinDate).HasColumnName("JoinDate");
-            });
+            });*/ //CAN BE SCRAPPED TOO
             modelBuilder.Entity<UserCard>(entity =>
             {
                 entity.ToTable("UserCard");

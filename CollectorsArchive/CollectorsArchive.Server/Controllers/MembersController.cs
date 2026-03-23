@@ -20,13 +20,12 @@ namespace CollectorsArchive.Server.Controllers
         public async Task<IActionResult> GetAllMembers()
         {
             var members = await _db.UserInformation
-                .Include(u => u.Profile)
                 .Select(u => new
                 {
-                    userId = u.UserId,
+                    userId = u.UserProfileId,
                     userName = u.UserName,
-                    photoUrl = u.Profile != null ? u.Profile.PhotoUrl : null,
-                    joinDate = u.Profile != null ? (DateTime?)u.Profile.JoinDate : null
+                    photoUrl = u.PhotoUrl,
+                    joinDate = u.JoinDate
                 })
                 .ToListAsync();
 
