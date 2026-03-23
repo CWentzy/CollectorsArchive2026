@@ -22,7 +22,7 @@ namespace CollectorsArchive.Server.Controllers
             var members = await _db.UserInformation
                 .Select(u => new
                 {
-                    userId = u.UserProfileId,
+                    userId = u.UserId,
                     userName = u.UserName,
                     photoUrl = u.PhotoUrl,
                     joinDate = u.JoinDate

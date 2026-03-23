@@ -21,14 +21,14 @@ namespace CollectorsArchive.Server.Controllers
         public async Task<IActionResult> GetProfile(int userId)
         {
             var user = await _db.UserInformation
-                .FirstOrDefaultAsync(u => u.UserProfileId == userId);
+                .FirstOrDefaultAsync(u => u.UserId == userId);
 
             if (user == null)
                 return NotFound(new { message = "Profile not found." });
 
             return Ok(new
             {
-                userId = user.UserProfileId,
+                userId = user.UserId,
                 userName = user.UserName,
                 bio = user.Bio,
                 photoUrl = user.PhotoUrl,
@@ -42,7 +42,7 @@ namespace CollectorsArchive.Server.Controllers
         public async Task<IActionResult> UpdateProfile(int userId, [FromBody] UpdateProfileRequest request)
         {
             var user = await _db.UserInformation
-                .FirstOrDefaultAsync(u => u.UserProfileId == userId);
+                .FirstOrDefaultAsync(u => u.UserId == userId);
 
             if (user == null)
                 return NotFound(new { message = "Profile not found." });

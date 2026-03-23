@@ -13,7 +13,7 @@ namespace CollectorsArchive.Server.Models
     {
         [Key]
         [Column("UserProfileID")]
-        public int UserProfileId { get; set; }
+        public int UserId { get; set; }
 
         // Email cannot be null and must be unique
         [Required]
