@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +31,7 @@ namespace CollectorsArchive.Server.Models
         [MaxLength(500)]
         public string? Bio { get; set; }
         [MaxLength(500)]
+        [Column("PhotoURL")]
         public string? PhotoUrl { get; set; }
         [Required]
         public DateTime JoinDate { get; set; }
