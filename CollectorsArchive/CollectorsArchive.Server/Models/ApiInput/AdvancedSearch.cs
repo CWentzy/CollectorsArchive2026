@@ -8,7 +8,7 @@
  *                  appropriate Filters object when needed.
  */
 
-namespace CollectorsArchive.Server.Models.CardSearch
+namespace CollectorsArchive.Server.Models.ApiInput
 {
     public class AdvancedSearch
     {

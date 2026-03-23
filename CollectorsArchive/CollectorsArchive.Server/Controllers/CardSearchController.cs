@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 
 using CollectorsArchive.Server.Models.CardSearch;
+using CollectorsArchive.Server.Models.ApiInput;
 
 
 namespace CollectorsArchive.Server.Controllers
@@ -170,7 +171,7 @@ namespace CollectorsArchive.Server.Controllers
 
             // Adjust search query to reflect the parameters provided by the user
             StringBuilder queryParameters = new StringBuilder();
-            AdvancedSearchFiltersYGO filters = (AdvancedSearchFiltersYGO)parameters.advancedFilters;
+            SearchFiltersYGO filters = (SearchFiltersYGO)parameters.advancedFilters;
 
             if (parameters.query != null) { queryParameters.Append($"YGOCard.CardName LIKE '%{parameters.query}%'"); }
 

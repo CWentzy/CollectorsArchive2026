@@ -7,7 +7,7 @@
  *                  can change
  */
 
-using CollectorsArchive.Server.Models.CardSearch;
+using CollectorsArchive.Server.Models.ApiInput;
 using System.Text;
 
 namespace CollectorsArchive.Server
@@ -27,7 +27,7 @@ namespace CollectorsArchive.Server
                             "JOIN CardSuperType ON YGOCard.SuperType = CardSuperType.SuperTypeID " +
                             "JOIN CardSubType ON YGOCard.SubType = CardSubType.SubTypeID ");
 
-            AdvancedSearchFiltersYGO ygoParameters = (AdvancedSearchFiltersYGO)parameters.advancedFilters;
+            SearchFiltersYGO ygoParameters = (SearchFiltersYGO)parameters.advancedFilters;
 
             if (parameters.query != null) { }
             if (ygoParameters.superTypes != null) { query.Append(YGOStringParameter(ygoParameters.superTypes, 
