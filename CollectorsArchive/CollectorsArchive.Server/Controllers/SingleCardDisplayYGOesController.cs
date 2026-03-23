@@ -1,4 +1,5 @@
-﻿using CollectorsArchive.Server.Models.ApiOutput;
+﻿using CollectorsArchive.Server.Models.ApiInput;
+using CollectorsArchive.Server.Models.ApiOutput;
 using CollectorsArchive.Server.Models.CardDisplays;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -18,7 +19,7 @@ namespace CollectorsArchive.Server.Controllers
         }
 
         [HttpPost("SingleCardDisplayYGO")]
-        public async Task<IActionResult> SingleYGOesCardDisplay([FromBody] CardDisplayYGO request)
+        public async Task<IActionResult> SingleYGOesCardDisplay([FromBody] CardDetailsRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.CardID))
             {

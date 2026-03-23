@@ -96,6 +96,7 @@ BEGIN
 SELECT TOP 12 CardPrinting.PrintID,
 	YGOCard.CardID,
 	YGOCard.CardName,
+    CardSet.CardSetID,
 	CardSet.SetName,
 	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
 	CardPrinting.CardRarity,
