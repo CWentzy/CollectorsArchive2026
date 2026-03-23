@@ -62,8 +62,9 @@ export default function LoginPage(props: PaperProps) {
 				const loginData = await backendResponse.json()
 
 				// if user not found then register
+				let finalData = loginData
 				if (loginData.message === "User not found. Please register first.") {
-					await fetch(RegisterNewUserURL, {
+					const registerResponse = await fetch(RegisterNewUserURL, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({
@@ -73,16 +74,17 @@ export default function LoginPage(props: PaperProps) {
 							photoUrl,
 						}),
 					})
+					finalData = await registerResponse.json()
 				}
 
-				console.log(loginData)
+				console.log(finalData)
 				localStorage.setItem(
 					"user",
 					JSON.stringify({
-						userId: loginData.userId,
-						email: loginData.email,
-						userName: loginData.userName,
-						photoUrl: loginData.photoUrl ?? photoUrl,
+						userId: finalData.userId,
+						email: finalData.email ?? email,
+						userName: finalData.userName ?? userName,
+						photoUrl: finalData.photoUrl ?? photoUrl,
 					})
 				)
 				navigate("/home")
