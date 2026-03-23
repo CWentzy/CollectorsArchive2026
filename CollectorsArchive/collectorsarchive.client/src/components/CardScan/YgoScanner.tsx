@@ -6,12 +6,16 @@ import cv from "@techstark/opencv-js";
 import { createWorker } from "tesseract.js";
 import "./scanner.css";
 import { CloseButton } from "@mantine/core";
+import {
+    type YgoScanResult,
+    type NormalizedRoi,
+    PASSCODE_ROIS,
+    cleanPasscode,
+    isValidPasscode,
+    getMostFrequentValue,
+    pickBestPasscode,
+} from "./ygoRules";
 
-type YgoScanResult = {
-    name: string;
-    passcode: string;
-    setCode: string;
-};
 
 type YgoLiveScannerProps = {
     onScanComplete?: (result: YgoScanResult) => void | Promise<void>;
@@ -68,40 +72,21 @@ export default function YgoLiveScanner({
     // State for extracted ROIs
     const [scanStatus, setScanStatus] = useState("Waiting for card...");
     const [passcodeText, setPasscodeText] = useState("");
-    const [setCodeText, setSetCodeText] = useState("");
-    const [nameText, setNameText] = useState("");
     const passcodeCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const setCodeCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const nameCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
     // Canvases for upscaling ROis
     const passcodeUpscaledCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const setCodeUpscaledCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const nameUpscaledCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
     // Processed canvases for ROIs OCR
     const passcodeProcessedCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const setCodeProcessedCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const nameProcessedCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
     //These are for seeing what hte cropped ROIs look like (Jack Remove after....)
-    const [passcodeUpscaledPreview, setPasscodeUpscaledPreview] = useState<string | null>(null);
-    const [passcodeProcessedPreview, setPasscodeProcessedPreview] = useState<string | null>(null);
+    const [passcodeUpscaledPreviews, setPasscodeUpscaledPreviews] = useState<string[]>([]);
+    const [passcodeProcessedPreviews, setPasscodeProcessedPreviews] = useState<string[]>([]);
 
-    const [setCodeUpscaledPreview, setSetCodeUpscaledPreview] = useState<string | null>(null);
-    const [setCodeProcessedPreview, setSetCodeProcessedPreview] = useState<string | null>(null);
-
-    const [nameUpscaledPreview, setNameUpscaledPreview] = useState<string | null>(null);
-    const [nameProcessedPreview, setNameProcessedPreview] = useState<string | null>(null);
-
-    //const [rawPasscodeText, setRawPasscodeText] = useState("");
-    //const [rawSetCodeText, setRawSetCodeText] = useState("");
-    //const [rawNameText, setRawNameText] = useState("");
 
     const [passcodeAttempts, setPasscodeAttempts] = useState<string[]>([]);
-    const [setCodeAttempts, setSetCodeAttempts] = useState<string[]>([]);
     const [rawPasscodeAttempts, setRawPasscodeAttempts] = useState<string[]>([]);
-    const [rawSetCodeAttempts, setRawSetCodeAttempts] = useState<string[]>([]);
 
     // Worker ref for Tesseract OCR
     const workerRef = useRef<any>(null);
@@ -109,16 +94,8 @@ export default function YgoLiveScanner({
     // Main function to run OCR on the captured card image and extract passcode, setcode, and name
     async function runYgoOcr(cardCanvas: HTMLCanvasElement) {
         const passcodeCanvas = passcodeCanvasRef.current;
-        const setCodeCanvas = setCodeCanvasRef.current;
-        const nameCanvas = nameCanvasRef.current;
-
         const passcodeUpscaledCanvas = passcodeUpscaledCanvasRef.current;
-        const setCodeUpscaledCanvas = setCodeUpscaledCanvasRef.current;
-        const nameUpscaledCanvas = nameUpscaledCanvasRef.current;
-
         const passcodeProcessedCanvas = passcodeProcessedCanvasRef.current;
-        const setCodeProcessedCanvas = setCodeProcessedCanvasRef.current;
-        const nameProcessedCanvas = nameProcessedCanvasRef.current;
 
         const worker = workerRef.current;
         if (!worker) {
@@ -128,133 +105,79 @@ export default function YgoLiveScanner({
 
         if (
             !passcodeCanvas ||
-            !setCodeCanvas ||
-            !nameCanvas ||
             !passcodeUpscaledCanvas ||
-            !setCodeUpscaledCanvas ||
-            !nameUpscaledCanvas
+            !passcodeProcessedCanvas
         ) {
             return;
         }
 
-        if (
-            !passcodeProcessedCanvas ||
-            !setCodeProcessedCanvas ||
-            !nameProcessedCanvas
-        ) {
-            return;
+        setScanStatus("Preparing passcode regions...");
+
+        const roiUpscaledCanvases: HTMLCanvasElement[] = [];
+        const roiProcessedCanvases: HTMLCanvasElement[] = [];
+
+        const upscaledPreviewList: string[] = [];
+        const processedPreviewList: string[] = [];
+
+        for (let i = 0; i < PASSCODE_ROIS.length; i++) {
+            const roiCanvas = document.createElement("canvas");
+            const roiUpscaledCanvas = document.createElement("canvas");
+            const roiProcessedCanvas = document.createElement("canvas");
+
+            cropNormalizedRoiToCanvas(cardCanvas, roiCanvas, PASSCODE_ROIS[i]);
+            upscaleCanvas(roiCanvas, roiUpscaledCanvas, 6);
+            preprocessOcrCanvas(roiUpscaledCanvas, roiProcessedCanvas);
+
+            roiUpscaledCanvases.push(roiUpscaledCanvas);
+            roiProcessedCanvases.push(roiProcessedCanvas);
+
+            upscaledPreviewList.push(roiUpscaledCanvas.toDataURL("image/png"));
+            processedPreviewList.push(roiProcessedCanvas.toDataURL("image/png"));
         }
 
-        setScanStatus("Preparing OCR regions...");
+        setPasscodeUpscaledPreviews(upscaledPreviewList);
+        setPasscodeProcessedPreviews(processedPreviewList);
 
-        //Croping the 3 ROIs from the card canvas to their own canvases
-        cropNormalizedRoiToCanvas(cardCanvas, passcodeCanvas, PASSCODE_ROI);
-        cropNormalizedRoiToCanvas(cardCanvas, setCodeCanvas, SETCODE_ROI);
-        cropNormalizedRoiToCanvas(cardCanvas, nameCanvas, NAME_ROI);
-
-        //Upscaling the ROIs *****************************************************************************
-        upscaleCanvas(passcodeCanvas, passcodeUpscaledCanvas, 6);
-        upscaleCanvas(setCodeCanvas, setCodeUpscaledCanvas, 6);
-        upscaleCanvas(nameCanvas, nameUpscaledCanvas, 2);
-
-        setPasscodeUpscaledPreview(passcodeUpscaledCanvas.toDataURL("image/png"));
-        setSetCodeUpscaledPreview(setCodeUpscaledCanvas.toDataURL("image/png"));
-        setNameUpscaledPreview(nameUpscaledCanvas.toDataURL("image/png"));
-
-        //Preprocessing the upscaled ROIs for better OCR results
-        preprocessOcrCanvas(passcodeUpscaledCanvas, passcodeProcessedCanvas);
-        preprocessOcrCanvas(setCodeUpscaledCanvas, setCodeProcessedCanvas);
-        preprocessOcrCanvas(nameUpscaledCanvas, nameProcessedCanvas);
-
-        setPasscodeProcessedPreview(passcodeProcessedCanvas.toDataURL("image/png"));
-        setSetCodeProcessedPreview(setCodeProcessedCanvas.toDataURL("image/png"));
-        setNameProcessedPreview(nameProcessedCanvas.toDataURL("image/png"));
-
-        setScanStatus("Verifying passcode and set code...");
-
+        setScanStatus("Verifying passcode...");
 
         const passcodeVotes: string[] = [];
-        const setCodeVotes: string[] = [];
-
         const rawPasscodeList: string[] = [];
         const cleanedPasscodeList: string[] = [];
 
-        const rawSetCodeList: string[] = [];
-        const cleanedSetCodeList: string[] = [];
+        for (let attempt = 0; attempt < 5; attempt++) {
+            for (let roiIndex = 0; roiIndex < roiProcessedCanvases.length; roiIndex++) {
+                const rawPasscode = await recognizeTextFromCanvasWithWorker(
+                    worker,
+                    roiProcessedCanvases[roiIndex],
+                    "0123456789"
+                );
 
-        for (let i = 0; i < 5; i++) {
-            const rawPasscode = await recognizeTextFromCanvasWithWorker(
-                worker,
-                passcodeProcessedCanvas,
-                //passcodeUpscaledCanvas,
-                //passcodeCanvas,
-                "0123456789"
-            );
+                const cleanedPasscode = cleanPasscode(rawPasscode);
 
-            const cleanedPasscode = cleanPasscode(rawPasscode);
+                rawPasscodeList.push(`ROI ${roiIndex + 1}: ${rawPasscode}`);
+                cleanedPasscodeList.push(`ROI ${roiIndex + 1}: ${cleanedPasscode}`);
 
-            //Test arrays to see all the OCR results for tweaking purposes (Jack remove after)
-            rawPasscodeList.push(rawPasscode);
-            cleanedPasscodeList.push(cleanedPasscode);
-
-            if (isValidPasscode(cleanedPasscode)) {
-                passcodeVotes.push(cleanedPasscode);
+                if (isValidPasscode(cleanedPasscode)) {
+                    passcodeVotes.push(cleanedPasscode);
+                }
             }
 
-            const rawSetCode = await recognizeTextFromCanvasWithWorker(
-                worker,
-                //setCodeProcessedCanvas,
-                setCodeUpscaledCanvas,
-                //setCodeCanvas,
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
-            );
-
-            const cleanedSetCode = cleanSetCode(rawSetCode);
-
-            // Test arrays to see all the OCR results for tweaking purposes (Jack remove after)
-            rawSetCodeList.push(rawSetCode);
-            cleanedSetCodeList.push(cleanedSetCode);
-
-            if (isLikelySetCode(cleanedSetCode)) {
-                setCodeVotes.push(cleanedSetCode);
-            }
-
-            setScanStatus(`Verifying scan ${i + 1}/5...`);
+            setScanStatus(`Verifying passcode ${attempt + 1}/5...`);
         }
 
-
-        // Set the attempts arrays for debugging purposes, to see all the OCR results (Jack remove after)
         setRawPasscodeAttempts(rawPasscodeList);
         setPasscodeAttempts(cleanedPasscodeList);
 
-        setRawSetCodeAttempts(rawSetCodeList);
-        setSetCodeAttempts(cleanedSetCodeList);
+        const finalPasscode =
+            pickBestPasscode(passcodeVotes) || getMostFrequentValue(passcodeVotes) || "";
 
-
-
-        const finalPasscode = getMostFrequentValue(passcodeVotes);
-        const finalSetCode = getMostFrequentValue(setCodeVotes);
-
-        setPasscodeText(finalPasscode || "");
-        setSetCodeText(finalSetCode || "");
-
-        setScanStatus("Reading card name...");
-
-        const rawName = await recognizeTextFromCanvasWithWorker(
-            worker,
-            //nameProcessedCanvas
-            nameUpscaledCanvas
-        );
-
-        const cleanedName = cleanCardName(rawName);
-        setNameText(cleanedName);
-
+        setPasscodeText(finalPasscode);
         setScanStatus("Scan complete.");
 
-        const result = {
-            passcode: finalPasscode || "",
-            setCode: finalSetCode || "",
-            name: cleanedName || "",
+        const result: YgoScanResult = {
+            passcode: finalPasscode,
+            setCode: "",
+            name: "",
         };
 
         await onScanComplete?.(result);
@@ -617,8 +540,6 @@ export default function YgoLiveScanner({
             <div style={{ marginTop: 20 }}>
                 <p className="status">{scanStatus}</p>
                 <p className="status-small">Passcode: {passcodeText || "—"}</p>
-                <p className="status-small">Set Code: {setCodeText || "—"}</p>
-                <p className="status-small">Name: {nameText || "—"}</p>
             </div>
 
             <p className="status">{status}</p>
@@ -660,13 +581,6 @@ export default function YgoLiveScanner({
             )}
 
 
-
-            {/* <div style={{ marginTop: 20 }}>
-        <p className="status-small">Raw Passcode: {rawPasscodeText || "—"}</p>
-        <p className="status-small">Raw Set Code: {rawSetCodeText || "—"}</p>
-        <p className="status-small">Raw Name: {rawNameText || "—"}</p>
-      </div> */}
-
             <div style={{ marginTop: 20 }}>
                 <h3>OCR Attempts</h3>
 
@@ -684,19 +598,6 @@ export default function YgoLiveScanner({
                     </p>
                 ))}
 
-                <p className="status-small" style={{ marginTop: 12 }}>Raw Set Code Attempts:</p>
-                {rawSetCodeAttempts.map((value, index) => (
-                    <p key={`raw-set-${index}`} className="status-small">
-                        {index + 1}. {JSON.stringify(value) || "—"}
-                    </p>
-                ))}
-
-                <p className="status-small" style={{ marginTop: 12 }}>Cleaned Set Code Attempts:</p>
-                {setCodeAttempts.map((value, index) => (
-                    <p key={`clean-set-${index}`} className="status-small">
-                        {index + 1}. {value || "—"}
-                    </p>
-                ))}
             </div>
 
 
@@ -704,116 +605,111 @@ export default function YgoLiveScanner({
             {/* Remove these 6 images after, only used for tweaking processing */}
 
             <div style={{ marginTop: 24 }}>
-                <h3>OCR Debug Previews</h3>
+    <h3>Passcode ROI Debug</h3>
 
-                {passcodeUpscaledPreview && (
-                    <div style={{ marginTop: 16 }}>
-                        <p className="status-small">Passcode Upscaled</p>
-                        <img
-                            src={passcodeUpscaledPreview}
-                            alt="Passcode upscaled"
-                            style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
-                        />
-                    </div>
-                )}
+    {passcodeUpscaledPreviews.map((img, index) => (
+        <div key={`upscaled-${index}`} style={{ marginTop: 16 }}>
+            <p className="status-small">ROI {index + 1} Upscaled</p>
+            <img
+                src={img}
+                alt={`ROI ${index + 1} upscaled`}
+                style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
+            />
+        </div>
+    ))}
 
-                {passcodeProcessedPreview && (
-                    <div style={{ marginTop: 16 }}>
-                        <p className="status-small">Passcode Processed</p>
-                        <img
-                            src={passcodeProcessedPreview}
-                            alt="Passcode processed"
-                            style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
-                        />
-                    </div>
-                )}
-
-                {setCodeUpscaledPreview && (
-                    <div style={{ marginTop: 16 }}>
-                        <p className="status-small">Set Code Upscaled</p>
-                        <img
-                            src={setCodeUpscaledPreview}
-                            alt="Set code upscaled"
-                            style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
-                        />
-                    </div>
-                )}
-
-                {setCodeProcessedPreview && (
-                    <div style={{ marginTop: 16 }}>
-                        <p className="status-small">Set Code Processed</p>
-                        <img
-                            src={setCodeProcessedPreview}
-                            alt="Set code processed"
-                            style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
-                        />
-                    </div>
-                )}
-
-                {nameUpscaledPreview && (
-                    <div style={{ marginTop: 16 }}>
-                        <p className="status-small">Name Upscaled</p>
-                        <img
-                            src={nameUpscaledPreview}
-                            alt="Name upscaled"
-                            style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
-                        />
-                    </div>
-                )}
-
-                {nameProcessedPreview && (
-                    <div style={{ marginTop: 16 }}>
-                        <p className="status-small">Name Processed</p>
-                        <img
-                            src={nameProcessedPreview}
-                            alt="Name processed"
-                            style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
-                        />
-                    </div>
-                )}
-            </div>
+    {passcodeProcessedPreviews.map((img, index) => (
+        <div key={`processed-${index}`} style={{ marginTop: 16 }}>
+            <p className="status-small">ROI {index + 1} Processed</p>
+            <img
+                src={img}
+                alt={`ROI ${index + 1} processed`}
+                style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
+            />
+        </div>
+    ))}
+</div>
 
             <canvas ref={captureCanvasRef} style={{ display: "none" }} />
             <canvas ref={croppedCanvasRef} style={{ display: "none" }} />
             <canvas ref={processedCanvasRef} style={{ display: "none" }} />
             <canvas ref={passcodeCanvasRef} style={{ display: "none" }} />
-            <canvas ref={setCodeCanvasRef} style={{ display: "none" }} />
-            <canvas ref={nameCanvasRef} style={{ display: "none" }} />
             <canvas ref={passcodeUpscaledCanvasRef} style={{ display: "none" }} />
-            <canvas ref={setCodeUpscaledCanvasRef} style={{ display: "none" }} />
-            <canvas ref={nameUpscaledCanvasRef} style={{ display: "none" }} />
             <canvas ref={passcodeProcessedCanvasRef} style={{ display: "none" }} />
-            <canvas ref={setCodeProcessedCanvasRef} style={{ display: "none" }} />
-            <canvas ref={nameProcessedCanvasRef} style={{ display: "none" }} />
         </section>
     );
 }
 
 // Preprocessing for OCR ROIs. Just for card ROIs not fullcard
+//function preprocessOcrCanvas(
+//    sourceCanvas: HTMLCanvasElement,
+//    outputCanvas: HTMLCanvasElement
+//) {
+//    let src: any = null;
+//    let gray: any = null;
+//    let inverted: any = null;
+
+//    try {
+//        src = cv.imread(sourceCanvas);
+//        gray = new cv.Mat();
+//        inverted = new cv.Mat();
+
+//        // Convert to grayscale
+//        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+//        // Invert so dark text becomes light text
+//        cv.bitwise_not(gray, inverted);
+
+//        // Show result
+//        cv.imshow(outputCanvas, inverted);
+//    } finally {
+//        if (src) src.delete();
+//        if (gray) gray.delete();
+//        if (inverted) inverted.delete();
+//    }
+//}
+
 function preprocessOcrCanvas(
     sourceCanvas: HTMLCanvasElement,
     outputCanvas: HTMLCanvasElement
 ) {
     let src: any = null;
     let gray: any = null;
+    let blurred: any = null;
+    let thresh: any = null;
     let inverted: any = null;
 
     try {
         src = cv.imread(sourceCanvas);
         gray = new cv.Mat();
+        blurred = new cv.Mat();
+        thresh = new cv.Mat();
         inverted = new cv.Mat();
 
-        // Convert to grayscale
+        // Grayscale
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
 
-        // Invert so dark text becomes light text
-        cv.bitwise_not(gray, inverted);
+        // Light blur to smooth noise
+        cv.GaussianBlur(gray, blurred, new cv.Size(3, 3), 0);
 
-        // Show result
+        // Stronger separation of text from background
+        cv.threshold(
+            blurred,
+            thresh,
+            0,
+            255,
+            cv.THRESH_BINARY + cv.THRESH_OTSU
+        );
+
+        // Invert so text is light on dark if that works better for OCR
+        cv.bitwise_not(thresh, inverted);
+
         cv.imshow(outputCanvas, inverted);
     } finally {
         if (src) src.delete();
         if (gray) gray.delete();
+        if (blurred) blurred.delete();
+        if (thresh) thresh.delete();
         if (inverted) inverted.delete();
     }
 }
@@ -1013,14 +909,6 @@ function findCardBoundsInsideGuide(
 }
 
 
-// ROI for 3 key areas: name, passcode, and setcode *****************************************************************
-
-type NormalizedRoi = {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-};
 
 function cropNormalizedRoiToCanvas(
     sourceCanvas: HTMLCanvasElement,
@@ -1195,30 +1083,6 @@ function warpCardToCanvas(
 }
 
 
-
-//ROI Sizing ******************************************************************************
-
-const NAME_ROI: NormalizedRoi = {
-    x: 0.03,
-    y: 0.03,
-    w: 0.81,
-    h: 0.09,
-};
-
-const PASSCODE_ROI: NormalizedRoi = {
-    x: 0.038,
-    y: 0.95,
-    w: 0.15,
-    h: 0.03,
-};
-
-const SETCODE_ROI: NormalizedRoi = {
-    x: 0.705,
-    y: 0.71,
-    w: 0.24,
-    h: 0.03,
-};
-
 async function recognizeTextFromCanvasWithWorker(
     worker: any,
     canvas: HTMLCanvasElement,
@@ -1235,65 +1099,6 @@ async function recognizeTextFromCanvasWithWorker(
     const text = result.data.text ?? "";
     return text.trim();
 }
-
-// Text cleaning *******************************************************************************************
-
-function cleanPasscode(text: string): string {
-    return text.replace(/[^0-9]/g, "").slice(0, 8);
-}
-
-function cleanSetCode(text: string): string {
-    const cleaned = text
-        .toUpperCase()
-        .replace(/O/g, "0")  // Will break real O's but fine for demo
-        .replace(/[_—–]/g, "-")
-        .replace(/[^A-Z0-9-]/g, "")
-        .replace(/--+/g, "-")
-        .replace(/-+$/g, "") // remove trailing dash
-        .trim();
-
-    const match = cleaned.match(/[A-Z0-9]{4}-[A-Z]{2}[0-9]{3}/);
-
-    return match ? match[0] : "";
-}
-
-function cleanCardName(text: string): string {
-    return text
-        .replace(/\s+/g, " ")
-        .replace(/[^\w\s\-'.:]/g, "")
-        .trim();
-}
-
-// Multiple OCR results handling ***************************************************************************************
-
-function isValidPasscode(text: string): boolean {
-    return /^\d{8}$/.test(text);
-}
-
-function isLikelySetCode(text: string): boolean {
-    return /^[A-Z0-9]{4}-[A-Z]{2}[0-9]{3}$/.test(text);
-}
-
-function getMostFrequentValue(values: string[]): string {
-    const counts = new Map<string, number>();
-
-    for (const value of values) {
-        counts.set(value, (counts.get(value) ?? 0) + 1);
-    }
-
-    let bestValue = "";
-    let bestCount = 0;
-
-    for (const [value, count] of counts.entries()) {
-        if (count > bestCount) {
-            bestValue = value;
-            bestCount = count;
-        }
-    }
-
-    return bestValue;
-}
-
 
 
 // Brightness*******************************************************************************************
