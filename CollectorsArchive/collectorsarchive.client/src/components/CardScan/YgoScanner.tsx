@@ -395,7 +395,7 @@ export default function YgoLiveScanner({
             // What we check before capturing a fram**********************************************************************
             //************************************************************************************************************
             const brightnessGood = avgBrightness >= 70 && avgBrightness <= 190;
-            const sharpnessGood = sharpnessScore >= 14;
+            const sharpnessGood = sharpnessScore >= 13;   //SHarpness is the deciding factor, lightitng is usually not the issue
 
             if (brightnessGood && sharpnessGood) {
                 goodFrameCountRef.current++;
@@ -641,7 +641,7 @@ export default function YgoLiveScanner({
 }
 
 // Preprocessing for OCR ROIs. Just for card ROIs not fullcard
-//function preprocessOcrCanvas(
+//function preprocessOcrCanvas(                        ******first version***** greyish background
 //    sourceCanvas: HTMLCanvasElement,
 //    outputCanvas: HTMLCanvasElement
 //) {
@@ -669,7 +669,10 @@ export default function YgoLiveScanner({
 //    }
 //}
 
-function preprocessOcrCanvas(
+
+
+ //***** second version with Black and White contrast from threshold ****************
+function preprocessOcrCanvas(                         
     sourceCanvas: HTMLCanvasElement,
     outputCanvas: HTMLCanvasElement
 ) {
@@ -715,64 +718,70 @@ function preprocessOcrCanvas(
 }
 
 
+
 function findCardBoundsInsideGuide(
     sourceCanvas: HTMLCanvasElement,
     outputCanvas?: HTMLCanvasElement
 ): EdgeSearchResult {
     let src: any = null;
     let gray: any = null;
-    //let filtered: any = null;
     let blurred: any = null;
-    let thresh: any = null;
+    let binary: any = null;
     let contours: any = null;
     let hierarchy: any = null;
+    let debugMask: any = null;
 
     try {
         src = cv.imread(sourceCanvas);
         gray = new cv.Mat();
-        //filtered = new cv.Mat();
         blurred = new cv.Mat();
-        thresh = new cv.Mat();
+        binary = new cv.Mat();
         contours = new cv.MatVector();
         hierarchy = new cv.Mat();
+        debugMask = new cv.Mat();
 
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-
-        //cv.bilateralFilter(gray, filtered, 9, 75, 75);
-
-        //cv.GaussianBlur(filtered, blurred, new cv.Size(5, 5), 0);
         cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
 
-        cv.Canny(blurred, thresh, 75, 150);
+        // Threshold tends to work better than raw edges for "one card on light background"
+        cv.threshold(
+            blurred,
+            binary,
+            0,
+            255,
+            cv.THRESH_BINARY_INV + cv.THRESH_OTSU
+        );
 
-        const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
-        cv.dilate(thresh, thresh, kernel);
-        cv.dilate(thresh, thresh, kernel); //dilate again lol even crispier edges hopefully...
-
+        const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+        cv.morphologyEx(binary, binary, cv.MORPH_CLOSE, kernel);
+        cv.dilate(binary, binary, kernel);
         kernel.delete();
 
+        binary.copyTo(debugMask);
+
         cv.findContours(
-            thresh,
+            binary,
             contours,
             hierarchy,
-            cv.RETR_LIST,
+            cv.RETR_EXTERNAL,
             cv.CHAIN_APPROX_SIMPLE
         );
 
         const width = src.cols;
         const height = src.rows;
+        const frameCenterX = width / 2;
+        const frameCenterY = height / 2;
 
         let bestBounds: RectBounds | null = null;
-        let bestArea = 0;
         let bestContour: any = null;
         let bestQuadPoints: Point2[] | null = null;
+        let bestScore = -Infinity;
 
         for (let i = 0; i < contours.size(); i++) {
             const contour = contours.get(i);
             const area = cv.contourArea(contour);
 
-            // Skip small contours that probably arent the card... can tweak to get perfect later...
-            if (area < width * height * 0.10) {
+            if (area < width * height * 0.05) {
                 contour.delete();
                 continue;
             }
@@ -781,56 +790,56 @@ function findCardBoundsInsideGuide(
             const approx = new cv.Mat();
             cv.approxPolyDP(contour, approx, 0.03 * peri, true);
 
-            if (approx.rows >= 4 && approx.rows <= 6) {
-                const rect = cv.boundingRect(approx);
-                const aspect = rect.width / rect.height;
+            const rect = cv.boundingRect(contour);
+            const aspect = rect.width / rect.height;
 
-                const centerX = rect.x + rect.width / 2;
-                const centerY = rect.y + rect.height / 2;
+            const centerX = rect.x + rect.width / 2;
+            const centerY = rect.y + rect.height / 2;
+            const distX = Math.abs(centerX - frameCenterX) / width;
+            const distY = Math.abs(centerY - frameCenterY) / height;
 
-                const frameCenterX = width / 2;
-                const frameCenterY = height / 2;
+            const nearCenter =
+                distX <= 0.35 &&
+                distY <= 0.35;
 
-                const distX = Math.abs(centerX - frameCenterX);
-                const distY = Math.abs(centerY - frameCenterY);
+            const bigEnough =
+                rect.width > width * 0.18 &&
+                rect.height > height * 0.25;
 
-                const nearCenter =
-                    distX <= width * 0.25 &&
-                    distY <= height * 0.25;
+            const cardAspect =
+                aspect > 0.40 &&
+                aspect < 1.10;
 
-                const bigEnough =
-                    rect.width > width * 0.20 &&
-                    rect.height > height * 0.30;
+            if (!nearCenter || !bigEnough || !cardAspect) {
+                approx.delete();
+                contour.delete();
+                continue;
+            }
 
-                const cardAspect =
-                    aspect > 0.45 &&
-                    aspect < 0.95;
+            // Score biggest plausible contour, with a mild center bonus
+            const normalizedArea = area / (width * height);
+            const centerPenalty = distX + distY;
+            const quadBonus = approx.rows === 4 ? 0.08 : 0;
 
-                if (
-                    approx.rows >= 4 &&
-                    approx.rows <= 8 &&
-                    nearCenter &&
-                    bigEnough &&
-                    cardAspect &&
-                    area > bestArea
-                ) {
-                    bestArea = area;
+            const score = normalizedArea - centerPenalty + quadBonus;
 
-                    if (bestContour) bestContour.delete();
-                    bestContour = approx.clone();
+            if (score > bestScore) {
+                bestScore = score;
 
-                    bestBounds = {
-                        x: rect.x,
-                        y: rect.y,
-                        w: rect.width,
-                        h: rect.height,
-                    };
+                if (bestContour) bestContour.delete();
+                bestContour = approx.clone();
 
-                    if (approx.rows === 4) {
-                        bestQuadPoints = contourToPoints(approx);
-                    } else {
-                        bestQuadPoints = null;
-                    }
+                bestBounds = {
+                    x: rect.x,
+                    y: rect.y,
+                    w: rect.width,
+                    h: rect.height,
+                };
+
+                if (approx.rows === 4) {
+                    bestQuadPoints = contourToPoints(approx);
+                } else {
+                    bestQuadPoints = null;
                 }
             }
 
@@ -845,45 +854,40 @@ function findCardBoundsInsideGuide(
                 const vec = new cv.MatVector();
                 vec.push_back(bestContour);
 
-                // Draw contour
                 cv.drawContours(debugMat, vec, 0, new cv.Scalar(0, 255, 0, 255), 3);
 
-                // Draw boundng box
                 if (bestBounds) {
                     cv.rectangle(
                         debugMat,
                         new cv.Point(bestBounds.x, bestBounds.y),
-                        new cv.Point(
-                            bestBounds.x + bestBounds.w,
-                            bestBounds.y + bestBounds.h
-                        ),
+                        new cv.Point(bestBounds.x + bestBounds.w, bestBounds.y + bestBounds.h),
                         new cv.Scalar(255, 0, 0, 255),
                         2
                     );
                 }
 
                 vec.delete();
+                cv.imshow(outputCanvas, debugMat);
+
+                const debugImageUrl = outputCanvas.toDataURL("image/png");
+
+                bestContour.delete();
+                debugMat.delete();
+
+                return {
+                    bounds: bestBounds,
+                    quadPoints: bestQuadPoints,
+                    debugImageUrl,
+                };
             } else {
-                cv.imshow(outputCanvas, thresh);
+                cv.imshow(outputCanvas, debugMask);
+                const debugImageUrl = outputCanvas.toDataURL("image/png");
                 return {
                     bounds: null,
                     quadPoints: null,
-                    debugImageUrl: outputCanvas.toDataURL("image/png"),
+                    debugImageUrl,
                 };
             }
-
-            cv.imshow(outputCanvas, debugMat);
-
-            const debugImageUrl = outputCanvas.toDataURL("image/png");
-
-            if (bestContour) bestContour.delete();
-            debugMat.delete();
-
-            return {
-                bounds: bestBounds,
-                quadPoints: bestQuadPoints,
-                debugImageUrl,
-            };
         }
 
         if (bestContour) bestContour.delete();
@@ -899,12 +903,11 @@ function findCardBoundsInsideGuide(
     } finally {
         if (src) src.delete();
         if (gray) gray.delete();
-        //if (filtered) filtered.delete(); //Filtered for background struggles... didnt really work, could remove later 
-        //(2 more lines above with all the processing features that can be removed too(filtered stuff))
         if (blurred) blurred.delete();
-        if (thresh) thresh.delete();
+        if (binary) binary.delete();
         if (contours) contours.delete();
         if (hierarchy) hierarchy.delete();
+        if (debugMask) debugMask.delete();
     }
 }
 
