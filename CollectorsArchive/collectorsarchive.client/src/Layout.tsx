@@ -1,7 +1,8 @@
 import { AppShell, Avatar, Button, Container, Grid, Group, Modal } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { IconUser } from "@tabler/icons-react"
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
+import { useMemo } from "react"
 import { CardScanButton } from "./components/CardScan/CardScanButton"
 //import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
 import CardScanOverlay from "./components/CardScan/CardScanOverlay"
@@ -29,8 +30,9 @@ export function Layout() {
 	const [scanOpened, { open, close }] = useDisclosure(false)
 	const [profileOpened, { toggle: toggleProfile, close: closeProfile }] = useDisclosure(false)
 
-	// Check login state
-	const user = JSON.parse(localStorage.getItem("user") || "null")
+	// Re-read user from localStorage whenever the route changes
+	const location = useLocation()
+	const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "null"), [location])
 	const isLoggedIn = !!user
 
 	return (
