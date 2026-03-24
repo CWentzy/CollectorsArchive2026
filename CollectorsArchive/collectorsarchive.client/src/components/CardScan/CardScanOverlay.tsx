@@ -5,9 +5,7 @@
 //import { useCameraPermission } from "./useCameraPermission";
 import { Button, Group, Stack, Text } from "@mantine/core"
 import { useState } from "react"
-import { formatCard } from "../../types/mapper"
-import type { Card } from "../../types/ygo/schema"
-import type { CardServerResponse } from "../CardSearch/schema"
+import type { CardInformation } from "../../types/api"
 import CardYGO from "../YGO/CardYGO"
 import YgoScanner from "./YgoScanner"
 
@@ -16,7 +14,7 @@ interface CardScanOverlayProps {
 }
 
 export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
-	const [results, setResults] = useState<Card[] | null>(null)
+	const [results, setResults] = useState<CardInformation[] | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [errorMessage, setErrorMessage] = useState("")
 
@@ -47,10 +45,10 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 				throw new Error("Failed to send scan result.")
 			}
 
-			const cardsList: CardServerResponse[] = await response.json()
+			const cardsList: CardInformation[] = await response.json()
 			console.log("Backend response:", cardsList)
 
-			setResults(cardsList.map(formatCard))
+			setResults(cardsList)
 		} catch (error) {
 			console.error("POST failed, but scan still worked:", error)
 			setErrorMessage("Could not load card matches.")
@@ -95,9 +93,9 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 
 					{results.length > 0 && (
 						<Stack gap="md">
-							{(results as Card[]).map((item) => {
-								const cardData = item as Card
-								return <CardYGO key={cardData.id} cardData={cardData} />
+							{(results as CardInformation[]).map((item) => {
+								const cardInfo = item as CardInformation
+								return <CardYGO key={cardInfo.cardID} cardInfo={cardInfo} />
 							})}
 						</Stack>
 					)}

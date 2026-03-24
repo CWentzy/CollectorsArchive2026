@@ -68,7 +68,7 @@ function App() {
 							<Route path="/profile/:userId" element={<ProfilePage />} />
 
 							{/* we need a card id to able to display the exact card this might come from backkkendd  */}
-							<Route path="/card/:id" element={<SingleCardDisplay />} />
+							<Route path="/card/:game/:cardID" element={<SingleCardDisplay />} />
 							{/* Should be the last route */}
 							<Route path="*" element={<NotFound />} />
 						</Route>

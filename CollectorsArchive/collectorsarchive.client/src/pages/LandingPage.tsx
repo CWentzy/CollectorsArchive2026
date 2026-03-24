@@ -1,5 +1,5 @@
-import { Button, Center, Group, Stack, Text, Title } from "@mantine/core"
-import { SearchIcon, Users2Icon } from "lucide-react"
+import { Button, Center, Stack, Text, Title } from "@mantine/core"
+import { Users2Icon } from "lucide-react"
 
 export default function LandingPage() {
 	return (
@@ -14,28 +14,23 @@ export default function LandingPage() {
 					</Text>
 				</Stack>
 
-				<Stack align="center" gap="md" w={420}>
+				<Stack align="center" gap="md" w={350}>
 					{/* Search Button */}
-					<Button
-						component="a"
-						href="/search"
-						size="lg"
-						variant="filled"
-						leftSection={<SearchIcon size={24} />}
-						fullWidth
-					>
-						Search Cards
+					<Button component="a" href="/home" size="lg" variant="filled" fullWidth>
+						Start Collecting
 					</Button>
 
 					{/* Collect Button */}
-					<Group grow w="100%">
-						<Button component="a" href="/home" size="lg" variant="light">
-							Start Collecting
-						</Button>
-						<Button component="a" href="/members" size="lg" variant="light" leftSection={<Users2Icon size={18} />}>
-							View Members
-						</Button>
-					</Group>
+					<Button
+						component="a"
+						href="/members"
+						size="lg"
+						variant="light"
+						fullWidth
+						leftSection={<Users2Icon size={18} />}
+					>
+						View Members
+					</Button>
 				</Stack>
 			</Stack>
 		</Center>

@@ -4,27 +4,25 @@ import { useState } from "react"
 
 const ADD_TO_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/UserCard/AddToCollection`
 
+const AMOUNT_TO_ADD = 1
+
 interface AddToCollectionResponse {
 	message: string
 	quantity: number
 }
 
 interface QuantityPickerProps {
-	printID?: number
-	onChange?: (quantity: number) => void
+	printID?: string
+	initialQuantity?: number
 }
 
-export default function QuantityPicker({ printID, onChange }: QuantityPickerProps) {
-	const [quantity, setQuantity] = useState(0)
+export default function QuantityPicker({ printID, initialQuantity }: QuantityPickerProps) {
+	const [quantity, setQuantity] = useState(initialQuantity ?? 0)
 	const [loading, setLoading] = useState(false)
 
 	const user = JSON.parse(localStorage.getItem("user") || "null")
 
 	const increment = async () => {
-		const next = quantity + 1
-		setQuantity(next)
-		onChange?.(next)
-
 		if (!printID || !user?.userId) return
 
 		try {
@@ -36,7 +34,7 @@ export default function QuantityPicker({ printID, onChange }: QuantityPickerProp
 				body: JSON.stringify({
 					userId: user?.userId,
 					printID: printID,
-					quantity: 1,
+					quantity: AMOUNT_TO_ADD,
 				}),
 			})
 
@@ -47,7 +45,6 @@ export default function QuantityPicker({ printID, onChange }: QuantityPickerProp
 			const data: AddToCollectionResponse = await response.json()
 
 			setQuantity(data.quantity)
-			onChange?.(data.quantity)
 		} catch (error) {
 			console.error("Error adding to collection:", error)
 		} finally {
@@ -56,9 +53,13 @@ export default function QuantityPicker({ printID, onChange }: QuantityPickerProp
 	}
 
 	const decrement = () => {
-		const next = Math.max(0, quantity - 1)
-		setQuantity(next)
-		onChange?.(next)
+		// const next = Math.max(0, quantity - 1)
+
+		// Simulate a backend call with a timeout for now... TODO: implement actual decrement functionality
+		setLoading(true)
+		setTimeout(() => {
+			setLoading(false)
+		}, 300)
 	}
 
 	return (

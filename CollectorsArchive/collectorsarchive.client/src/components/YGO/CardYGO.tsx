@@ -1,40 +1,39 @@
 import { Anchor, Flex, Group, Image, Card as MantineCard, SimpleGrid, Text } from "@mantine/core"
-import type { Card } from "../../types/ygo/schema"
+import type { CardInformation, PrintingInformation } from "../../types/api"
+import { Game } from "../CardSearch/schema"
 import QuantityPicker from "../QuantityPicker"
 
 interface CardYGOProps {
-	cardData: Card
+	cardInfo: CardInformation
+	printInfo?: PrintingInformation
 }
 
-export default function CardYGO({ cardData }: CardYGOProps) {
-	const imageUrl = cardData.printInfo?.imageUrl || "assets/images/card_placeholder_ygo.jpg" // TODO: Should be game-aware
+export default function CardYGO({ cardInfo, printInfo }: CardYGOProps) {
+	const imageUrl = "assets/images/card_placeholder_ygo.jpg" // TODO: Should be game-aware
 
 	return (
-		<MantineCard key={cardData.id} padding="md" withBorder>
+		<MantineCard key={cardInfo.cardID} padding="md" withBorder>
 			<SimpleGrid cols={2}>
 				<Group align="center">
-					{imageUrl && <Image src={imageUrl} alt={cardData.name} w={64} />}
+					{imageUrl && <Image src={imageUrl} alt={cardInfo.cardName} w={64} />}
 
 					<div>
-						<Anchor href={`/card/${cardData?.id}`} target="_blank">
-							<Text fw={500}>{cardData.name}</Text>
+						<Anchor href={`/card/${Game.ygo}/${cardInfo?.cardID}`} target="_blank">
+							<Text fw={500}>{cardInfo.cardName}</Text>
 						</Anchor>
 
 						<Text c="dimmed" size="xs">
-							{cardData.printInfo?.setCode} - Rarity: {cardData.printInfo?.cardRarity}
+							{printInfo?.setCode} - Rarity: {printInfo?.rarity}
 						</Text>
 
 						<Text c="dimmed" size="xs">
-							Print ID: {cardData.printInfo?.id} {/* COME BACK TO THIS ITS THE PRINTID WE SEE IN COMPONENT*/}
+							Print ID: {printInfo?.printID} {/* COME BACK TO THIS ITS THE PRINTID WE SEE IN COMPONENT*/}
 						</Text>
 					</div>
 				</Group>
 
 				<Flex direction="column" justify="center" align="flex-end">
-					<QuantityPicker
-						printID={cardData.printInfo?.id ?? undefined}
-						onChange={(q) => console.log("quantity changed:", q)}
-					/>
+					<QuantityPicker printID={printInfo?.printID ?? undefined} initialQuantity={printInfo?.quantity ?? 0} />
 				</Flex>
 			</SimpleGrid>
 		</MantineCard>
