@@ -2,7 +2,7 @@ import { ActionIcon, Group, Text } from "@mantine/core"
 import { IconMinus, IconPlus } from "@tabler/icons-react"
 import { useState } from "react"
 
-const ADD_TO_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/UserCard/AddToCollection"
+const ADD_TO_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/UserCard/AddToCollection`
 
 interface AddToCollectionResponse {
 	message: string

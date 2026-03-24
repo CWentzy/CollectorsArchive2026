@@ -44,8 +44,8 @@ type UserProfile = {
 	joinDate: string
 }
 
-const API_BASE = "https://collectorsarchive.azurewebsites.net/api/UserProfile"
-const GET_USER_COLLECTION = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
+const API_BASE = `${import.meta.env.VITE_SERVER_URL}/api/UserProfile`
+const GET_USER_COLLECTION = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
 const formatDate = (dateStr: string) => {
 	return new Date(dateStr).toLocaleDateString("en-US", { month: "long", year: "numeric" })
 }

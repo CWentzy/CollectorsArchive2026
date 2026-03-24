@@ -6,8 +6,7 @@ import { useNavigate } from "react-router-dom"
 import PrintYGO from "../components/YGO/PrintYGO"
 import { formatDisplayCollectionPrint } from "../types/mapper"
 import type { DisplayCollectionPrint, PrintWithCard } from "../types/ygo/schema"
-const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
-
+const GET_USER_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
 
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).

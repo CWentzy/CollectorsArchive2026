@@ -6,8 +6,7 @@ import { formatCardDetails, formatPrintingDetails } from "../types/mapper"
 import type { Card, Print, PrintDetails } from "../types/ygo/schema"
 
 const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
-const SingleCardDisplayYGO =
-	"https://collectorsarchive.azurewebsites.net/api/SingleCardDisplayYGOes/SingleCardDisplayYGO"
+const SingleCardDisplayYGO = `${import.meta.env.VITE_SERVER_URL}/api/SingleCardDisplayYGOes/SingleCardDisplayYGO`
 
 interface CardAndPrints {
 	prints: Print[]

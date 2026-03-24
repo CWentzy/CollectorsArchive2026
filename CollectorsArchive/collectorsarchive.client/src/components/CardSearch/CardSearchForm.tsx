@@ -279,7 +279,7 @@ export default function CardSearchForm() {
 			setSearching(true)
 
 			// Search - get from /api/AdvancedSearchSet
-			const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CardSearch/AdvancedSearchSet", {
+			const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/CardSearch/AdvancedSearchSet`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

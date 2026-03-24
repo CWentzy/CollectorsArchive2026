@@ -20,15 +20,11 @@ import { useState } from "react"
 
 const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
-const RegisterNewUserURL = "https://collectorsarchive.azurewebsites.net/api/Auth/RegisterNewUser"
-
-const LoginUsingGoogleURL = "https://collectorsarchive.azurewebsites.net/api/Auth/LoginUsingGoogle"
-
-const RequestForTempCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/RequestForTempCode"
-const RegistrationForNonGoogleUsers = "https://collectorsarchive.azurewebsites.net/api/Auth/ForNonGoogleNewUser"
-
-// this variable i will be using it for after user recieved an email with the code
-const VerfyingTemporaryCodeURL = "https://collectorsarchive.azurewebsites.net/api/Auth/VerfyingTemporaryCode"
+const RegisterNewUserURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/RegisterNewUser`
+const LoginUsingGoogleURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/LoginUsingGoogle`
+const RequestForTempCodeURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/RequestForTempCode`
+const RegistrationForNonGoogleUsers = `${import.meta.env.VITE_SERVER_URL}/api/Auth/ForNonGoogleNewUser`
+const VerfyingTemporaryCodeURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/VerfyingTemporaryCode`
 
 export default function LoginPage(props: PaperProps) {
 	const [type, toggle] = useToggle(["login", "register"])

@@ -11,7 +11,7 @@ type Member = {
     joinDate: string | null
 }
 
-const API_URL = "https://collectorsarchive.azurewebsites.net/api/Members/GetAllMembers"
+const API_URL = `${import.meta.env.VITE_SERVER_URL}/api/Members/GetAllMembers`
 
 const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "Unknown"
