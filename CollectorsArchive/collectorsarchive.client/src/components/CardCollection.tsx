@@ -12,29 +12,43 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 	return (
 		<Stack w="100%">
 			{uniqueCards?.length && prints?.length ? (
-				uniqueCards.map((card) => (
-					<Accordion key={card.cardID} variant="separated" radius="md">
-						<Accordion.Item value={card.cardID}>
-							<Accordion.Control>
-								<Group w="100%">
-									<Text size="sm">{card.cardName}</Text>
-									<Badge variant="light" size="sm" fw={500}>
-										{`${prints.filter((print) => print.cardID === card.cardID).length} printing${prints.filter((print) => print.cardID === card.cardID).length > 1 ? "s" : ""}`}
-									</Badge>
-								</Group>
-							</Accordion.Control>
-							<Accordion.Panel>
-								<Stack gap="xs">
-									{prints
-										.filter((print) => print.cardID === card.cardID)
-										.map((print) => (
-											<PrintYGO key={print.printID} printInfo={print} cardInfo={card} />
-										))}
-								</Stack>
-							</Accordion.Panel>
-						</Accordion.Item>
-					</Accordion>
-				))
+				uniqueCards.map((card) => {
+					const cardPrints = prints.filter((print) => print.cardID === card.cardID)
+
+					if (cardPrints.length > 1) {
+						return (
+							<Accordion key={card.cardID} variant="separated" radius="md">
+								<Accordion.Item value={card.cardID}>
+									<Accordion.Control>
+										<Group w="100%">
+											<Text size="sm">{card.cardName}</Text>
+											<Badge variant="light" size="sm" fw={500}>
+												{`${cardPrints.length} printing${cardPrints.length > 1 ? "s" : ""}`}
+											</Badge>
+										</Group>
+									</Accordion.Control>
+									<Accordion.Panel>
+										<Stack gap="xs">
+											{prints
+												.filter((print) => print.cardID === card.cardID)
+												.map((print) => (
+													<PrintYGO key={print.printID} printInfo={print} cardInfo={card} />
+												))}
+										</Stack>
+									</Accordion.Panel>
+								</Accordion.Item>
+							</Accordion>
+						)
+					} else {
+						return (
+							<PrintYGO
+								key={card.cardID}
+								printInfo={prints.find((print) => print.cardID === card.cardID) as PrintingInformation}
+								cardInfo={card}
+							/>
+						)
+					}
+				})
 			) : (
 				<Text c="dimmed" size="sm">
 					This member hasn't added any cards to their collection yet.

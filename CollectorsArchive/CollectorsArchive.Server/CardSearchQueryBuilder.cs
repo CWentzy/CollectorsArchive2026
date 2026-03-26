@@ -27,9 +27,9 @@ namespace CollectorsArchive.Server
                             "JOIN CardSuperType ON YGOCard.SuperType = CardSuperType.SuperTypeID " +
                             "JOIN CardSubType ON YGOCard.SubType = CardSubType.SubTypeID ");
 
-            SearchFiltersYGO ygoParameters = (SearchFiltersYGO)parameters.advancedFilters;
+            SearchFiltersYGO ygoParameters = (SearchFiltersYGO)parameters.AdvancedFilters;
 
-            if (parameters.query != null) { }
+            if (parameters.Query != null) { }
             if (ygoParameters.superTypes != null) { query.Append(YGOStringParameter(ygoParameters.superTypes, 
                                                     "CardSuperType.SuperTypeName")); }
             if (ygoParameters.subTypes != null) { query.Append(YGOStringParameter(ygoParameters.subTypes,

@@ -1,7 +1,7 @@
 import { Box, Card, Grid, Group, Image, LoadingOverlay, Stack, Table, Text, Title } from "@mantine/core"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Game, GameIDs } from "../components/CardSearch/schema"
+import { Game, GameID } from "../components/CardSearch/schema"
 import PrintYGO from "../components/YGO/PrintYGO"
 import type { CardInformation, CardsAndPrints, MTGCard, PrintingInformation, YGOCard } from "../types/api"
 
@@ -14,10 +14,10 @@ function CardAttributes({ cardInfo }: { cardInfo?: CardInformation }) {
 	let attributes = null
 
 	switch (cardInfo.gameID) {
-		case GameIDs.ygo:
+		case GameID.ygo:
 			attributes = cardInfo.cardAttributes as YGOCard
 			break
-		case GameIDs.mtg:
+		case GameID.mtg:
 			attributes = cardInfo.cardAttributes as MTGCard
 			break
 		default:
@@ -66,7 +66,7 @@ export default function SingleCardDisplay() {
 
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
-	const gameID = GameIDs[game as Game]
+	const gameID = GameID[game as Game]
 
 	useEffect(() => {
 		async function fetchCard() {
@@ -99,7 +99,7 @@ export default function SingleCardDisplay() {
 					{/* Card Image Column */}
 					<Grid.Col span="auto">
 						{/* TODO: Replace with real card image from backend */}
-						{gameID === GameIDs.ygo && (
+						{gameID === GameID.ygo && (
 							<Image src={ygoCardImageUrl} alt={"Card Iamge"} fit="contain" h={520} mah={520} />
 						)}
 					</Grid.Col>

@@ -26,13 +26,15 @@ export const Game = {
 
 export type Game = (typeof Game)[keyof typeof Game]
 
-export const GameIDs: Record<Game, number> = {
+export const GameID: Record<Game, number> = {
 	ygo: 1,
 	mtg: 2,
 	pokemon: 3,
 }
 
-export type GameIDs = (typeof GameIDs)[keyof typeof GameIDs]
+export type GameID = (typeof GameID)[keyof typeof GameID]
+
+export const GameToID = (game: Game): GameID => GameID[game]
 
 export const Language = {
 	en: "en",

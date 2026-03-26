@@ -120,7 +120,7 @@ export default function HomePage() {
 					/* Collection */
 					<Paper py="md" px="lg" w="100%" radius="md" withBorder>
 						<Text size="lg" fw={600} mb="md">
-							Collection
+							My Collection
 						</Text>
 
 						<ScrollArea style={{ height: "100vh" }} offsetScrollbars pos="relative">

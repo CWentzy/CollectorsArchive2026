@@ -10,12 +10,12 @@ import {
 	Accordion,
 	Box,
 	Button,
-	Divider,
 	Flex,
 	Group,
 	JsonInput,
 	LoadingOverlay,
 	Paper,
+	ScrollArea,
 	SegmentedControl,
 	Select,
 	Stack,
@@ -27,8 +27,8 @@ import {
 import { useMediaQuery } from "@mantine/hooks"
 import { DicesIcon, FunnelIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
 import { useState } from "react"
-import type { CardInformation } from "../../types/api"
-import CardYGO from "../YGO/CardYGO"
+import type { CardInformation, CardsAndPrints } from "../../types/api"
+import CardCollection from "../CardCollection"
 import AdvancedFilters from "./AdvancedFilters"
 import {
 	CardSearchFormProvider,
@@ -37,7 +37,14 @@ import {
 	type CardSearchFormValues,
 } from "./CardSearchFormContext"
 import { buildGameValidators, getGameDefaults, getGameFieldKeys } from "./gameFilterConfigs"
-import { Game, SEARCH_QUERY_MAX_LENGTH, SEARCH_QUERY_MIN_LENGTH, SearchType, type SearchResult } from "./schema"
+import {
+	Game,
+	GameToID,
+	SEARCH_QUERY_MAX_LENGTH,
+	SEARCH_QUERY_MIN_LENGTH,
+	SearchType,
+	type SearchResult,
+} from "./schema"
 
 const gameValidators = buildGameValidators()
 
@@ -45,28 +52,6 @@ const initialFormValues: CardSearchFormValues = {
 	query: "" as string,
 	searchType: SearchType.set as SearchType,
 	game: Game.ygo as Game | undefined,
-}
-
-const dummyResult: SearchResult = {
-	type: SearchType.card,
-	cardInfo: [
-		{
-			gameID: 1,
-			cardID: "17589298",
-			cardName: "Test Card",
-		},
-	],
-	printInfo: [
-		{
-			gameID: 1,
-			printID: "123456",
-			setID: "ABC",
-			setName: "Test Set",
-			setCode: "TST",
-			rarity: "Common",
-			releaseDate: new Date(),
-		},
-	],
 }
 
 function QuerySection({ isMobile }: { isMobile?: boolean }) {
@@ -219,21 +204,30 @@ function AdvancedFiltersSection() {
 }
 
 interface SearchResultProps {
-	result: SearchResult
+	cardsAndPrints: CardsAndPrints | null
 }
 
-function SearchResult({ result }: SearchResultProps) {
-	if (!result || (Array.isArray(result.cardInfo) && result.cardInfo.length === 0)) {
-		return <Text c="dimmed">No results to display.</Text>
+function SearchResult({ cardsAndPrints }: SearchResultProps) {
+	if (!cardsAndPrints) {
+		return null
+	}
+
+	const cards = cardsAndPrints?.cardsInfo as CardInformation[] | undefined
+
+	if (cards?.length === 0) {
+		return <Text c="dimmed">No results found. Try adjusting your search or filters.</Text>
 	}
 
 	return (
-		<Stack gap="md">
-			{(result.cardInfo as CardInformation[]).map((item) => {
-				const cardInfo = item as CardInformation
-				return <CardYGO key={cardInfo.cardID} cardInfo={cardInfo} />
-			})}
-		</Stack>
+		<Paper shadow="sm" py="md" px="lg" radius="md" withBorder>
+			<Text size="lg" fw={600} mb="md">
+				Search Results
+			</Text>
+
+			<ScrollArea style={{ height: "75vh" }} offsetScrollbars="present" type="auto">
+				<CardCollection cardsAndPrints={cardsAndPrints} />
+			</ScrollArea>
+		</Paper>
 	)
 }
 
@@ -243,9 +237,9 @@ export default function CardSearchForm() {
 
 	const [accordionValue, setAccordionValue] = useState<string | null>(null) // closed by default
 	const [searching, setSearching] = useState(false)
-	const [searchResult, setSearchResult] = useState<SearchResult>()
+	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 
-	const [debugValues, setDebugValues] = useState<typeof form.values>(initialFormValues) // for debugging - TODO: remove
+	const [debugJson, setDebugJson] = useState<string>() // for debugging - TODO: remove
 
 	const form = useCardSearchForm({
 		mode: "uncontrolled",
@@ -269,12 +263,32 @@ export default function CardSearchForm() {
 			},
 			...gameValidators,
 		},
-		onValuesChange: (values) => setDebugValues(values), // for debugging - TODO: remove
+
+		// for debugging - TODO: remove
+		onValuesChange: (values) => {
+			// Should be a copy of the payload below (where we fetch)
+			const payload = {
+				GameID: GameToID(values.game as Game),
+				Query: values.query,
+				SearchType: values.searchType,
+				AdvancedFilters: {}, // TODO: include advanced filters in the request body
+			}
+
+			setDebugJson(JSON.stringify(payload, null, 2))
+		},
 	})
 
 	const handleSubmit = async (values: typeof form.values) => {
 		try {
 			setSearching(true)
+
+			const payload = JSON.stringify({
+				// The API expects the following body
+				GameID: GameToID(values.game as Game),
+				Query: values.query,
+				SearchType: values.searchType,
+				AdvancedFilters: {}, // TODO: include advanced filters in the request body
+			})
 
 			// Search - get from /api/AdvancedSearchSet
 			const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/CardSearch/AdvancedSearchSet`, {
@@ -282,22 +296,19 @@ export default function CardSearchForm() {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({
-					advancedFilters: {}, // TODO: include advanced filters in the request body
-					...values,
-				}),
+				body: payload,
 			})
 
 			if (!response.ok) {
 				throw new Error(`Search failed with status ${response.status}`)
 			}
 
-			const cardsList: CardInformation[] = await response.json()
+			const data = await response.json()
 
-			setSearchResult({
-				type: SearchType.card,
-				cardInfo: cardsList,
-			})
+			const cardsInfo = data.cards
+			const printsInfo = data.printings
+
+			setCardAndPrints({ cardsInfo, printsInfo })
 		} catch (error) {
 			console.error("Error during search:", error)
 		} finally {
@@ -323,7 +334,11 @@ export default function CardSearchForm() {
 							</Button>
 						</Flex>
 
-						<Accordion value={accordionValue} onChange={setAccordionValue} variant="separated">
+						<Accordion
+							value={!cardAndPrints ? "search" : accordionValue}
+							onChange={setAccordionValue}
+							variant="separated"
+						>
 							<Accordion.Item value="search">
 								<Accordion.Control icon={<FunnelIcon size={16} />}>
 									<Text fw={500}>Game Filters</Text>
@@ -339,7 +354,7 @@ export default function CardSearchForm() {
 												<Text size="xs" c="dimmed" fw={200}>
 													Live form values (for debugging):
 												</Text>
-												<JsonInput value={JSON.stringify(debugValues, null, 2)} readOnly rows={10} />
+												<JsonInput value={debugJson} readOnly rows={10} />
 											</div>
 
 											<AdvancedFiltersSection />
@@ -352,12 +367,10 @@ export default function CardSearchForm() {
 				</form>
 			</CardSearchFormProvider>
 
-			<Divider label="Search Results" />
-
 			{/* Search Results */}
 			<Paper pos="relative">
 				<LoadingOverlay visible={searching} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
-				<SearchResult result={searchResult || dummyResult} />
+				<SearchResult cardsAndPrints={cardAndPrints} />
 			</Paper>
 		</Stack>
 	)
