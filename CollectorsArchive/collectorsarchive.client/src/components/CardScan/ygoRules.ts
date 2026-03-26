@@ -17,15 +17,9 @@ export type NormalizedRoi = {
 // - right catches clipped right edge
 export const PASSCODE_ROIS: NormalizedRoi[] = [
     {
-        x: 0.032,
-        y: 0.945,
-        w: 0.145, 
-        h: 0.04,
-    },
-    {
         x: 0.038,
         y: 0.945,
-        w: 0.145,
+        w: 0.15,
         h: 0.04,
     },
 ];

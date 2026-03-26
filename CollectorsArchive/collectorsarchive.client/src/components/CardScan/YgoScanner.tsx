@@ -88,6 +88,9 @@ export default function YgoLiveScanner({
     const [passcodeAttempts, setPasscodeAttempts] = useState<string[]>([]);
     const [rawPasscodeAttempts, setRawPasscodeAttempts] = useState<string[]>([]);
 
+    //UI for tweaking sharpness threshold, as it can be the deciding factor in many cases, and lighting is usually not the issue.
+    const [sharpnessThreshold, setSharpnessThreshold] = useState(18);
+
     // Worker ref for Tesseract OCR
     const workerRef = useRef<any>(null);
 
@@ -149,6 +152,7 @@ export default function YgoLiveScanner({
                 const rawPasscode = await recognizeTextFromCanvasWithWorker(
                     worker,
                     roiProcessedCanvases[roiIndex],
+                    //roiUpscaledCanvases[roiIndex],
                     "0123456789"
                 );
 
@@ -395,7 +399,7 @@ export default function YgoLiveScanner({
             // What we check before capturing a fram**********************************************************************
             //************************************************************************************************************
             const brightnessGood = avgBrightness >= 70 && avgBrightness <= 190;
-            const sharpnessGood = sharpnessScore >= 13;   //SHarpness is the deciding factor, lightitng is usually not the issue
+            const sharpnessGood = sharpnessScore >= sharpnessThreshold;   //SHarpness is the deciding factor, lightitng is usually not the issue
 
             if (brightnessGood && sharpnessGood) {
                 goodFrameCountRef.current++;
@@ -501,6 +505,20 @@ export default function YgoLiveScanner({
 
     return (
         <section className="scanner">
+            <div style={{ marginTop: 12 }}>
+                <label className="status-small">
+                    Sharpness Threshold: {sharpnessThreshold}
+                </label>
+                <input
+                    type="range"
+                    min={5}
+                    max={30}
+                    step={1}
+                    value={sharpnessThreshold}
+                    onChange={(e) => setSharpnessThreshold(Number(e.target.value))}
+                    style={{ width: "100%", marginTop: 8, fontSize: 16 }}
+                />
+            </div>
             <CloseButton
                 variant="transparent"
                 size="xl"
@@ -640,83 +658,84 @@ export default function YgoLiveScanner({
     );
 }
 
-// Preprocessing for OCR ROIs. Just for card ROIs not fullcard
-//function preprocessOcrCanvas(                        ******first version***** greyish background
+//function preprocessOcrCanvas(
 //    sourceCanvas: HTMLCanvasElement,
 //    outputCanvas: HTMLCanvasElement
 //) {
 //    let src: any = null;
 //    let gray: any = null;
+//    let blurred: any = null;
+//    let thresh: any = null;
 //    let inverted: any = null;
+//    let kernel: any = null;
 
 //    try {
 //        src = cv.imread(sourceCanvas);
 //        gray = new cv.Mat();
+//        blurred = new cv.Mat();
+//        thresh = new cv.Mat();
 //        inverted = new cv.Mat();
 
-//        // Convert to grayscale
 //        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+//        cv.GaussianBlur(gray, blurred, new cv.Size(3, 3), 0);
 
-//        // Invert so dark text becomes light text
-//        cv.bitwise_not(gray, inverted);
+//        cv.threshold(
+//            blurred,
+//            thresh,
+//            127,
+//            255,
+//            cv.THRESH_BINARY + cv.THRESH_OTSU
+//        );
 
-//        // Show result
+//        cv.bitwise_not(thresh, inverted);
+
+//        kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(2, 2));
+//        cv.erode(inverted, inverted, kernel);
+
 //        cv.imshow(outputCanvas, inverted);
 //    } finally {
 //        if (src) src.delete();
 //        if (gray) gray.delete();
+//        if (blurred) blurred.delete();
+//        if (thresh) thresh.delete();
 //        if (inverted) inverted.delete();
+//        if (kernel) kernel.delete();
 //    }
 //}
 
 
-
- //***** second version with Black and White contrast from threshold ****************
-function preprocessOcrCanvas(                         
+function preprocessOcrCanvas(
     sourceCanvas: HTMLCanvasElement,
     outputCanvas: HTMLCanvasElement
 ) {
     let src: any = null;
     let gray: any = null;
-    let blurred: any = null;
     let thresh: any = null;
-    let inverted: any = null;
 
     try {
         src = cv.imread(sourceCanvas);
         gray = new cv.Mat();
-        blurred = new cv.Mat();
         thresh = new cv.Mat();
-        inverted = new cv.Mat();
 
-        // Grayscale
+        // Convert to grayscale
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
 
-        // Light blur to smooth noise
-        cv.GaussianBlur(gray, blurred, new cv.Size(3, 3), 0);
-
-        // Stronger separation of text from background
+        // Keep dark text, remove lighter background
         cv.threshold(
-            blurred,
+            gray,
             thresh,
-            0,
+            70,
             255,
-            cv.THRESH_BINARY + cv.THRESH_OTSU
+            cv.THRESH_BINARY_INV
         );
 
-        // Invert so text is light on dark if that works better for OCR
-        cv.bitwise_not(thresh, inverted);
-
-        cv.imshow(outputCanvas, inverted);
+        cv.imshow(outputCanvas, thresh);
     } finally {
         if (src) src.delete();
         if (gray) gray.delete();
-        if (blurred) blurred.delete();
         if (thresh) thresh.delete();
-        if (inverted) inverted.delete();
     }
 }
-
 
 
 function findCardBoundsInsideGuide(
