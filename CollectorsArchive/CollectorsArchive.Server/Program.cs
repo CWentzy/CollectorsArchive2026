@@ -15,7 +15,8 @@ builder.Services.AddHostFiltering(options =>
 {
     options.AllowedHosts = new[]
     {
-        "collectorsarchive.azurewebsites.net"
+        //"collectorsarchive.azurewebsites.net"
+        "localhost"
     };
 });
 
@@ -35,7 +36,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("https://calm-meadow-02809691e.6.azurestaticapps.net")
+        //policy.WithOrigins("https://calm-meadow-02809691e.6.azurestaticapps.net")
+        policy.WithOrigins("https://localhost:5173")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();

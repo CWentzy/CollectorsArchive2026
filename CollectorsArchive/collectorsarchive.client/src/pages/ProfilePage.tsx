@@ -18,6 +18,7 @@ import { GalleryHorizontalEndIcon, LayoutListIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import CardCollection from "../components/CardCollection"
+import CardLists from "../components/Cardlists"
 import type { CardsAndPrints, PrintingInformation } from "../types/api"
 const GET_USER_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
 
@@ -27,6 +28,8 @@ type Member = {
 	photoUrl: string | null
 	joinDate: string | null
 }
+
+type Tab = "collection" | "cardlists" //To track which tab is active
 
 const formatDate = (dateStr: string | null) => {
 	if (!dateStr) return "Unknown"
@@ -40,6 +43,7 @@ export default function MemberProfilePage() {
 
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
+	const [activeTab, setActiveTab] = useState<Tab>("collection")
 
 	useEffect(() => {
 		const fetchCollection = async () => {
@@ -177,26 +181,37 @@ export default function MemberProfilePage() {
 						<DropDownListForSearching />
 					</Flex> */}
 					<Flex justify="flex-start" gap="md" wrap="wrap">
-						<Button variant="light" color="green" leftSection={<GalleryHorizontalEndIcon size={16} />}>
+						<Button variant={activeTab === "collection" ? "filled" : "light"}
+							color="green"
+							leftSection={<GalleryHorizontalEndIcon size={16} />}
+							onClick={() => setActiveTab("collection")}>
 							Collection
 						</Button>
-						<Button variant="light" color="grape" leftSection={<LayoutListIcon size={16} />} disabled>
+						<Button variant={activeTab === "cardlists" ? "filled" : "light"}
+							color="grape"
+							leftSection={<LayoutListIcon size={16} />}
+							onClick={() => setActiveTab("cardlists")}>
 							Card Lists
 						</Button>
 					</Flex>
 				</Stack>
 
-				{/* Collection */}
-				<Paper shadow="sm" py="md" px="lg" radius="md" withBorder>
-					<Text size="lg" fw={600} mb="md">
-						Collection
-					</Text>
+				{activeTab === "collection" && (
+					<Paper shadow="sm" py="md" px="lg" radius="md" withBorder>
+						<Text size="lg" fw={600} mb="md">
+							Collection
+						</Text>
+						<ScrollArea style={{ height: "50vh" }} offsetScrollbars="present" pos="relative">
+							<LoadingOverlay visible={loading} overlayProps={{ radius: "md", blur: 2 }} loaderProps={{ type: "dots" }} />
+							<CardCollection cardsAndPrints={cardAndPrints} />
+						</ScrollArea>
+					</Paper>
+				)}
 
-					<ScrollArea style={{ height: "50vh" }} offsetScrollbars="present" pos="relative">
-						<LoadingOverlay visible={loading} overlayProps={{ radius: "md", blur: 2 }} loaderProps={{ type: "dots" }} />
-						<CardCollection cardsAndPrints={cardAndPrints} />
-					</ScrollArea>
-				</Paper>
+				{activeTab === "cardlists" && (
+					
+					<CardLists />
+				)}
 			</Stack>
 		</Box>
 	)
