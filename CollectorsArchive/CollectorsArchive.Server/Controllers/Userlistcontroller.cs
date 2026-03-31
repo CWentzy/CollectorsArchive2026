@@ -140,52 +140,61 @@ namespace CollectorsArchive.Server.Controllers
         {
             if (userListID <= 0)
                 return BadRequest(new { message = "Valid userListID is required." });
-
-            List<CardInformation> cards = [];
-            List<PrintingInformation> printings = [];
-            string connectionString = _configuration.GetConnectionString("ErmiyasDb");
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            using (SqlCommand command = new SqlCommand("GetListCards", conn))
+            try
             {
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@UserListID", userListID);
+                List<CardInformation> cards = [];
+                List<PrintingInformation> printings = [];
+                string connectionString = _configuration.GetConnectionString("ErmiyasDb");
 
-                await conn.OpenAsync();
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand command = new SqlCommand("GetListCards", conn))
                 {
-                    while (await reader.ReadAsync())
-                    {
-                        cards.Add(new CardInformation
-                        {
-                            GameID = 1,
-                            CardID = reader["CardID"].ToString(),
-                            CardName = reader["CardName"].ToString(),
-                        });
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@UserListID", userListID);
 
-                        printings.Add(new PrintingInformation
+                    await conn.OpenAsync();
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
                         {
-                            GameID = 1,
-                            PrintID = reader.GetInt32("PrintID"),
-                            CardID = reader["CardID"].ToString(),
-                            CardName = reader["CardName"].ToString(),
-                            SetID = reader.GetInt32("SetID"),
-                            SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
-                            SetName = reader["SetName"]?.ToString() ?? string.Empty,
-                            Rarity = reader["CardRarity"]?.ToString() ?? string.Empty,
-                            ReleaseDate = DateTime.Now,
-                            Quantity = reader["Quantity"] as int? ?? 0,
-                        });
+                            cards.Add(new CardInformation
+                            {
+                                GameID = reader.GetInt32("GameID"),
+                                CardID = reader["CardID"].ToString(),
+                                CardName = reader["CardName"].ToString(),
+                            });
+                            
+                            printings.Add(new PrintingInformation
+                            {
+                                GameID = reader.GetInt32("GameID"),
+                                PrintID = reader.GetInt32("PrintID"),
+                                CardID = reader["CardID"].ToString(),
+                                CardName = reader["CardName"].ToString(),
+                                SetID = reader.GetInt32("SetID"),
+                                SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
+                                SetName = reader["SetName"]?.ToString() ?? string.Empty,
+                                Rarity = reader["CardRarity"]?.ToString() ?? string.Empty,
+                                ReleaseDate = DateTime.Now,
+                                Quantity = reader["Quantity"] as int? ?? 0,
+                            });
+                        }
                     }
                 }
-            }
 
-            return Ok(new
-            {
-                cards,
-                printings,
-            });
+
+                return Ok(new
+                {
+                    cards,
+                    printings,
+                });
+            }
+            catch (Exception ex)
+    {
+        // This will show the REAL error instead of a generic 500
+        return StatusCode(500, new { message = ex.Message, detail = ex.StackTrace });
+    }
         }
+
     }
 
     // ── Request Models ─────────────────────────────────────────────────────────

@@ -10,12 +10,12 @@ namespace CollectorsArchive.Server.Models
         public int ListCardID { get; set; }
 
         [Required]
-        public int UserListID { get; set; }
+        public int CardListID { get; set; }
 
         [Required]
-        public int CardID { get; set; }
+        public int PrintID { get; set; }
 
         [Required]
-        public int GameID { get; set; }
+        public int Quantity { get; set; }
     }
 }

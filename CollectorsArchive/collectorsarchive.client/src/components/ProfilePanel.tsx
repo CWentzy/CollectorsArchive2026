@@ -259,7 +259,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 										<Text size="xs" fw={600} c="dimmed" tt="uppercase" style={{ letterSpacing: "0.05em" }}>
 											Bio
 										</Text>
-										<Text size="sm" c="dimmed" fs={profile?.bio ? "normal" : "italic"}>
+										<Text size="sm" c="white" fs={profile?.bio ? "normal" : "italic"}>
 											{profile?.bio ?? "No bio yet — tell the world about your collection!"}
 										</Text>
 									</Stack>

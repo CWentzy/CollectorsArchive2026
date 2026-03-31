@@ -210,7 +210,7 @@ export default function MemberProfilePage() {
 
 				{activeTab === "cardlists" && (
 					
-					<CardLists />
+					<CardLists userProfileID={member.userId} />
 				)}
 			</Stack>
 		</Box>

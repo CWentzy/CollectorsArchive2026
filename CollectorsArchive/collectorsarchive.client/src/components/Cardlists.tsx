@@ -36,11 +36,14 @@ interface UserList {
 	userProfileID: number
 	userListName: string
 }
-
+//EACH PROFILE PAGE PASSES ITS OWN UserProfileID TO THIS COMPONENT, SO IT CAN FETCH THE LISTS FOR THE CORRECT USER
+interface CardListsProps {
+	userProfileID?: number
+}
 // ─── Component ─────────────────────────────────────────────────────────────────
-export default function CardLists() {
+export default function CardLists({ userProfileID: propUserProfileID }: CardListsProps) {
 	const user = JSON.parse(localStorage.getItem("user") || "null")
-	const userProfileID = user?.userId
+	const userProfileID = propUserProfileID ?? user?.userId
 
 	const [lists, setLists] = useState<UserList[]>([])
 	const [selectedList, setSelectedList] = useState<UserList | null>(null)
@@ -91,10 +94,9 @@ export default function CardLists() {
 		setLoadingCards(true)
 		setListCards(null)
 		try {
-			// TODO: confirm query param name matches your controller
 			const res = await fetch(`${GET_LIST_CARDS_URL}?userListID=${userListID}`)
-			const data: CardsAndPrints = await res.json()
-			setListCards(data)
+			const data = await res.json()
+			setListCards({ cardsInfo: data.cards, printsInfo: data.printings })
 		} catch (err) {
 			console.error("Failed to fetch list cards:", err)
 		} finally {
