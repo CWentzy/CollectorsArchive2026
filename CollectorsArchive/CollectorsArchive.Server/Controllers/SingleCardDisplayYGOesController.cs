@@ -1,6 +1,5 @@
 ﻿using CollectorsArchive.Server.Models.ApiInput;
 using CollectorsArchive.Server.Models.ApiOutput;
-using CollectorsArchive.Server.Models.CardDisplays;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -75,11 +74,11 @@ namespace CollectorsArchive.Server.Controllers
                                         SuperType = reader["SuperType"]?.ToString() ?? string.Empty,
                                         SubType = reader["SubType"]?.ToString() ?? string.Empty,
                                         Attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
-                                        Level = reader["CardLevel"] as int?,
-                                        Attack = reader["AttackValue"] as int?,
-                                        Defense = reader["DefenseValue"] as int?,
-                                        PendulumScale = reader["PendulumScale"] as int?,
-                                        LinkRating = reader["LinkRating"] as int?
+                                        Level = reader["CardLevel"] as byte?,
+                                        Attack = reader["AttackValue"] as short?,
+                                        Defense = reader["DefenseValue"] as short?,
+                                        PendulumScale = reader["PendulumScale"] as byte?,
+                                        LinkRating = reader["LinkRating"] as byte?
                                     }
                                 });
                             }
