@@ -216,6 +216,89 @@ namespace CollectorsArchive.Server.Controllers
 
             return Ok(new { message = "Print added to list." });
         }
+        // ── GET: api/UserList/GetPrintQuantityInList?userListID=1&printID=123 ──
+        [HttpGet("GetPrintQuantityInList")]
+        public async Task<IActionResult> GetPrintQuantityInList([FromQuery] int userListID, [FromQuery] int printID)
+        {
+            if (userListID <= 0 || printID <= 0)
+                return BadRequest(new { message = "Valid userListID and printID are required." });
+
+            int quantity = 0;
+            string connectionString = _configuration.GetConnectionString("ErmiyasDb");
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlCommand command = new SqlCommand("GetPrintQuantityInList", conn))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@UserListID", userListID);
+                command.Parameters.AddWithValue("@PrintID", printID);
+
+                await conn.OpenAsync();
+                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                        quantity = reader.GetInt32("Quantity");
+                }
+            }
+
+            return Ok(new { quantity });
+        }
+
+        // ── POST: api/UserList/IncrementPrintInList ───────────────────────────
+        [HttpPost("IncrementPrintInList")]
+        public async Task<IActionResult> IncrementPrintInList([FromBody] ListPrintRequest request)
+        {
+            if (request.UserListID <= 0 || request.PrintID <= 0)
+                return BadRequest(new { message = "Valid UserListID and PrintID are required." });
+
+            int quantity = 0;
+            string connectionString = _configuration.GetConnectionString("ErmiyasDb");
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlCommand command = new SqlCommand("IncrementPrintInList", conn))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@UserListID", request.UserListID);
+                command.Parameters.AddWithValue("@PrintID", request.PrintID);
+
+                await conn.OpenAsync();
+                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                        quantity = reader.GetInt32("Quantity");
+                }
+            }
+
+            return Ok(new { quantity });
+        }
+
+        // ── POST: api/UserList/DecrementPrintInList ───────────────────────────
+        [HttpPost("DecrementPrintInList")]
+        public async Task<IActionResult> DecrementPrintInList([FromBody] ListPrintRequest request)
+        {
+            if (request.UserListID <= 0 || request.PrintID <= 0)
+                return BadRequest(new { message = "Valid UserListID and PrintID are required." });
+
+            int quantity = 0;
+            string connectionString = _configuration.GetConnectionString("ErmiyasDb");
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlCommand command = new SqlCommand("DecrementPrintInList", conn))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@UserListID", request.UserListID);
+                command.Parameters.AddWithValue("@PrintID", request.PrintID);
+
+                await conn.OpenAsync();
+                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                        quantity = reader.GetInt32("Quantity");
+                }
+            }
+
+            return Ok(new { quantity });
+        }
     }
 
     // ── Request Models ─────────────────────────────────────────────────────────
@@ -231,6 +314,11 @@ namespace CollectorsArchive.Server.Controllers
         public string UserListName { get; set; } = string.Empty;
     }
     public class AddPrintToListRequest
+    {
+        public int UserListID { get; set; }
+        public int PrintID { get; set; }
+    }
+    public class ListPrintRequest
     {
         public int UserListID { get; set; }
         public int PrintID { get; set; }
