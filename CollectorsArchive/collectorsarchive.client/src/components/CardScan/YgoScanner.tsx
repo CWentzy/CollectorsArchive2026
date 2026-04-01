@@ -221,12 +221,31 @@ export default function YgoLiveScanner({
         setPasscodeText(finalValue);
         setScanStatus("Scan complete.");
 
+
+        let isValidResult = false;
+
+        if (scanMode === "YGO") {
+            isValidResult = isValidPasscode(finalValue);
+        } else if (scanMode === "MTG") {
+            isValidResult =
+                finalValue.trim().length >= 3 &&
+                /[A-Za-z]/.test(finalValue);
+        }
+
+        if (!isValidResult) {
+            capturedRef.current = false;
+            goodFrameCountRef.current = 0;
+            setGoodFrameCount(0);
+
+            return;
+        }
+
         const result: ScanResult = {
             mode: scanMode,
             value: finalValue,
         };
 
-        //await onScanComplete?.(result);
+        await onScanComplete?.(result);
     }, [onScanComplete, scanMode]);
 
     useEffect(() => {
