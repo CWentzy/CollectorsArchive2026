@@ -36,12 +36,12 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 				payload = {
 					cardID: result.value,
 				}
-				url = "https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch"
+				url = `${import.meta.env.VITE_SERVER_URL}/api/CardSearch/CVYGOSearch`
 			} else {
 				payload = {
 					cardName: result.value,
 				}
-				url = "https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearchMTG"
+				url = `${import.meta.env.VITE_SERVER_URL}/api/CardSearch/CVMTGSearch`
 			}
 
 			console.log("Payload being sent:", payload)
