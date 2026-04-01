@@ -159,14 +159,14 @@ namespace CollectorsArchive.Server.Controllers
                         {
                             cards.Add(new CardInformation
                             {
-                                GameID = reader.GetInt32("GameID"),
+                                GameID = 1,
                                 CardID = reader["CardID"].ToString(),
                                 CardName = reader["CardName"].ToString(),
                             });
                             
                             printings.Add(new PrintingInformation
                             {
-                                GameID = reader.GetInt32("GameID"),
+                                GameID = 1,
                                 PrintID = reader.GetInt32("PrintID"),
                                 CardID = reader["CardID"].ToString(),
                                 CardName = reader["CardName"].ToString(),
@@ -189,12 +189,33 @@ namespace CollectorsArchive.Server.Controllers
                 });
             }
             catch (Exception ex)
-    {
-        // This will show the REAL error instead of a generic 500
-        return StatusCode(500, new { message = ex.Message, detail = ex.StackTrace });
-    }
+            {
+            // This will show the REAL error instead of a generic 500
+            return StatusCode(500, new { message = ex.Message, detail = ex.StackTrace });
+            }
         }
 
+        [HttpPost("AddPrintToList")]
+        public async Task<IActionResult> AddPrintToList([FromBody] AddPrintToListRequest request)
+        {
+            if (request.UserListID <= 0 || request.PrintID <= 0)
+                return BadRequest(new { message = "Valid UserListID and PrintID are required." });
+
+            string connectionString = _configuration.GetConnectionString("ErmiyasDb");
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlCommand command = new SqlCommand("AddPrintToList", conn))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@UserListID", request.UserListID);
+                command.Parameters.AddWithValue("@PrintID", request.PrintID);
+
+                await conn.OpenAsync();
+                await command.ExecuteNonQueryAsync();
+            }
+
+            return Ok(new { message = "Print added to list." });
+        }
     }
 
     // ── Request Models ─────────────────────────────────────────────────────────
@@ -208,5 +229,10 @@ namespace CollectorsArchive.Server.Controllers
     {
         public int UserListID { get; set; }
         public string UserListName { get; set; } = string.Empty;
+    }
+    public class AddPrintToListRequest
+    {
+        public int UserListID { get; set; }
+        public int PrintID { get; set; }
     }
 }

@@ -24,11 +24,11 @@ import CardCollection from "./CardCollection"
 // TODO: Replace these with your real .NET API endpoints
 const BASE_URL = import.meta.env.VITE_SERVER_URL
 
-const GET_USER_LISTS_URL = `${BASE_URL}/api/UserList/GetUserLists`         // GET  ?userProfileID=...
-const CREATE_LIST_URL = `${BASE_URL}/api/UserList/CreateList`            // POST { userProfileID, userListName }
-const DELETE_LIST_URL = `${BASE_URL}/api/UserList/DeleteList`            // DELETE ?userListID=...
-const RENAME_LIST_URL = `${BASE_URL}/api/UserList/RenameList`            // PUT  { userListID, userListName }
-const GET_LIST_CARDS_URL = `${BASE_URL}/api/UserList/GetListCards`          // GET  ?userListID=...
+const GET_USER_LISTS_URL = `${BASE_URL}/api/UserList/GetUserLists`
+const CREATE_LIST_URL = `${BASE_URL}/api/UserList/CreateList`
+const DELETE_LIST_URL = `${BASE_URL}/api/UserList/DeleteList`
+const RENAME_LIST_URL = `${BASE_URL}/api/UserList/RenameList`
+const GET_LIST_CARDS_URL = `${BASE_URL}/api/UserList/GetListCards`
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 interface UserList {

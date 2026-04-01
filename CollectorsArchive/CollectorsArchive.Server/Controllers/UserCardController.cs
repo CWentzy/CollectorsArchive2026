@@ -38,7 +38,8 @@ namespace CollectorsArchive.Server.Controllers
             {
                 UserProfileID = request.UserId,
                 PrintID = request.PrintID,
-                Quantity = request.Quantity
+                Quantity = request.Quantity,
+                CardEditionID = request.CardEditionID
             };
 
             _db.UserCards.Add(newCard);
@@ -53,5 +54,6 @@ namespace CollectorsArchive.Server.Controllers
         public int UserId { get; set; }//THIS NEEDS CHANGE
         public int PrintID { get; set; }
         public int Quantity { get; set; } = 1;
+        public string CardEditionID { get; set; } = "1";
     }
 }
