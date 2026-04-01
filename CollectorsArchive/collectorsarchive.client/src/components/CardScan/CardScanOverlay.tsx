@@ -64,6 +64,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 			if (result.mode === "YGO") {
 				setResults(cardsList.map(formatCard))
 			} else {
+				//Nothing set up for MTG display yet... Auto error and log
 				console.log("MTG response received:", cardsList)
 				setResults(null)
 				setErrorMessage("MTG response received. UI mapping not added yet.")
