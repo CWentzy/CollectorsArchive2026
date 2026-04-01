@@ -1,25 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import cv from "@techstark/opencv-js";
-//const cvAny: any = cv;
-//import Tesseract from "tesseract.js";
 import { createWorker } from "tesseract.js";
 import "./scanner.css";
 import { CloseButton } from "@mantine/core";
 import {
-    type YgoScanResult,
-    type NormalizedRoi,
-    PASSCODE_ROIS,
+    type NormalizedPasscodeRoi,
+    PASSCODE_ROI,
     cleanPasscode,
     isValidPasscode,
-    getMostFrequentValue,
+    getMostFrequentPasscodeValue,
     pickBestPasscode,
 } from "./ygoRules";
 
+import {
+    type NormalizedNameRoi,
+    NAME_ROI,
+    cleanName,
+    isValidName,
+    getMostFrequentNameValue,
+    pickBestName,
+} from "./mtgRules";
+
 
 type YgoLiveScannerProps = {
-    onScanComplete?: (result: YgoScanResult) => void | Promise<void>;
+    onScanComplete?: (result: ScanResult) => void | Promise<void>;
     onClose?: () => void;
+};
+
+type ScanMode = "YGO" | "MTG";
+
+type ScanResult = {
+    mode: ScanMode;
+    value: string;
 };
 
 type Point2 = {
@@ -89,13 +102,19 @@ export default function YgoLiveScanner({
     const [rawPasscodeAttempts, setRawPasscodeAttempts] = useState<string[]>([]);
 
     //UI for tweaking sharpness threshold, as it can be the deciding factor in many cases, and lighting is usually not the issue.
-    const [sharpnessThreshold, setSharpnessThreshold] = useState(18);
+    const [sharpnessThreshold, setSharpnessThreshold] = useState(24);
+
+    //Used for tracking the users best sharpness to score to auto lower the threshold for capture
+    const [maxSharpnessSeen, setMaxSharpnessSeen] = useState(0);
+
+    //Toggle state for YGO and MTG
+    const [scanMode, setScanMode] = useState<ScanMode>("YGO");
 
     // Worker ref for Tesseract OCR
     const workerRef = useRef<any>(null);
 
     // Main function to run OCR on the captured card image and extract passcode, setcode, and name
-    async function runYgoOcr(cardCanvas: HTMLCanvasElement) {
+    const runYgoOcr = useCallback(async (cardCanvas: HTMLCanvasElement) => {
         const passcodeCanvas = passcodeCanvasRef.current;
         const passcodeUpscaledCanvas = passcodeUpscaledCanvasRef.current;
         const passcodeProcessedCanvas = passcodeProcessedCanvasRef.current;
@@ -122,12 +141,18 @@ export default function YgoLiveScanner({
         const upscaledPreviewList: string[] = [];
         const processedPreviewList: string[] = [];
 
-        for (let i = 0; i < PASSCODE_ROIS.length; i++) {
+        //for (let i = 0; i < PASSCODE_ROIS.length; i++) {
             const roiCanvas = document.createElement("canvas");
             const roiUpscaledCanvas = document.createElement("canvas");
             const roiProcessedCanvas = document.createElement("canvas");
 
-            cropNormalizedRoiToCanvas(cardCanvas, roiCanvas, PASSCODE_ROIS[i]);
+        if (scanMode == "YGO") {
+            cropNormalizedRoiToCanvas(cardCanvas, roiCanvas, PASSCODE_ROI[0]);
+        } else if (scanMode == "MTG") {
+            cropNormalizedRoiToCanvas(cardCanvas, roiCanvas, NAME_ROI[0]);
+        }
+
+            //cropNormalizedRoiToCanvas(cardCanvas, roiCanvas, PASSCODE_ROIS[i]);
             upscaleCanvas(roiCanvas, roiUpscaledCanvas, 6);
             preprocessOcrCanvas(roiUpscaledCanvas, roiProcessedCanvas);
 
@@ -136,7 +161,7 @@ export default function YgoLiveScanner({
 
             upscaledPreviewList.push(roiUpscaledCanvas.toDataURL("image/png"));
             processedPreviewList.push(roiProcessedCanvas.toDataURL("image/png"));
-        }
+        //}
 
         setPasscodeUpscaledPreviews(upscaledPreviewList);
         setPasscodeProcessedPreviews(processedPreviewList);
@@ -146,46 +171,63 @@ export default function YgoLiveScanner({
         const passcodeVotes: string[] = [];
         const rawPasscodeList: string[] = [];
         const cleanedPasscodeList: string[] = [];
+        const whitelist = scanMode === "YGO" ? "0123456789" : ""; // Get the appropriate whitelist based on the current scan mode
 
-        for (let attempt = 0; attempt < 5; attempt++) {
+        for (let attempt = 0; attempt < 3; attempt++) {
             for (let roiIndex = 0; roiIndex < roiProcessedCanvases.length; roiIndex++) {
                 const rawPasscode = await recognizeTextFromCanvasWithWorker(
                     worker,
                     roiProcessedCanvases[roiIndex],
                     //roiUpscaledCanvases[roiIndex],
-                    "0123456789"
+                    whitelist //Sending whitelist for YGO specific or not for MTG
                 );
 
-                const cleanedPasscode = cleanPasscode(rawPasscode);
+                if (scanMode == "YGO") {
+                    const cleanedPasscode = cleanPasscode(rawPasscode);
 
-                rawPasscodeList.push(`ROI ${roiIndex + 1}: ${rawPasscode}`);
-                cleanedPasscodeList.push(`ROI ${roiIndex + 1}: ${cleanedPasscode}`);
+                    rawPasscodeList.push(`ROI ${roiIndex + 1}: ${rawPasscode}`);
+                    cleanedPasscodeList.push(`ROI ${roiIndex + 1}: ${cleanedPasscode}`);
 
-                if (isValidPasscode(cleanedPasscode)) {
-                    passcodeVotes.push(cleanedPasscode);
+                    if (isValidPasscode(cleanedPasscode)) {
+                        passcodeVotes.push(cleanedPasscode);
+                    }
+                } else if (scanMode == "MTG") {
+                    const cleanedPasscode = cleanName(rawPasscode);
+
+                    rawPasscodeList.push(`ROI ${roiIndex + 1}: ${rawPasscode}`);
+                    cleanedPasscodeList.push(`ROI ${roiIndex + 1}: ${cleanedPasscode}`);
+
+                    if (isValidName(cleanedPasscode)) {
+                        passcodeVotes.push(cleanedPasscode);
+                    }
                 }
+
             }
 
-            setScanStatus(`Verifying passcode ${attempt + 1}/5...`);
+            setScanStatus(`Verifying scan ${attempt + 1}/3...`);
         }
 
         setRawPasscodeAttempts(rawPasscodeList);
         setPasscodeAttempts(cleanedPasscodeList);
 
-        const finalPasscode =
-            pickBestPasscode(passcodeVotes) || getMostFrequentValue(passcodeVotes) || "";
+        let finalValue: string = "";
+        if (scanMode == "YGO") {
+            finalValue = pickBestPasscode(passcodeVotes) || getMostFrequentPasscodeValue(passcodeVotes) || "";
+        } else if (scanMode == "MTG") {
+            finalValue = pickBestName(passcodeVotes) || getMostFrequentNameValue(passcodeVotes) || "";
+        }
+        
 
-        setPasscodeText(finalPasscode);
+        setPasscodeText(finalValue);
         setScanStatus("Scan complete.");
 
-        const result: YgoScanResult = {
-            passcode: finalPasscode,
-            setCode: "",
-            name: "",
+        const result: ScanResult = {
+            mode: scanMode,
+            value: finalValue,
         };
 
-        await onScanComplete?.(result);
-    }
+        //await onScanComplete?.(result);
+    }, [onScanComplete, scanMode]);
 
     useEffect(() => {
         let mounted = true;
@@ -501,10 +543,27 @@ export default function YgoLiveScanner({
                 window.clearInterval(analysisIntervalRef.current);
             }
         };
-    }, [cameraReady]);
+    }, [cameraReady, sharpnessThreshold, runYgoOcr]);
 
     return (
         <section className="scanner">
+            <div style={{ marginTop: 12 }}>
+                <label className="status-small">Scanner Mode</label>
+                <select
+                    value={scanMode}
+                    onChange={(e) => setScanMode(e.target.value as ScanMode)}
+                    style={{
+                        width: "100%",
+                        marginTop: 8,
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        fontSize: 16,
+                    }}
+                >
+                    <option value="YGO">Yu-Gi-Oh!</option>
+                    <option value="MTG">Magic: The Gathering</option>
+                </select>
+            </div>
             <div style={{ marginTop: 12 }}>
                 <label className="status-small">
                     Sharpness Threshold: {sharpnessThreshold}
@@ -548,6 +607,7 @@ export default function YgoLiveScanner({
                 </div>
 
                 <div className="debug-panel">
+                    <div>Mode: {scanMode}</div>
                     <div>Brightness: {brightness?.toFixed(2)}</div>
                     <div>Sharpness: {sharpness?.toFixed(2)}</div>
                     <div>Stable Frames: {goodFrameCount}</div>
@@ -657,51 +717,6 @@ export default function YgoLiveScanner({
         </section>
     );
 }
-
-//function preprocessOcrCanvas(
-//    sourceCanvas: HTMLCanvasElement,
-//    outputCanvas: HTMLCanvasElement
-//) {
-//    let src: any = null;
-//    let gray: any = null;
-//    let blurred: any = null;
-//    let thresh: any = null;
-//    let inverted: any = null;
-//    let kernel: any = null;
-
-//    try {
-//        src = cv.imread(sourceCanvas);
-//        gray = new cv.Mat();
-//        blurred = new cv.Mat();
-//        thresh = new cv.Mat();
-//        inverted = new cv.Mat();
-
-//        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-//        cv.GaussianBlur(gray, blurred, new cv.Size(3, 3), 0);
-
-//        cv.threshold(
-//            blurred,
-//            thresh,
-//            127,
-//            255,
-//            cv.THRESH_BINARY + cv.THRESH_OTSU
-//        );
-
-//        cv.bitwise_not(thresh, inverted);
-
-//        kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(2, 2));
-//        cv.erode(inverted, inverted, kernel);
-
-//        cv.imshow(outputCanvas, inverted);
-//    } finally {
-//        if (src) src.delete();
-//        if (gray) gray.delete();
-//        if (blurred) blurred.delete();
-//        if (thresh) thresh.delete();
-//        if (inverted) inverted.delete();
-//        if (kernel) kernel.delete();
-//    }
-//}
 
 
 function preprocessOcrCanvas(
@@ -935,7 +950,7 @@ function findCardBoundsInsideGuide(
 function cropNormalizedRoiToCanvas(
     sourceCanvas: HTMLCanvasElement,
     outputCanvas: HTMLCanvasElement,
-    roi: NormalizedRoi
+    roi: NormalizedPasscodeRoi
 ) {
     const sx = Math.floor(sourceCanvas.width * roi.x);
     const sy = Math.floor(sourceCanvas.height * roi.y);
@@ -1117,7 +1132,6 @@ async function recognizeTextFromCanvasWithWorker(
 
     const result = await worker.recognize(canvas);
 
-    //let text = result.data.text ?? "";
     const text = result.data.text ?? "";
     return text.trim();
 }

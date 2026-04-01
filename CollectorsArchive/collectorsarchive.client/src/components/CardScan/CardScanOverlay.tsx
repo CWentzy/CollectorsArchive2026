@@ -1,8 +1,3 @@
-//import { Alert, Box, Button, Center, CloseButton, Flex, Text } from "@mantine/core";
-//import { CameraIcon } from "lucide-react";
-//import { useEffect, useRef } from "react";
-//import { useCamera } from "./useCamera";
-//import { useCameraPermission } from "./useCameraPermission";
 import { Button, Group, Stack, Text } from "@mantine/core"
 import { useState } from "react"
 import { formatCard } from "../../types/mapper"
@@ -10,6 +5,13 @@ import type { Card } from "../../types/ygo/schema"
 import type { CardServerResponse } from "../CardSearch/schema"
 import CardYGO from "../YGO/CardYGO"
 import YgoScanner from "./YgoScanner"
+
+type ScanMode = "YGO" | "MTG"
+
+type ScanResult = {
+	mode: ScanMode
+	value: string
+}
 
 interface CardScanOverlayProps {
 	onClose?: () => void
@@ -20,22 +22,31 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 	const [loading, setLoading] = useState(false)
 	const [errorMessage, setErrorMessage] = useState("")
 
-	async function handleScanComplete(result: { passcode: string; setCode: string; name: string }) {
+	async function handleScanComplete(result: ScanResult) {
 		console.log("Scan result:", result)
 
 		try {
 			setLoading(true)
 			setErrorMessage("")
 
-			const payload = {
-				cardName: result.name,
-				cardID: result.passcode,
-				setIndex: result.setCode,
+			let payload: Record<string, string>
+			let url = ""
+
+			if (result.mode === "YGO") {
+				payload = {
+					cardID: result.value,
+				}
+				url = "https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch"
+			} else {
+				payload = {
+					cardName: result.value,
+				}
+				url = "https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearchMTG"
 			}
 
 			console.log("Payload being sent:", payload)
 
-			const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch", {
+			const response = await fetch(url, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -50,7 +61,13 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 			const cardsList: CardServerResponse[] = await response.json()
 			console.log("Backend response:", cardsList)
 
-			setResults(cardsList.map(formatCard))
+			if (result.mode === "YGO") {
+				setResults(cardsList.map(formatCard))
+			} else {
+				console.log("MTG response received:", cardsList)
+				setResults(null)
+				setErrorMessage("MTG response received. UI mapping not added yet.")
+			}
 		} catch (error) {
 			console.error("POST failed, but scan still worked:", error)
 			setErrorMessage("Could not load card matches.")
@@ -66,7 +83,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 
 	return (
 		<div className="card-scan-overlay">
-			{!results && <YgoScanner onClose={onClose} onScanComplete={handleScanComplete} />}
+			{!results && !loading && <YgoScanner onClose={onClose} onScanComplete={handleScanComplete} />}
 
 			{loading && (
 				<div style={{ padding: 24 }}>
@@ -95,7 +112,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 
 					{results.length > 0 && (
 						<Stack gap="md">
-							{(results as Card[]).map((item) => {
+							{results.map((item) => {
 								const cardData = item as Card
 								return <CardYGO key={cardData.id} cardData={cardData} />
 							})}
@@ -107,115 +124,127 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 			{!loading && errorMessage && !results && (
 				<div style={{ padding: 24 }}>
 					<Text c="red">{errorMessage}</Text>
+
+					<Group mt="md">
+						<Button variant="default" onClick={handleRescan}>
+							Rescan
+						</Button>
+						<Button variant="light" onClick={onClose}>
+							Close
+						</Button>
+					</Group>
 				</div>
 			)}
 		</div>
 	)
 }
 
-//export function CardScanOverlay({ onClose }: { onClose: () => void }) {
-//	const { stream, start, stop } = useCamera()
-//	const permissionState = useCameraPermission()
-//	const videoRef = useRef<HTMLVideoElement | null>(null)
+//import { Button, Group, Stack, Text } from "@mantine/core"
+//import { useState } from "react"
+//import { formatCard } from "../../types/mapper"
+//import type { Card } from "../../types/ygo/schema"
+//import type { CardServerResponse } from "../CardSearch/schema"
+//import CardYGO from "../YGO/CardYGO"
+//import YgoScanner from "./YgoScanner"
 
-//	// Handle Camera Initialization
-//	useEffect(() => {
-//		let isMounted = true
+//interface CardScanOverlayProps {
+//	onClose?: () => void
+//}
 
-//		const initCamera = async () => {
-//			try {
-//				const newStream = await start()
+//export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
+//	const [results, setResults] = useState<Card[] | null>(null)
+//	const [loading, setLoading] = useState(false)
+//	const [errorMessage, setErrorMessage] = useState("")
 
-//				// If the component unmounted while we were waiting for the camera
-//				if (!isMounted && newStream) {
-//					newStream.getTracks().forEach((track) => track.stop())
-//				}
-//			} catch (err) {
-//				if (isMounted) {
-//					console.error("Failed to start camera:", err)
-//				}
+//	async function handleScanComplete(result: { passcode: string; setCode: string; name: string }) {
+//		console.log("Scan result:", result)
+
+//		try {
+//			setLoading(true)
+//			setErrorMessage("")
+
+//			const payload = {
+//				cardName: result.name,
+//				cardID: result.passcode,
+//				setIndex: result.setCode,
 //			}
-//		}
 
-//		if (permissionState === "granted") {
-//			initCamera()
-//		}
+//			console.log("Payload being sent:", payload)
 
-//		return () => {
-//			isMounted = false
-//			stop()
-//		}
-//	}, [permissionState, start, stop])
-
-//	// Handle Stream Assignment & Playback
-//	useEffect(() => {
-//		const video = videoRef.current
-//		if (video && stream) {
-//			video.srcObject = stream
-
-//			video.play().catch((err) => {
-//				console.warn("Video play interrupted:", err)
+//			const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CardSearch/CVSearch", {
+//				method: "POST",
+//				headers: {
+//					"Content-Type": "application/json",
+//				},
+//				body: JSON.stringify(payload),
 //			})
-//		}
 
-//		return () => {
-//			if (video) {
-//				video.srcObject = null
+//			if (!response.ok) {
+//				throw new Error("Failed to send scan result.")
 //			}
+
+//			const cardsList: CardServerResponse[] = await response.json()
+//			console.log("Backend response:", cardsList)
+
+//			setResults(cardsList.map(formatCard))
+//		} catch (error) {
+//			console.error("POST failed, but scan still worked:", error)
+//			setErrorMessage("Could not load card matches.")
+//		} finally {
+//			setLoading(false)
 //		}
-//	}, [stream])
+//	}
+
+//	function handleRescan() {
+//		setResults(null)
+//		setErrorMessage("")
+//	}
 
 //	return (
-//		<Box pos="fixed" inset={0} bg="black" h="100dvh" w="100vw" style={{ overflow: "hidden" }}>
-//			{permissionState !== "granted" ? (
-//				<Center h="100%" p="sm">
-//					<Alert color="red" w={450} title="Permission Required" icon={<CameraIcon />}>
-//						<Flex direction="column" gap="md">
-//							<Text size="sm" c="red">
-//								{permissionState === "denied"
-//									? "Camera access is disabled. Please enable it in your browser settings to scan cards."
-//									: "Camera access is required to scan cards."}
-//							</Text>
-//							{permissionState === "prompt" && (
-//								<Flex justify="flex-end">
-//									<Button color="green" size="sm" mb="xs" mr="xs" onClick={() => start()}>
-//										Allow Camera Access
-//									</Button>
-//								</Flex>
-//							)}
-//						</Flex>
-//					</Alert>
-//				</Center>
-//			) : (
-//				<>
-//					<video
-//						ref={videoRef}
-//						autoPlay
-//						playsInline
-//						muted
-//						style={{ width: "100%", height: "100%", objectFit: "cover" }}
-//					/>
-//					<Box
-//						pos="absolute"
-//						inset={0}
-//						m="xl"
-//						style={{
-//							pointerEvents: "none",
-//						}}
-//					/>
-//				</>
+//		<div className="card-scan-overlay">
+//			{!results && <YgoScanner onClose={onClose} onScanComplete={handleScanComplete} />}
+
+//			{loading && (
+//				<div style={{ padding: 24 }}>
+//					<Text>Searching for matching cards...</Text>
+//				</div>
 //			)}
 
-//			<CloseButton
-//				variant="transparent"
-//				c="white"
-//				size="xl"
-//				radius="xl"
-//				onClick={onClose}
-//				pos="absolute"
-//				top={20}
-//				right={20}
-//			/>
-//		</Box>
+//			{!loading && results && (
+//				<div style={{ padding: 24 }}>
+//					<Group justify="space-between" mb="md">
+//						<Text fw={700} size="lg">
+//							Scan Results
+//						</Text>
+
+//						<Group>
+//							<Button variant="default" onClick={handleRescan}>
+//								Rescan
+//							</Button>
+//							<Button variant="light" onClick={onClose}>
+//								Close
+//							</Button>
+//						</Group>
+//					</Group>
+
+//					{results.length === 0 && <Text>No matches found.</Text>}
+
+//					{results.length > 0 && (
+//						<Stack gap="md">
+//							{(results as Card[]).map((item) => {
+//								const cardData = item as Card
+//								return <CardYGO key={cardData.id} cardData={cardData} />
+//							})}
+//						</Stack>
+//					)}
+//				</div>
+//			)}
+
+//			{!loading && errorMessage && !results && (
+//				<div style={{ padding: 24 }}>
+//					<Text c="red">{errorMessage}</Text>
+//				</div>
+//			)}
+//		</div>
 //	)
 //}
