@@ -268,7 +268,7 @@ export default function CardSearchForm() {
 		onValuesChange: (values) => {
 			// Should be a copy of the payload below (where we fetch)
 			const payload = {
-				GameID: GameToID(values.game as Game),
+				GameID: GameToID(values.game as Game) || 0, // send 0 for "all" since API expects that
 				Query: values.query,
 				SearchType: values.searchType,
 				AdvancedFilters: {}, // TODO: include advanced filters in the request body
@@ -284,7 +284,7 @@ export default function CardSearchForm() {
 
 			const payload = JSON.stringify({
 				// The API expects the following body
-				GameID: GameToID(values.game as Game),
+				GameID: GameToID(values.game as Game) || 0, // send 0 for "all" since API expects that
 				Query: values.query,
 				SearchType: values.searchType,
 				AdvancedFilters: {}, // TODO: include advanced filters in the request body
