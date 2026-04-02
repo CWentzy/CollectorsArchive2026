@@ -222,7 +222,7 @@ namespace MTGWebScraper
             string[] types = typeline.Split(' ');
             foreach (string type in types)
             {
-                if (type == string.Empty || type == "-") { continue; }
+                if (type == string.Empty || type == "-" || type == "–") { continue; } // The second '–' is the unicode character En Dash (&#8211 or \u2013)
                 if (SuperTypes.Contains(type)) { newCard.SuperType += $" {type}"; }
                 else if (CardTypes.Contains(type)) { newCard.Type += $" {type}"; }
                 else { newCard.SubType += $" {type}"; }

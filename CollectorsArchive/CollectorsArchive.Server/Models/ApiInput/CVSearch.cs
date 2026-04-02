@@ -17,5 +17,15 @@ namespace CollectorsArchive.Server.Models.ApiInput
 
         public string? cardID { get; set; }
     }
+
+
+    // ---------------------------------- MAGIC THE GATHERING ---------------------------------- //
+
+    public class CVSearchMTG
+    {
+        public string? cardName { get; set; }
+    }
+
+
 }
 

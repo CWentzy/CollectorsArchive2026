@@ -31,7 +31,8 @@ namespace YGODataUtility
                 Console.WriteLine("===== SELECT AN OPTION =====");
                 Console.WriteLine("1. Check for new data\n" +
                                   "2. Update alternate language data\n" +
-                                  "3. Exit");
+                                  "3. Update card classification\n" +
+                                  "4. Exit");
                 Console.Write("Option: ");
 
                 switch (Console.ReadLine())
@@ -52,6 +53,9 @@ namespace YGODataUtility
 
                         break;
                     case "3":
+                        UpdateClassificationData();
+                        break;
+                    case "4":
                         loop = false;
                         break;
                 }
@@ -207,7 +211,7 @@ namespace YGODataUtility
             SqlCommand cmd = conn.CreateCommand();
 
             cmd.CommandText = "SELECT * FROM CardPrinting " +
-                                "JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID" +
+                                "JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID " +
                                 "WHERE CardPrinting.GameID = 1 AND CardID = @id AND SetName = @set";
             cmd.Parameters.AddWithValue("@id", idString);
             cmd.Parameters.AddWithValue("@set", printing.set_name);
@@ -217,8 +221,11 @@ namespace YGODataUtility
             if (result == null) { cmd = printing.GetInsertCommand(conn, idString); }
             else { return; }
 
-            cmd.Connection = conn;
-            cmd.ExecuteNonQuery();
+            if (cmd.CommandText != string.Empty)
+            {
+                cmd.Connection = conn;
+                cmd.ExecuteNonQuery();
+            }
         }
 
 
@@ -255,6 +262,48 @@ namespace YGODataUtility
                     Console.WriteLine("\nDone.");
                 }
             }
+        }
+
+
+        static void UpdateClassificationData()
+        {
+            // ----- Retrieve all cards -----
+            Console.Write("Retrieving Card Data...");
+            API_YGOCardDataHolder allCards = new API_YGOCardDataHolder();
+            if (!API_YGO.RetrieveCardDataAll(ref allCards))
+            {
+                Console.WriteLine("Unable to retrieve Card Data.");
+                return;
+            }
+            Console.WriteLine("Done.");
+
+            // ----- Inserting all cards and printings -----
+            Console.WriteLine("Updating Card Data...");
+            int addCount = 0;
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                for (int i = 0; i < allCards.data.Count; i++)
+                {
+                    Console.Write($"\rUpdating Card: {i + 1}/{allCards.data.Count}");
+                    UpdateClassifications(conn, allCards.data[i]);
+                }
+            }
+            Console.WriteLine("\nDone.\n");
+        }
+
+
+        static void UpdateClassifications(SqlConnection conn, API_YGOCard card)
+        {
+            if (card.typeline == null) { return; }
+
+            string classifications = card.GetClassifications();
+            string commandText = "UPDATE YGOCard SET Classifications = @classifications WHERE CardID = @cardID";
+            SqlCommand cmd = new SqlCommand(commandText, conn);
+            cmd.Parameters.AddWithValue("@classifications", classifications);
+            cmd.Parameters.AddWithValue("@cardID", card.id);
+            cmd.ExecuteScalar();
         }
     }
 }
