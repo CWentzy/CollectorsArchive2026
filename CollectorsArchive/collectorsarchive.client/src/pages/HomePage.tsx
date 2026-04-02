@@ -150,6 +150,7 @@ export default function HomePage() {
 					<Box w="100%">
 						<CardLists />
 					</Box>
+				)}
 			</Stack>
 		</Box>
 	)
