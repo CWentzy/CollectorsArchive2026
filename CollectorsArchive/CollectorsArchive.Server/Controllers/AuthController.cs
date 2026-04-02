@@ -2,7 +2,6 @@ using CollectorsArchive.Server.Models;
 using CollectorsArchive.Server.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace CollectorsArchive.Server.Controllers
@@ -21,45 +20,54 @@ namespace CollectorsArchive.Server.Controllers
         }
 
 
-        [HttpPost("RegisterNewUser")]
-        public async Task<IActionResult> Register([FromBody] GoogleAuthRequest request)
+        [HttpPost("LoginUsingGoogle")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.Name) ||
-                string.IsNullOrWhiteSpace(request.GoogleSubject))
+            // so before we used to have registeration page , we dont need that anymore cus we will authomatically register them if they are not registered to our database
+            if (string.IsNullOrWhiteSpace(request.GoogleSubject))
+                return BadRequest(new { message = "Google Subject is required." });
+
+            // Try to find user by using their google subject from our db userprofile table 
+            var user = await _db.UserProfile
+                .FirstOrDefaultAsync(u => u.GoogleSubject == request.GoogleSubject);
+
+            //  If user does NOT exist then we will auto-register
+            if (user == null)
             {
-                return BadRequest(new { message = "Email, Name, and Google Subject are required." });
+                user = new UserProfile
+                {
+                    Email = request.Email,
+                    UserName = request.Name,
+                    GoogleSubject = request.GoogleSubject,
+                    PhotoUrl = request.PhotoUrl,
+                    JoinDate = DateTime.UtcNow
+                };
+
+                _db.UserProfile.Add(user);
+                await _db.SaveChangesAsync();
+            }
+            else
+            {
+                // Update photo if changed
+                if (!string.IsNullOrWhiteSpace(request.PhotoUrl) && user.PhotoUrl != request.PhotoUrl)
+                {
+                    user.PhotoUrl = request.PhotoUrl;
+                    await _db.SaveChangesAsync();
+                }
             }
 
-            // Check if user already exists by Google Subject or Email
-            var existingUser = await _db.UserInformation
-                .FirstOrDefaultAsync(u => u.UserName == request.Name || u.Email == request.Email);
-
-            if (existingUser != null)
-            {
-                return Conflict(new { message = "A user with this email or Google account already exists." });
-            }
-
-            var newUser = new UserInformation
-            {
-                Email = request.Email,
-                UserName = request.Name,
-                GoogleSubject = request.GoogleSubject,
-                PhotoUrl = request.PhotoUrl,    
-                JoinDate = DateTime.UtcNow
-            };
-
-            _db.UserInformation.Add(newUser);
-            await _db.SaveChangesAsync();
-
+            // then at the last i will return final user
             return Ok(new
             {
-                message = "Registration successful.",
-                userId = newUser.UserId,
-                email = newUser.Email,
-                userName = newUser.UserName
+                message = "Login successful.",
+                userId = user.UserId,
+                email = user.Email,
+                userName = user.UserName,
+                photoUrl = user.PhotoUrl
             });
         }
+
+
         [HttpPost("ForNonGoogleNewUser")]
         public async Task<IActionResult> RegisterNonGoogleUser([FromBody] NonGoogleUserRequestModel request)
         {
@@ -68,7 +76,7 @@ namespace CollectorsArchive.Server.Controllers
                 return BadRequest(new { message = "Email and Code are required." });
 
             // Check if user already exists
-            var existingUser = await _db.UserInformation
+            var existingUser = await _db.UserProfile
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (existingUser != null)
@@ -85,7 +93,7 @@ namespace CollectorsArchive.Server.Controllers
                 return BadRequest(new { message = "Code expired." });
 
             // Create user
-            var newUser = new UserInformation
+            var newUser = new UserProfile
             {
                 Email = request.Email,
                 UserName = string.IsNullOrWhiteSpace(request.Name)
@@ -95,7 +103,7 @@ namespace CollectorsArchive.Server.Controllers
                 JoinDate = DateTime.UtcNow
             };
 
-            _db.UserInformation.Add(newUser);
+            _db.UserProfile.Add(newUser);
             await _db.SaveChangesAsync();
 
             // Remove used code
@@ -112,120 +120,105 @@ namespace CollectorsArchive.Server.Controllers
             });
         }
 
-
-
-        [HttpPost("LoginUsingGoogle")]
-        public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthRequest request)
-        {
-            if (string.IsNullOrWhiteSpace(request.GoogleSubject))
-            {
-                return BadRequest(new { message = "Google Subject is required." });
-            }
-
-            var user = await _db.UserInformation
-                .FirstOrDefaultAsync(u => u.GoogleSubject == request.GoogleSubject);
-
-            if (user == null)
-            {
-                return Ok(new { message = "User not found. Please register first." });
-            }
-            if(!string.IsNullOrWhiteSpace(request.PhotoUrl) && user.PhotoUrl != request.PhotoUrl)
-            {
-
-                user.PhotoUrl = request.PhotoUrl;
-                await _db.SaveChangesAsync();
-            }
-            return Ok(new
-            {
-                message = "Login successful.",
-                userId = user.UserId,
-                email = user.Email,
-                userName = user.UserName,
-                photoUrl = user.PhotoUrl
-            });
-        }
-
         [HttpPost("RequestForTempCode")]
         public async Task<IActionResult> RequestTempCode([FromBody] TempCodeRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest(new { message = "Email is required" });
+
             try
             {
-                if (string.IsNullOrWhiteSpace(request.Email))
-                    return BadRequest(new { message = "Email is required" });
+                var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+                var expiryTime = DateTime.UtcNow.AddMinutes(10);
 
-                var code = new Random().Next(100000, 999999).ToString();
-
-                var tempCode = new TempLoginCode
+                //  first i need to check if there is already a code for this email in the database, if there is then i will update it with the new code and expiration time,
+                //  if there is not then i will create a new entry in the database with the email, code and expiration time
+                var existingEntry = await _db.TempLoginCodes.FirstOrDefaultAsync(x => x.Email == request.Email);
+                if (existingEntry != null)
                 {
-                    Email = request.Email,
-                    Code = code,
-                    Expiration = DateTime.UtcNow.AddMinutes(10)
-                };
+                    existingEntry.Code = code;
+                    existingEntry.Expiration = expiryTime;
+                    _db.TempLoginCodes.Update(existingEntry);
+                }
+                else
+                {
+                    _db.TempLoginCodes.Add(new TempLoginCode { Email = request.Email, Code = code, Expiration = expiryTime });
+                }
 
-                _db.TempLoginCodes.Add(tempCode);
                 await _db.SaveChangesAsync();
 
-                // Send email
-                await _emailService.SendAsync(
-                    request.Email,
-                    "This is your Collector's Archive Login Code",
-                    $"Your login code is: {code} This code will expire within 10 minutes."
-                );
+                // then i will send the code to the user's email using my email service, if there is an error with sending the email (like gmail rejecting the connection) then i will catch that error and return
+                // a 500 status code with a message to check the console for more details
+                try
+                {
+                    await _emailService.SendAsync(request.Email, "Login Code", $"Your code is: {code}");
+                }
+                catch (Exception mailEx)
+                {
+                    // This will show up in your CMD/Output window if Gmail rejects the connection
+                    Console.WriteLine($"GMAIL ERROR: {mailEx.Message}");
+                    return StatusCode(500, new { message = "Email failed to send. Check console." });
+                }
 
                 return Ok(new { message = "Temporary login code sent" });
             }
             catch (Exception ex)
             {
-                // RETURN THE ACTUAL ERROR TO FRONTEND
-                return StatusCode(500, new
-                {
-                    message = "SERVER ERROR",
-                    error = ex.Message,
-                    stack = ex.StackTrace
-                });
+                return StatusCode(500, new { message = "Server Error", error = ex.Message });
             }
         }
+
+
+
+
+
 
         [HttpPost("VerfyingTemporaryCode")]
         public async Task<IActionResult> VerifyTempCode([FromBody] TempCodeVerifyRequest request)
         {
+            // Find the code
             var record = await _db.TempLoginCodes
                 .FirstOrDefaultAsync(x => x.Email == request.Email && x.Code == request.Code);
 
-            if (record == null || record.Expiration < DateTime.UtcNow)
-                return BadRequest(new { message = "Invalid or expired code" });
+            if (record == null)
+                return BadRequest(new { message = "Invalid code." });
 
-            // b4 i regester the user i will check if the user is in the database or not because if the user is in the database then i dont need to create them again
-            var user = await _db.UserInformation
+            if (record.Expiration < DateTime.UtcNow)
+                return BadRequest(new { message = "Code expired." });
+
+            // Check if user exists
+            var user = await _db.UserProfile
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            // here i am creating user if the user is not in the database because
-            // i want to make sure that every user that login with email and code will be in the database
+            // Auto-Register if they are new
             if (user == null)
             {
-                user = new UserInformation
+                user = new UserProfile
                 {
                     Email = request.Email,
-                    UserName = request.Email.Split('@')[0],
-                    GoogleSubject = null,
+                    UserName = request.Email.Split('@')[0], // Default username from email
                     JoinDate = DateTime.UtcNow
                 };
 
-                _db.UserInformation.Add(user);
+                _db.UserProfile.Add(user);
                 await _db.SaveChangesAsync();
             }
 
-            // Remove used code
+            // Cleanup the used code
             _db.TempLoginCodes.Remove(record);
             await _db.SaveChangesAsync();
 
+            // Return everything the frontend needs
             return Ok(new
             {
                 message = "Login successful",
+                userId = user.UserId, // Important for collection queries!
                 userName = user.UserName,
-                email = user.Email
+                email = user.Email,
+                joinDate = user.JoinDate
             });
         }
+
 
 
         // I need to creating another endpoit when users gives me their non google email i will first search in the database and

@@ -13,9 +13,9 @@ namespace CollectorsArchive.Server.Service
     {
         private readonly CollectorArchiveEmailSettings emailSettings;
 
-        public EmailConfirmationService(IOptions<CollectorArchiveEmailSettings> _emailSettings) 
+        public EmailConfirmationService(IOptions<CollectorArchiveEmailSettings> _emailSettings)
         {
-            emailSettings = _emailSettings.Value; 
+            emailSettings = _emailSettings.Value;
         }
         public async Task SendAsync(string to, string subject, string body)
         {
@@ -32,7 +32,12 @@ namespace CollectorsArchive.Server.Service
 
             using var client = new MailKit.Net.Smtp.SmtpClient();
 
-            await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+            // adding timeout to prevent hanging
+            client.Timeout = 10000;
+
+            // try to connect to the SMTP server with SSL, if it fails, try without SSL
+            await client.ConnectAsync("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
+
             await client.AuthenticateAsync(emailSettings.Email, emailSettings.AppPassword);
             await client.SendAsync(message);
             await client.DisconnectAsync(true);

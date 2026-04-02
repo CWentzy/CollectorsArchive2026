@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using CollectorsArchive.Server.Models;
+﻿using CollectorsArchive.Server.Models;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CollectorsArchive.Server
 {
@@ -9,8 +10,11 @@ namespace CollectorsArchive.Server
         // this entity will be our table in the database, it will store user information .
         // The UserID field will be the primary key that we specify in sql, and the email and username
         // user name will be the email id of the user without @domain part this is the class that we created in Models/User.cs
-        public DbSet<UserInformation> UserInformation { get; set; }
+
+        // In your DbContext
+        public DbSet<UserProfile> UserProfile { get; set; }
         public DbSet<TempLoginCode> TempLoginCodes { get; set; }
+
         // public DbSet<UserProfile> UserProfiles { get; set; } THIS CAN BE SCRAPPED TOO
         public DbSet<UserCard> UserCards { get; set; }
 
@@ -71,7 +75,7 @@ namespace CollectorsArchive.Server
             });
         }
         */
-        
+
 
     }
 }

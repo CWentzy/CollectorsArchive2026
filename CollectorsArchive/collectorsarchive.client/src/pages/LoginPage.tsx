@@ -48,41 +48,24 @@ export default function LoginPage(props: PaperProps) {
 				const googleSubject = userData.sub
 				const photoUrl = userData.picture
 
-				// try login first
+				// try login first and then if user is not registered or not found then authomatically register them as user
 				const backendResponse = await fetch(LoginUsingGoogleURL, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ googleSubject, photoUrl }),
+					body: JSON.stringify({
+						email,
+						name: userName, // the backend ecpects name not userName
+						googleSubject,
+						photoUrl,
+					}),
 				})
-
+				{
+					/* this is a time which will let user to stay login or authomatically will logged them out after 12 hrs  */
+				}
+				const loginTime = Date.now()
 				const loginData = await backendResponse.json()
 
-				// if user not found then register
-				let finalData = loginData
-				if (loginData.message === "User not found. Please register first.") {
-					const registerResponse = await fetch(RegisterNewUserURL, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							email,
-							name: userName,
-							googleSubject,
-							photoUrl,
-						}),
-					})
-					finalData = await registerResponse.json()
-				}
-
-				console.log(finalData)
-				localStorage.setItem(
-					"user",
-					JSON.stringify({
-						userId: finalData.userId,
-						email: finalData.email ?? email,
-						userName: finalData.userName ?? userName,
-						photoUrl: finalData.photoUrl ?? photoUrl,
-					})
-				)
+				localStorage.setItem("user", JSON.stringify({ ...loginData, loginTime }))
 				navigate("/home")
 			} catch (error) {
 				console.error("Failed to fetch user info from Google:", error)
@@ -123,21 +106,19 @@ export default function LoginPage(props: PaperProps) {
 					onSubmit={form.onSubmit(async (values) => {
 						const { email } = values
 
-						// S BOTH login and register request code
+						// This endpoint should send a code to ANY valid email provided
 						const response = await fetch(RequestForTempCodeURL, {
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
 							body: JSON.stringify({ email }),
 						})
 
-						if (!response.ok) {
-							console.log("Failed to send code")
-							return
+						if (response.ok) {
+							setSavedEmail(email)
+							setIsCodeStep(true)
+						} else {
+							console.log("Error sending code")
 						}
-
-						// save email and move to code step
-						setSavedEmail(email)
-						setIsCodeStep(true)
 					})}
 				>
 					<Stack>
@@ -156,62 +137,40 @@ export default function LoginPage(props: PaperProps) {
 					</Stack>
 
 					<Group justify="space-between" mt="xl">
-						<Anchor component="button" type="button" opacity={0.85} onClick={() => toggle()} size="xs">
-							{type === "register" ? "Already have an account? Login" : "Don't have an account? Register"}
-						</Anchor>
-
 						{/* VERIFY CODE */}
 						{isCodeStep ? (
 							<Button
 								type="button"
+								fullWidth
 								onClick={async () => {
-									let response
-
-									if (type === "register") {
-										// REGISTER create user
-										response = await fetch(RegistrationForNonGoogleUsers, {
-											method: "POST",
-											headers: { "Content-Type": "application/json" },
-											body: JSON.stringify({
-												email: savedEmail,
-												code,
-												name: parseEmailUsername(savedEmail),
-											}),
-										})
-									} else {
-										// LOGIN verify only
-										response = await fetch(VerfyingTemporaryCodeURL, {
-											method: "POST",
-											headers: { "Content-Type": "application/json" },
-											body: JSON.stringify({
-												email: savedEmail,
-												code,
-											}),
-										})
-									}
+									// Call one "VerifyAndLogin" endpoint
+									const response = await fetch(VerfyingTemporaryCodeURL, {
+										method: "POST",
+										headers: { "Content-Type": "application/json" },
+										body: JSON.stringify({
+											email: savedEmail,
+											code,
+											// If they are new, the backend uses this name
+											name: parseEmailUsername(savedEmail),
+										}),
+									})
 
 									if (response.ok) {
 										const data = await response.json()
-
-										localStorage.setItem(
-											"user",
-											JSON.stringify({
-												userName: data.userName,
-												email: data.email,
-												userId: data.userId,
-											})
-										)
-
+										const loginTime = Date.now()
+										localStorage.setItem("user", JSON.stringify({ ...data, loginTime }))
 										navigate("/home")
 									} else {
-										console.log("Invalid or expired code")
+										alert("Invalid or expired code")
 									}
 								}}
 							>
-								Verify Code
+								Verify & Login
 							</Button>
 						) : (
-							<Button type="submit">{upperFirst(type)}</Button>
+							<Button type="submit" fullWidth>
+								Continue
+							</Button>
 						)}
 					</Group>
 				</form>
