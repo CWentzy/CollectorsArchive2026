@@ -40,6 +40,8 @@ namespace YGODataUtility
     public class API_YGOCard
     {
 
+        public readonly List<string> classifications = new List<string>() { "Normal", "Effect", "Ritual", "Fusion", "Synchro", "Xyz", "Toon", "Flip", "Spirit", "Union", "Gemini", "Tuner", "Pendulum", "Link" };
+
         // ------------------------------------- PROPERTIES ------------------------------------ //
 
         public int id { get; set; }
@@ -52,6 +54,7 @@ namespace YGODataUtility
 
         // ----- Monster Specific Attributes -----
 
+        public string[] typeline { get; set; }
         public int? atk { get; set; }
         public int? def { get; set; }
         public int? level { get; set; }
@@ -88,6 +91,12 @@ namespace YGODataUtility
             string[] cardTypes = humanReadableCardType.Split(' ');
             string superType = cardTypes.First().ToUpper() == "SKILL" ? "SKILL" : cardTypes.Last().ToUpper();
 
+            string classification = string.Empty;
+            if (typeline != null)
+            {
+                classification = GetClassifications();
+            }
+
             switch (superType)
             {
                 case "SPELL":
@@ -107,32 +116,32 @@ namespace YGODataUtility
                     if (cardTypes.Contains("Pendulum"))
                     {
                         cmd.CommandText = "INSERT INTO YGOCard (CardName, CardID, CardText, SuperType, SubType, Attribute, CardLevel, " +
-                                            "AttackValue, DefenseValue, PendulumScale) VALUES " +
+                                            "AttackValue, DefenseValue, PendulumScale, Classifications) VALUES " +
                                             "(@cardName, @cardCode, @cardText, " +
                                             "(SELECT SuperTypeID FROM CardSuperType WHERE SuperTypeName = @superType), " +
                                             "(SELECT SubTypeID FROM CardSubType WHERE SubTypeName = @subType), " +
                                             "(SELECT AttributeID FROM MonsterAttribute WHERE AttributeName = @attribute), " +
-                                            "@level, @atk, @def, @pend);";
+                                            "@level, @atk, @def, @pend, @classifications);";
                     }
                     else if (cardTypes.Contains("Link"))
                     {
                         cmd.CommandText = "INSERT INTO YGOCard (CardName, CardID, CardText, SuperType, SubType, Attribute, " +
-                                            "AttackValue, LinkRating) VALUES " +
+                                            "AttackValue, LinkRating, Classifications) VALUES " +
                                             "(@cardName, @cardCode, @cardText, " +
                                             "(SELECT SuperTypeID FROM CardSuperType WHERE SuperTypeName = @superType), " +
                                             "(SELECT SubTypeID FROM CardSubType WHERE SubTypeName = @subType), " +
                                             "(SELECT AttributeID FROM MonsterAttribute WHERE AttributeName = @attribute), " +
-                                            "@atk, @link);";
+                                            "@atk, @link, @classifications);";
                     }
                     else
                     {
                         cmd.CommandText = "INSERT INTO YGOCard (CardName, CardID, CardText, SuperType, SubType, Attribute, CardLevel, " +
-                                            "AttackValue, DefenseValue) VALUES " +
+                                            "AttackValue, DefenseValue, Classifications) VALUES " +
                                             "(@cardName, @cardCode, @cardText, " +
                                             "(SELECT SuperTypeID FROM CardSuperType WHERE SuperTypeName = @superType), " +
                                             "(SELECT SubTypeID FROM CardSubType WHERE SubTypeName = @subType), " +
                                             "(SELECT AttributeID FROM MonsterAttribute WHERE AttributeName = @attribute), " +
-                                            "@level, @atk, @def);";
+                                            "@level, @atk, @def, @classifications);";
                     }
                     break;
             }
@@ -151,7 +160,7 @@ namespace YGODataUtility
                 cmd.Parameters.AddWithValue("@subType", race);
                 cmd.Parameters.AddWithValue("@attribute", attribute);
                 cmd.Parameters.AddWithValue("@atk", atk);
-                
+                cmd.Parameters.AddWithValue("@classifications", classification.Trim());
 
                 if (level != null) 
                 { 
@@ -161,13 +170,22 @@ namespace YGODataUtility
 
 
                 if (cardTypes.Contains("Pendulum")) { cmd.Parameters.AddWithValue("@pend", scale); }
-                if (cardTypes.Contains("Link")) 
-                { 
-                    cmd.Parameters.AddWithValue("@link", linkval);
-                }
+                if (cardTypes.Contains("Link")) { cmd.Parameters.AddWithValue("@link", linkval); }
             }
 
             return cmd;
+        }
+
+
+        public string GetClassifications()
+        {
+            string classification = string.Empty;
+            foreach (string type in typeline)
+            {
+                if (classifications.Contains(type)) { classification += type + " "; }
+            }
+
+            return classification;
         }
 
     }
