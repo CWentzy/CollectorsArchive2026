@@ -1,7 +1,7 @@
 import { Button, Group, Stack, Text } from "@mantine/core"
 import { useState } from "react"
-import type { CardInformation } from "../../types/api"
-import CardYGO from "../YGO/CardYGO"
+import type { CardInformation, CardsAndPrints, PrintingInformation } from "../../types/api"
+import PrintYGO from "../YGO/PrintYGO"
 import YgoScanner from "./YgoScanner"
 
 type ScanMode = "YGO" | "MTG"
@@ -16,7 +16,7 @@ interface CardScanOverlayProps {
 }
 
 export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
-	const [results, setResults] = useState<CardInformation[] | null>(null)
+	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [errorMessage, setErrorMessage] = useState("")
 
@@ -56,15 +56,17 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 				throw new Error("Failed to send scan result.")
 			}
 
-			const cardsList: CardInformation[] = await response.json()
-			console.log("Backend response:", cardsList)
+			const data = await response.json()
+
+			const cardsInfo = data.cards[0] // TODO: if we always get back 1 card, then update controller to just send back 1 card instead of array
+			const printsInfo = data.printings
 
 			if (result.mode === "YGO") {
-				setResults(cardsList.map(formatCard))
+				setCardAndPrints({ cardsInfo, printsInfo })
 			} else {
 				//Nothing set up for MTG display yet... Auto error and log
-				console.log("MTG response received:", cardsList)
-				setResults(null)
+				console.log("MTG response received:", data)
+				setCardAndPrints(null)
 				setErrorMessage("MTG response received. UI mapping not added yet.")
 			}
 		} catch (error) {
@@ -75,14 +77,17 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 		}
 	}
 
+	const cardInfo = cardAndPrints?.cardsInfo as CardInformation | undefined // single card
+	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
+
 	function handleRescan() {
-		setResults(null)
+		setCardAndPrints(null)
 		setErrorMessage("")
 	}
 
 	return (
 		<div className="card-scan-overlay">
-			{!results && !loading && <YgoScanner onClose={onClose} onScanComplete={handleScanComplete} />}
+			{!cardAndPrints && !loading && <YgoScanner onClose={onClose} onScanComplete={handleScanComplete} />}
 
 			{loading && (
 				<div style={{ padding: 24 }}>
@@ -90,7 +95,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 				</div>
 			)}
 
-			{!loading && results && (
+			{!loading && cardAndPrints && (
 				<div style={{ padding: 24 }}>
 					<Group justify="space-between" mb="md">
 						<Text fw={700} size="lg">
@@ -107,20 +112,19 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 						</Group>
 					</Group>
 
-					{results.length === 0 && <Text>No matches found.</Text>}
+					{printsInfo?.length === 0 && <Text>No matches found.</Text>}
 
-					{results.length > 0 && (
+					{printsInfo?.length && (
 						<Stack gap="md">
-							{results.map((item) => {
-								const cardData = item as Card
-								return <CardYGO key={cardData.id} cardData={cardData} />
-							})}
+							{printsInfo.map((print) => (
+								<PrintYGO key={print.printID} printInfo={print} cardInfo={cardInfo} />
+							))}
 						</Stack>
 					)}
 				</div>
 			)}
 
-			{!loading && errorMessage && !results && (
+			{!loading && errorMessage && !cardAndPrints && (
 				<div style={{ padding: 24 }}>
 					<Text c="red">{errorMessage}</Text>
 
