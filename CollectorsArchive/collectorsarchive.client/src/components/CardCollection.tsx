@@ -1,6 +1,6 @@
 import { Accordion, Badge, Group, Stack, Text } from "@mantine/core"
 import type { CardInformation, CardsAndPrints, PrintingInformation } from "../types/api"
-import PrintYGO from "./YGO/PrintYGO"
+import PrintYGO from "./PrintYGO"
 
 export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: CardsAndPrints | null }) {
 	const cards = cardsAndPrints?.cardsInfo as CardInformation[] | undefined

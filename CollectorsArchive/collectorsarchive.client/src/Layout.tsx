@@ -1,12 +1,13 @@
 import { AppShell, Avatar, Button, Container, Grid, Group, Modal } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { IconUser } from "@tabler/icons-react"
-import { Outlet, useLocation } from "react-router-dom"
 import { useMemo } from "react"
+import { Outlet, useLocation } from "react-router-dom"
 import { CardScanButton } from "./components/CardScan/CardScanButton"
 //import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
 import CardScanOverlay from "./components/CardScan/CardScanOverlay"
 import CardSearchButton from "./components/CardSearch/CardSearchButton"
+import CreditsFooter from "./components/CreditsFooter"
 import Logo from "./components/Logo"
 import { ProfilePanel, type UserProfile } from "./components/ProfilePanel"
 
@@ -99,6 +100,9 @@ export function Layout() {
 				<Container size="xl">
 					<Outlet />
 				</Container>
+
+				<CreditsFooter />
+
 				<Modal opened={scanOpened} onClose={close} fullScreen withCloseButton={false} keepMounted={false} padding={0}>
 					<CardScanOverlay onClose={close} />
 				</Modal>
