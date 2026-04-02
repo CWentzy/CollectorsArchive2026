@@ -29,8 +29,11 @@ namespace CollectorsArchive.Server.Controllers
             // declaring the store procedure that im calling from db 
             string collectionStoreProcedureName = "DisplayUserCollection";
 
-            List<CardInformation> collectionCards = [];
-            List<PrintingInformation> collectionPrintings = [];
+            //List<CardInformation> collectionCards = [];
+            //List<PrintingInformation> collectionPrintings = [];
+
+            List<CardInformation> collectionCards = new List<CardInformation>();
+            List<PrintingInformation> collectionPrintings = new List<PrintingInformation>();
 
             string connectionString = _configuration.GetConnectionString("ErmiyasDb");
 
@@ -74,11 +77,12 @@ namespace CollectorsArchive.Server.Controllers
                 }
             }
 
-            if (collectionCards == null || collectionCards.Count == 0 || collectionPrintings == null || collectionPrintings.Count == 0)
-            {
-                return NotFound(new { message = "No collection found for this user." });
-            }
+            //if (collectionCards == null || collectionCards.Count == 0 || collectionPrintings == null || collectionPrintings.Count == 0)
+            //{
+            //    return NotFound(new { message = "No collection found for this user." });
+            //}
 
+            // JUST RETURN THE DATA (even if it's empty lists list for new user example) 
             return Ok(new
             {
                 message = "Collection retrieved successfully.",
