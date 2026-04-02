@@ -6,37 +6,39 @@
 	Button,
 	Divider,
 	Group,
-	Stack,
-	Text,
-	Transition,
-	useMantineColorScheme,
 	Loader,
 	Modal,
+	Stack,
+	Text,
 	Textarea,
 	TextInput,
+	Transition,
+	useMantineColorScheme,
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import {
 	IconCalendar,
+	IconCards,
 	IconEdit,
 	IconLayoutList,
+	IconLayoutSidebarRightCollapse,
 	IconLogout,
 	IconMoon,
 	IconSun,
-	IconUsers,
-	IconLayoutSidebarRightCollapse,
-	IconCards,
 } from "@tabler/icons-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
+
+const GET_USER_PROFILE = `${import.meta.env.VITE_SERVER_URL}/api/UserProfile`
+const GET_USER_COLLECTION = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
 
 interface ProfilePanelProps {
 	opened: boolean
 	onClose: () => void
 }
 
-type UserProfile = {
+export type UserProfile = {
 	userId: number
 	userName: string
 	bio: string | null
@@ -44,19 +46,18 @@ type UserProfile = {
 	joinDate: string
 }
 
-const API_BASE = "https://collectorsarchive.azurewebsites.net/api/UserProfile"
-const GET_USER_COLLECTION = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
-const formatDate = (dateStr: string) => {
-	return new Date(dateStr).toLocaleDateString("en-US", { month: "long", year: "numeric" })
-}
 export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 	const user = JSON.parse(localStorage.getItem("user") || "null")
-	const userId = user?.userId ?? user?.id ?? null
+	const userId = user?.userId
 
 	const [profile, setProfile] = useState<UserProfile | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [cards, setCards] = useState<{ cardID: string; cardName: string }[]>([])
 	const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
+
+	// Refs to track which userID/userName we've fetched profile/collection for to prevent unnecessary re-fetches
+	const fetchedProfileForUserRef = useRef<number | null>(null)
+	const fetchedCollectionForUserNameRef = useRef<string | null>(null)
 
 	const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 	const isDark = colorScheme === "dark"
@@ -69,31 +70,53 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 	// Fetch profile whenever the panel opens
 	useEffect(() => {
 		if (!opened || !userId) return
-		setLoading(true)
-		fetch(`${API_BASE}/${userId}`)
-			.then((res) => {
-				if (!res.ok) throw new Error()
-				return res.json()
-			})
-			.then((data: UserProfile) => {
+		if (fetchedProfileForUserRef.current === userId && profile) return
+
+		const loadProfile = async () => {
+			setLoading(true)
+
+			try {
+				const profileResponse = await fetch(`${GET_USER_PROFILE}/${userId}`)
+				if (!profileResponse.ok) throw new Error()
+
+				const data: UserProfile = await profileResponse.json()
+
 				setProfile(data)
+				fetchedProfileForUserRef.current = userId
+
 				// Sync localStorage username in case it changed
 				const stored = JSON.parse(localStorage.getItem("user") || "null")
-				if (stored && data.userName) {
+				if (stored && data.userName && stored.userName !== data.userName) {
 					stored.userName = data.userName
 					localStorage.setItem("user", JSON.stringify(stored))
 				}
-				return fetch(GET_USER_COLLECTION, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ UserName: data.userName }),
-				})
-			})
-			.then((res) => res.json())
-			.then((col) => setCards(col.collection ?? []))
-			.catch(() => setProfile(null))
-			.finally(() => setLoading(false))
-	}, [opened, userId])
+
+				// Avoid refetching collection if we already have it for the current username
+				if (fetchedCollectionForUserNameRef.current !== data.userName) {
+					const collectionResponse = await fetch(GET_USER_COLLECTION, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ UserName: data.userName }),
+					})
+					if (!collectionResponse.ok) throw new Error()
+
+					const col = await collectionResponse.json()
+
+					setCards(col.collection ?? [])
+					fetchedCollectionForUserNameRef.current = data.userName
+				}
+			} catch {
+				setProfile(null)
+				setCards([])
+				fetchedProfileForUserRef.current = null
+				fetchedCollectionForUserNameRef.current = null
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		void loadProfile()
+	}, [opened, userId, profile])
 
 	const handleOpenEdit = () => {
 		form.setValues({
@@ -105,7 +128,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 	}
 
 	const handleSave = async () => {
-		await fetch(`${API_BASE}/${userId}`, {
+		await fetch(`${GET_USER_PROFILE}/${userId}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -114,15 +137,33 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 				photoUrl: form.values.photoUrl || null,
 			}),
 		})
+
 		// Re-fetch profile to reflect saved changes
-		const res = await fetch(`${API_BASE}/${userId}`)
+		const res = await fetch(`${GET_USER_PROFILE}/${userId}`)
 		const updated: UserProfile = await res.json()
+
 		setProfile(updated)
+		fetchedProfileForUserRef.current = userId
+
 		// Update localStorage username
 		const stored = JSON.parse(localStorage.getItem("user") || "null")
 		if (stored) {
 			stored.userName = updated.userName
 			localStorage.setItem("user", JSON.stringify(stored))
+		}
+
+		if (fetchedCollectionForUserNameRef.current !== updated.userName) {
+			const collectionRes = await fetch(GET_USER_COLLECTION, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ UserName: updated.userName }),
+			})
+
+			if (collectionRes.ok) {
+				const col = await collectionRes.json()
+				setCards(col.collection ?? [])
+				fetchedCollectionForUserNameRef.current = updated.userName
+			}
 		}
 		closeEdit()
 	}
@@ -166,7 +207,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 			<Transition mounted={opened} transition="slide-left" duration={300} timingFunction="ease">
 				{(styles) => (
 					<Box style={{ ...styles, height: "100%", overflowY: "auto" }}>
-						<Stack gap="md" p="lg" h="100%">
+						<Stack gap="md" p="lg">
 							{/* ── Close button ── */}
 							<Group justify="flex-start">
 								<ActionIcon variant="subtle" color="gray" size="sm" onClick={onClose} aria-label="Close profile panel">
@@ -218,7 +259,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 										<Text size="xs" fw={600} c="dimmed" tt="uppercase" style={{ letterSpacing: "0.05em" }}>
 											Bio
 										</Text>
-										<Text size="sm" c="dimmed" fs={profile?.bio ? "normal" : "italic"}>
+										<Text size="sm" fs={profile?.bio ? "normal" : "italic"}>
 											{profile?.bio ?? "No bio yet — tell the world about your collection!"}
 										</Text>
 									</Stack>
@@ -269,14 +310,6 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 										</Text>
 									</Group>
 
-									<Group gap="xs" align="center">
-										<IconUsers size={14} color="var(--mantine-color-spell-green-5)" />
-										<Text size="sm">Friends</Text>
-										<Text size="sm" fw={600} ml="auto" c="spell-green">
-											--
-										</Text>
-									</Group>
-
 									<Divider />
 
 									{/* ── Theme Toggle ── */}
@@ -316,4 +349,8 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 			</Transition>
 		</>
 	)
+}
+
+const formatDate = (dateStr: string) => {
+	return new Date(dateStr).toLocaleDateString("en-US", { month: "long", year: "numeric" })
 }

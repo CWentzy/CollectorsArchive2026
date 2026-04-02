@@ -13,14 +13,14 @@ import {
 	Stack,
 	Text,
 } from "@mantine/core"
-import { IconCalendar, IconCards, IconChevronLeft, IconLayoutList, IconUsers } from "@tabler/icons-react"
-import { GalleryHorizontalEndIcon, LayoutListIcon, Users2Icon } from "lucide-react"
+import { IconCalendar, IconCards, IconChevronLeft, IconLayoutList } from "@tabler/icons-react"
+import { GalleryHorizontalEndIcon, LayoutListIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import PrintYGO from "../components/YGO/PrintYGO"
-import { formatDisplayCollectionPrint } from "../types/mapper"
-import type { DisplayCollectionPrint, PrintWithCard } from "../types/ygo/schema"
-const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
+import CardCollection from "../components/CardCollection"
+import CardLists from "../components/Cardlists"
+import type { CardsAndPrints, PrintingInformation } from "../types/api"
+const GET_USER_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
 
 type Member = {
 	userId: number
@@ -28,6 +28,8 @@ type Member = {
 	photoUrl: string | null
 	joinDate: string | null
 }
+
+type Tab = "collection" | "cardlists" //To track which tab is active
 
 const formatDate = (dateStr: string | null) => {
 	if (!dateStr) return "Unknown"
@@ -39,8 +41,9 @@ export default function MemberProfilePage() {
 	const navigate = useNavigate()
 	const member = location.state?.member as Member | undefined
 
-	const [prints, setPrints] = useState<PrintWithCard[]>([])
+	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
+	const [activeTab, setActiveTab] = useState<Tab>("collection")
 
 	useEffect(() => {
 		const fetchCollection = async () => {
@@ -55,19 +58,10 @@ export default function MemberProfilePage() {
 
 				const data = await response.json()
 
-				// Cards are nested under "collection" in the response
-				const prints: PrintWithCard[] = data.collection.map((print: DisplayCollectionPrint) => {
-					const printWithCard: PrintWithCard = {
-						print: formatDisplayCollectionPrint(print),
-						card: {
-							id: print.cardID,
-							name: print.cardName,
-						},
-					}
-					return printWithCard
-				})
+				const cardsInfo = data.cards
+				const printsInfo = data.printings
 
-				setPrints(prints)
+				setCardAndPrints({ cardsInfo, printsInfo })
 			} catch (err) {
 				console.error(err)
 			} finally {
@@ -77,6 +71,7 @@ export default function MemberProfilePage() {
 
 		fetchCollection()
 	}, [member])
+
 	// If someone navigates here directly without state, show a fallback
 	if (!member) {
 		return (
@@ -97,6 +92,8 @@ export default function MemberProfilePage() {
 			</Box>
 		)
 	}
+
+	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
 
 	return (
 		<Box mih="100vh" w="100%" py="md" px="xl">
@@ -162,19 +159,12 @@ export default function MemberProfilePage() {
 								<IconCards size={14} color="var(--mantine-color-spell-green-5)" />
 								<Text size="sm">Cards Collected</Text>
 								<Text size="sm" fw={700} ml="xs" c="spell-green">
-									{prints.length}
+									{printsInfo?.length ?? "--"}
 								</Text>
 							</Group>
 							<Group gap="xs">
 								<IconLayoutList size={14} color="var(--mantine-color-spell-green-5)" />
 								<Text size="sm">Card Lists</Text>
-								<Text size="sm" fw={700} ml="xs" c="spell-green">
-									--
-								</Text>
-							</Group>
-							<Group gap="xs">
-								<IconUsers size={14} color="var(--mantine-color-spell-green-5)" />
-								<Text size="sm">Friends</Text>
 								<Text size="sm" fw={700} ml="xs" c="spell-green">
 									--
 								</Text>
@@ -191,36 +181,37 @@ export default function MemberProfilePage() {
 						<DropDownListForSearching />
 					</Flex> */}
 					<Flex justify="flex-start" gap="md" wrap="wrap">
-						<Button variant="light" color="green" leftSection={<GalleryHorizontalEndIcon size={16} />}>
-							Collected Cards
+						<Button variant={activeTab === "collection" ? "filled" : "light"}
+							color="green"
+							leftSection={<GalleryHorizontalEndIcon size={16} />}
+							onClick={() => setActiveTab("collection")}>
+							Collection
 						</Button>
-						<Button variant="light" color="grape" leftSection={<LayoutListIcon size={16} />}>
+						<Button variant={activeTab === "cardlists" ? "filled" : "light"}
+							color="grape"
+							leftSection={<LayoutListIcon size={16} />}
+							onClick={() => setActiveTab("cardlists")}>
 							Card Lists
-						</Button>
-						<Button variant="light" color="pink" leftSection={<Users2Icon size={16} />}>
-							Friends
 						</Button>
 					</Flex>
 				</Stack>
 
-				{/* Collection */}
-				<Paper shadow="sm" p="md" radius="md" withBorder>
-					<Text size="lg" fw={600} mb="md">
-						Collection
-					</Text>
+				{activeTab === "collection" && (
+					<Paper shadow="sm" py="md" px="lg" radius="md" withBorder>
+						<Text size="lg" fw={600} mb="md">
+							Collection
+						</Text>
+						<ScrollArea style={{ height: "50vh" }} offsetScrollbars="present" pos="relative">
+							<LoadingOverlay visible={loading} overlayProps={{ radius: "md", blur: 2 }} loaderProps={{ type: "dots" }} />
+							<CardCollection cardsAndPrints={cardAndPrints} />
+						</ScrollArea>
+					</Paper>
+				)}
 
-					<ScrollArea style={{ height: "50vh" }} offsetScrollbars pos="relative">
-						<LoadingOverlay visible={loading} overlayProps={{ radius: "md", blur: 2 }} loaderProps={{ type: "dots" }} />
-
-						<Stack w="100%">
-							{prints.map((print: PrintWithCard) => {
-								const printData = print.print
-								const cardData = print.card
-								return <PrintYGO key={printData.id} printData={printData} cardData={cardData} />
-							})}
-						</Stack>
-					</ScrollArea>
-				</Paper>
+				{activeTab === "cardlists" && (
+					
+					<CardLists userProfileID={member.userId} />
+				)}
 			</Stack>
 		</Box>
 	)

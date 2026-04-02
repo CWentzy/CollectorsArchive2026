@@ -1,56 +1,107 @@
-import { Badge, Box, Grid, Group, Image, LoadingOverlay, Stack, Text, Title } from "@mantine/core"
+import { Box, Card, Grid, Group, Image, LoadingOverlay, Stack, Table, Text, Title } from "@mantine/core"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
+import { Game, GameID } from "../components/CardSearch/schema"
 import PrintYGO from "../components/YGO/PrintYGO"
-import { formatCardDetails, formatPrintingDetails } from "../types/mapper"
-import type { Card, Print, PrintDetails } from "../types/ygo/schema"
+import type { CardInformation, CardsAndPrints, MTGCard, PrintingInformation, YGOCard } from "../types/api"
 
-const placeholderImageUrl = "/assets/images/card_placeholder_ygo.jpg"
-const SingleCardDisplayYGO =
-	"https://collectorsarchive.azurewebsites.net/api/SingleCardDisplayYGOes/SingleCardDisplayYGO"
+const ygoCardImageUrl = "/assets/images/card_placeholder_ygo.jpg"
+const SingleCardDisplayYGO = `${import.meta.env.VITE_SERVER_URL}/api/SingleCardDisplayYGOes/SingleCardDisplayYGO`
 
-interface CardAndPrints {
-	prints: Print[]
-	card?: Card
+function CardAttributes({ cardInfo }: { cardInfo?: CardInformation }) {
+	if (!cardInfo) return null
+
+	let attributes = null
+
+	switch (cardInfo.gameID) {
+		case GameID.ygo:
+			attributes = cardInfo.cardAttributes as YGOCard
+			break
+		case GameID.mtg:
+			attributes = cardInfo.cardAttributes as MTGCard
+			break
+		default:
+			return null
+	}
+
+	return (
+		<Card withBorder>
+			<Card.Section withBorder inheritPadding py="xs">
+				<Text size="sm" fw={500}>
+					Attributes
+				</Text>
+			</Card.Section>
+			<Card.Section inheritPadding py="xs">
+				{attributes ? (
+					<Table variant="vertical" layout="fixed" withRowBorders={false}>
+						<Table.Tbody>
+							{Object.entries(attributes).map(([key, value]) => (
+								<Table.Tr key={key}>
+									<Table.Td w={150}>
+										<Text c="dimmed" size="xs" tt="uppercase">
+											{key.replace(/([A-Z])/g, " $1").trim()}
+										</Text>
+									</Table.Td>
+									<Table.Td>
+										<Text size="sm" fw={500}>
+											{value}
+										</Text>
+									</Table.Td>
+								</Table.Tr>
+							))}
+						</Table.Tbody>
+					</Table>
+				) : (
+					<Text size="sm" c="dimmed">
+						No information available for this card.
+					</Text>
+				)}
+			</Card.Section>
+		</Card>
+	)
 }
 
 export default function SingleCardDisplay() {
-	const { id } = useParams<{ id: string }>()
-	const [cardAndPrints, setCardAndPrints] = useState<CardAndPrints | null>(null)
+	const { game, cardID } = useParams()
+
+	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
+	const gameID = GameID[game as Game]
 
 	useEffect(() => {
 		async function fetchCard() {
 			const response = await fetch(SingleCardDisplayYGO, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ cardID: id }),
+				body: JSON.stringify({ gameID, cardID }),
 			})
 
 			const data = await response.json()
 
-			const prints = data.printings.map((print: PrintDetails) => formatPrintingDetails(print))
-			const card = data.card ? formatCardDetails(data.card) : undefined
+			const printsInfo = data.printings
+			const cardsInfo = data.card
 
-			setCardAndPrints({ card, prints })
-
-			console.log("Card:", card)
-			console.log("Printings:", data.printings)
+			setCardAndPrints({ cardsInfo, printsInfo })
 
 			setLoading(false)
 		}
 
 		fetchCard()
-	}, [id])
+	}, [gameID, cardID])
+
+	const cardInfo = cardAndPrints?.cardsInfo as CardInformation | undefined // single card
+	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
 
 	return (
 		<Box py="xl">
 			<Box mx="auto">
 				<Grid gutter={50} align="center">
 					{/* Card Image Column */}
-					<Grid.Col span="content">
+					<Grid.Col span="auto">
 						{/* TODO: Replace with real card image from backend */}
-						<Image src={placeholderImageUrl} alt={"Card Iamge"} fit="contain" h={520} />
+						{gameID === GameID.ygo && (
+							<Image src={ygoCardImageUrl} alt={"Card Iamge"} fit="contain" h={520} mah={520} />
+						)}
 					</Grid.Col>
 
 					{/* Details Column */}
@@ -61,36 +112,23 @@ export default function SingleCardDisplay() {
 							<Stack gap="md">
 								{/* Header — name and id come from route params */}
 								<Title order={1} fz={42} fw={800}>
-									{cardAndPrints?.card?.name ?? "Unknown Card"}
+									{cardInfo?.cardName ?? "Unknown Card"}
 								</Title>
 
-								<Group gap="xs">
-									{cardAndPrints?.card?.superType && (
-										<Badge size="md" variant="gradient" gradient={{ from: "yellow", to: "red", deg: 45 }} fw={600}>
-											{cardAndPrints?.card?.superType}
-										</Badge>
-									)}
-
-									{cardAndPrints?.card?.subType && (
-										<Badge size="md" variant="transparent" fw={600}>
-											{cardAndPrints?.card?.subType}
-										</Badge>
-									)}
-								</Group>
-
-								{/* Description — card Text is a descriiption of the card */}
+								{/* Description — card text is a description of the card */}
 								<div>
-									<Text c="dimmed">
-										{cardAndPrints?.card?.description ?? "No description available for this card."}
-									</Text>
+									<Text c="dimmed">{cardInfo?.cardText ?? "No description available for this card."}</Text>
 
 									<Group justify="flex-end" w="100%">
 										<Text c="dimmed" size="xs">
-											ID: {cardAndPrints?.card?.id ?? "Unknown ID"}
+											ID: {cardInfo?.cardID ?? "Unknown ID"}
 										</Text>
 									</Group>
 								</div>
 							</Stack>
+
+							{/* Game-specific attributes */}
+							<CardAttributes cardInfo={cardInfo} />
 
 							{/* <Group justify="space-between" grow>
 								<Button size="md" variant="light">
@@ -112,9 +150,9 @@ export default function SingleCardDisplay() {
 					</Text>
 
 					<Stack gap="xs">
-						{cardAndPrints?.prints.length ? (
-							cardAndPrints.prints.map((print) => (
-								<PrintYGO key={print.id} printData={print} cardData={cardAndPrints.card} />
+						{printsInfo?.length ? (
+							printsInfo.map((print) => (
+								<PrintYGO key={print.printID} printInfo={print} cardInfo={cardInfo} withCardLink={false} />
 							))
 						) : (
 							<Text c="dimmed" size="sm">

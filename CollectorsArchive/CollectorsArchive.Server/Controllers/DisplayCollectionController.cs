@@ -1,4 +1,6 @@
 ﻿using CollectorsArchive.Server.Models;
+using CollectorsArchive.Server.Models.ApiOutput;
+using CollectorsArchive.Server.Models.CardDisplays;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -27,7 +29,8 @@ namespace CollectorsArchive.Server.Controllers
             // declaring the store procedure that im calling from db 
             string collectionStoreProcedureName = "DisplayUserCollection";
 
-            List<DisplayCollectionModel> cardCollection = new List<DisplayCollectionModel>();
+            List<CardInformation> collectionCards = [];
+            List<PrintingInformation> collectionPrintings = [];
 
             string connectionString = _configuration.GetConnectionString("ErmiyasDb");
 
@@ -46,19 +49,32 @@ namespace CollectorsArchive.Server.Controllers
                 {
                     while (await reader.ReadAsync())
                     {
-                        cardCollection.Add(new DisplayCollectionModel
+                        collectionCards.Add(new CardInformation
                         {
+                            GameID = 1, //reader.GetInt32("GameID"),
+                            CardID = reader["CardID"].ToString(),
+                            CardName = reader["CardName"].ToString(),
+                        });
+
+                        collectionPrintings.Add(new PrintingInformation
+                        {
+                            GameID = 1, //reader.GetInt32("GameID"),
                             PrintID = reader.GetInt32("PrintID"),
                             CardID = reader["CardID"].ToString(),
                             CardName = reader["CardName"].ToString(),
-                            SetCode = reader["SetCode"].ToString(),
-                            CardRarity = reader["CardRarity"].ToString()
+                            SetID = reader.GetInt32("SetID"),
+                            SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
+                            SetName = reader["SetName"]?.ToString() ?? string.Empty,
+                            Rarity = reader["CardRarity"]?.ToString() ?? string.Empty,
+                            ReleaseDate = DateTime.Now,
+
+                            Quantity = reader["Quantity"] as int? ?? 0,
                         });
                     }
                 }
             }
 
-            if (cardCollection == null || cardCollection.Count == 0)
+            if (collectionCards == null || collectionCards.Count == 0 || collectionPrintings == null || collectionPrintings.Count == 0)
             {
                 return NotFound(new { message = "No collection found for this user." });
             }
@@ -67,7 +83,8 @@ namespace CollectorsArchive.Server.Controllers
             {
                 message = "Collection retrieved successfully.",
                 userName = request.UserName,
-                collection = cardCollection
+                cards = collectionCards,
+                printings = collectionPrintings
             });
         }
     }

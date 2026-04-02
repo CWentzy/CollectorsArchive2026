@@ -29,20 +29,24 @@ namespace YGODataUtility
             // ----- Determine the Set ID for the current printings set
             cmd.CommandText = "SELECT CardSetID FROM CardSet WHERE SetName = @setName";
             cmd.Parameters.AddWithValue("@setName", set_name);
-            int setID = (int)cmd.ExecuteScalar();
 
-
-            cmd.CommandText = "INSERT INTO CardPrinting (CardID, GameID, CardSetID, CardSetIndex, CardRarity) VALUES " +
+            var result = cmd.ExecuteScalar();
+            int setID = 0;
+            if (result != null) 
+            { 
+                setID = (int)result;
+                cmd.CommandText = "INSERT INTO CardPrinting (CardID, GameID, CardSetID, CardSetIndex, CardRarity) VALUES " +
                                 "(@cardID, " +
                                 "(SELECT GameID FROM CardGame WHERE GameID = @gameID), " +
                                 "(SELECT CardSetID FROM CardSet WHERE CardSetID = @setID), " +
                                 "@setIndex, @rarity);";
 
-            cmd.Parameters.AddWithValue("@cardID", cardID);
-            cmd.Parameters.AddWithValue("@gameID", _ygoGameID);
-            cmd.Parameters.AddWithValue("setID", setID);
-            cmd.Parameters.AddWithValue("@setIndex", setCode.Last());
-            cmd.Parameters.AddWithValue("@rarity", set_rarity);
+                cmd.Parameters.AddWithValue("@cardID", cardID);
+                cmd.Parameters.AddWithValue("@gameID", _ygoGameID);
+                cmd.Parameters.AddWithValue("setID", setID);
+                cmd.Parameters.AddWithValue("@setIndex", setCode.Last());
+                cmd.Parameters.AddWithValue("@rarity", set_rarity);
+            }
 
             return cmd;
         }

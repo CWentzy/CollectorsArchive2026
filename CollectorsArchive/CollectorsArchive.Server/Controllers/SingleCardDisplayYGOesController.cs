@@ -1,4 +1,5 @@
-﻿using CollectorsArchive.Server.Models.CardDisplays;
+﻿using CollectorsArchive.Server.Models.ApiInput;
+using CollectorsArchive.Server.Models.ApiOutput;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -17,7 +18,7 @@ namespace CollectorsArchive.Server.Controllers
         }
 
         [HttpPost("SingleCardDisplayYGO")]
-        public async Task<IActionResult> SingleYGOesCardDisplay([FromBody] CardDisplayYGO request)
+        public async Task<IActionResult> SingleYGOesCardDisplay([FromBody] CardDetailsRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.CardID))
             {
@@ -28,8 +29,11 @@ namespace CollectorsArchive.Server.Controllers
             {
                 string connectionString = _configuration.GetConnectionString("ErmiyasDb");
 
-                List<CardDisplayYGO> cardDisplayYGO = new();
-                List<PrintInfoDisplayDetails> printInfoDisplayDetails = new();
+                // List<CardDisplayYGO> cardDisplayYGO = new();
+                // List<PrintInfoDisplayDetails> printInfoDisplayDetails = new();
+
+                List<CardInformation> cardDisplayYGO = new();
+                List<PrintingInformation> printInfoDisplayDetails = new();
 
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
@@ -45,19 +49,37 @@ namespace CollectorsArchive.Server.Controllers
                         {
                             while (await reader.ReadAsync())
                             {
-                                cardDisplayYGO.Add(new CardDisplayYGO
+                                //cardDisplayYGO.Add(new CardDisplayYGO
+                                //{
+                                //    CardID = reader["CardID"]?.ToString() ?? string.Empty,
+                                //    name = reader["CardName"]?.ToString() ?? string.Empty,
+                                //    superType = reader["SuperType"]?.ToString() ?? string.Empty,
+                                //    subType = reader["SubType"]?.ToString() ?? string.Empty,
+                                //    cardText = reader["CardText"]?.ToString() ?? "No description available.",
+                                //    attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
+                                //    level = reader["CardLevel"] as int?,
+                                //    Atk = reader["AttackValue"] as int?,
+                                //    Def = reader["DefenseValue"] as int?,
+                                //    PendulumScale = reader["PendulumScale"] as int?,
+                                //    LinkRating = reader["LinkRating"] as int?
+                                //});
+                                cardDisplayYGO.Add(new CardInformation
                                 {
+                                    GameID = reader.GetInt32("GameID"),
                                     CardID = reader["CardID"]?.ToString() ?? string.Empty,
-                                    name = reader["CardName"]?.ToString() ?? string.Empty,
-                                    superType = reader["SuperType"]?.ToString() ?? string.Empty,
-                                    subType = reader["SubType"]?.ToString() ?? string.Empty,
-                                    cardText = reader["CardText"]?.ToString() ?? "No description available.",
-                                    attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
-                                    level = reader["CardLevel"] as int?,
-                                    Atk = reader["AttackValue"] as int?,
-                                    Def = reader["DefenseValue"] as int?,
-                                    PendulumScale = reader["PendulumScale"] as int?,
-                                    LinkRating = reader["LinkRating"] as int?
+                                    CardName = reader["CardName"]?.ToString() ?? string.Empty,
+                                    CardText = reader["CardText"]?.ToString() ?? "No description available.",
+                                    CardAttributes = new YGOCard 
+                                    {
+                                        SuperType = reader["SuperType"]?.ToString() ?? string.Empty,
+                                        SubType = reader["SubType"]?.ToString() ?? string.Empty,
+                                        Attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
+                                        Level = reader["CardLevel"] as byte?,
+                                        Attack = reader["AttackValue"] as short?,
+                                        Defense = reader["DefenseValue"] as short?,
+                                        PendulumScale = reader["PendulumScale"] as byte?,
+                                        LinkRating = reader["LinkRating"] as byte?
+                                    }
                                 });
                             }
                         }
@@ -78,12 +100,22 @@ namespace CollectorsArchive.Server.Controllers
                         {
                             while (await reader.ReadAsync())
                             {
-                                printInfoDisplayDetails.Add(new PrintInfoDisplayDetails
+                                //printInfoDisplayDetails.Add(new PrintInfoDisplayDetails
+                                //{
+                                //    PrintID = reader.GetInt32("PrintID"),
+                                //    SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
+                                //    SetName = reader["SetName"]?.ToString() ?? string.Empty,
+                                //    CardRarity = reader["CardRarity"]?.ToString() ?? string.Empty,
+                                //    ReleaseDate = reader["ReleaseDate"] as DateTime? ?? DateTime.Now
+                                //});
+                                printInfoDisplayDetails.Add(new PrintingInformation
                                 {
+                                    GameID = reader.GetInt32("GameID"),
                                     PrintID = reader.GetInt32("PrintID"),
+                                    SetID = reader.GetInt32("SetID"),
                                     SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
                                     SetName = reader["SetName"]?.ToString() ?? string.Empty,
-                                    CardRarity = reader["CardRarity"]?.ToString() ?? string.Empty,
+                                    Rarity = reader["CardRarity"]?.ToString() ?? string.Empty,
                                     ReleaseDate = reader["ReleaseDate"] as DateTime? ?? DateTime.Now
                                 });
                             }

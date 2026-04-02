@@ -1,22 +1,17 @@
 import { AppShell, Avatar, Button, Container, Grid, Group, Modal } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { IconUser } from "@tabler/icons-react"
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
+import { useMemo } from "react"
 import { CardScanButton } from "./components/CardScan/CardScanButton"
 //import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
 import CardScanOverlay from "./components/CardScan/CardScanOverlay"
+import CardSearchButton from "./components/CardSearch/CardSearchButton"
 import Logo from "./components/Logo"
-import { ProfilePanel } from "./components/ProfilePanel"
+import { ProfilePanel, type UserProfile } from "./components/ProfilePanel"
 
-export function Layout() {
-	const [scanOpened, { open, close }] = useDisclosure(false)
-	const [profileOpened, { toggle: toggleProfile, close: closeProfile }] = useDisclosure(false)
-
-	// Check login state
-	const user = JSON.parse(localStorage.getItem("user") || "null")
-	const isLoggedIn = !!user
-
-	const ProfileMenu = () => (
+function ProfileMenu({ user, toggleProfile }: { user: UserProfile; toggleProfile: () => void }) {
+	return (
 		<Avatar
 			style={{ cursor: "pointer" }}
 			size="sm"
@@ -29,6 +24,16 @@ export function Layout() {
 			{!user?.photoUrl && (user?.userName?.[0]?.toUpperCase() ?? <IconUser size={16} />)}
 		</Avatar>
 	)
+}
+
+export function Layout() {
+	const [scanOpened, { open, close }] = useDisclosure(false)
+	const [profileOpened, { toggle: toggleProfile, close: closeProfile }] = useDisclosure(false)
+
+	// Re-read user from localStorage whenever the route changes
+	const location = useLocation()
+	const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "null"), [location])
+	const isLoggedIn = !!user
 
 	return (
 		<AppShell
@@ -54,6 +59,7 @@ export function Layout() {
 						<Grid.Col span="content" visibleFrom="sm">
 							<Group justify="center" align="center">
 								<CardScanButton onClick={open} />
+								<CardSearchButton onClick={() => (window.location.href = "/search")} />
 							</Group>
 						</Grid.Col>
 
@@ -61,7 +67,7 @@ export function Layout() {
 							{/* Desktop navigation */}
 							<Group visibleFrom="sm" gap="xs" justify="flex-end">
 								{isLoggedIn ? (
-									<ProfileMenu />
+									<ProfileMenu user={user} toggleProfile={toggleProfile} />
 								) : (
 									<Button component="a" href="/login" variant="default" size="sm">
 										Login
@@ -70,9 +76,10 @@ export function Layout() {
 							</Group>
 							{/* Mobile navigation this has a bug  */}
 							<Group hiddenFrom="sm" gap="xs" justify="flex-end">
-								<CardScanButton onClick={open} iconOnly />
+								<CardScanButton iconOnly onClick={open} />
+								<CardSearchButton iconOnly onClick={() => (window.location.href = "/search")} />
 								{isLoggedIn ? (
-									<ProfileMenu />
+									<ProfileMenu user={user} toggleProfile={toggleProfile} />
 								) : (
 									<Button component="a" href="/login" variant="default" size="sm">
 										Login

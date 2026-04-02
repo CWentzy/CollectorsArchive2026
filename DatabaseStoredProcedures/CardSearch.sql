@@ -37,13 +37,17 @@ AS
 BEGIN
 
 SELECT 
+    CardPrinting.GameID,
     CardPrinting.CardID,
     CASE WHEN @GameID = 'ygo' THEN YGOCard.CardName
 		END AS 'CardName',
     CardPrinting.PrintID,
+    CardPrinting.CardSetID,
+    CardSet.SetName,
     CASE WHEN @GameID = 'ygo' THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex
         END AS 'SetCode',
-    CardPrinting.CardRarity
+    CardPrinting.CardRarity,
+    CardSet.ReleaseDate
 FROM CardPrinting
     JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
     JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
@@ -67,12 +71,16 @@ CREATE OR ALTER PROCEDURE CVSearch
 AS
 BEGIN
 
-SELECT 
+SELECT
+    CardPrinting.GameID,
     YGOCard.CardID,
     YGOCard.CardName,
     CardPrinting.PrintID,
+    CardPrinting.CardSetID,
+    CardSet.SetName,
 	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
-    CardPrinting.CardRarity
+    CardPrinting.CardRarity,
+    CardSet.ReleaseDate
 FROM CardPrinting
     JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
     JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID

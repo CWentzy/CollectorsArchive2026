@@ -12,12 +12,12 @@ namespace CollectorsArchive.Server.Models.ApiInput
 {
     public class AdvancedSearch
     {
-        public required string query { get; set; }          // The name of the Card or Set
-        public required string searchType { get; set; }
-        public required string game { get; set; }
+        public required int GameID { get; set; }
+        public required string Query { get; set; }          // The name of the Card or Set
+        public required string SearchType { get; set; }
 
 
         // This object is cast into different filters depending on the game that is selected
-        public required object advancedFilters { get; set; }
+        public required object AdvancedFilters { get; set; }
     }
 }

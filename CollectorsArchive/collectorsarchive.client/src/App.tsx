@@ -53,7 +53,7 @@ const resolver: CSSVariablesResolver = () => ({
 function App() {
 	return (
 		/* wrapping the whole app with GoogleOAuthProvider so google login works everywhere */
-		<GoogleOAuthProvider clientId={"887271318818-l8omtrnmumbkr0tc4ssu031qkbii4t8i.apps.googleusercontent.com"}>
+		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
 			<MantineThemeProvider theme={theme}>
 				<MantineProvider theme={theme} defaultColorScheme="auto" cssVariablesResolver={resolver}>
 					<Routes>
@@ -68,7 +68,7 @@ function App() {
 							<Route path="/profile/:userId" element={<ProfilePage />} />
 
 							{/* we need a card id to able to display the exact card this might come from backkkendd  */}
-							<Route path="/card/:id" element={<SingleCardDisplay />} />
+							<Route path="/card/:game/:cardID" element={<SingleCardDisplay />} />
 							{/* Should be the last route */}
 							<Route path="*" element={<NotFound />} />
 						</Route>

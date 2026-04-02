@@ -1,26 +1,38 @@
-import { Box, Button, Center, Combobox, Flex, Group, Loader, Stack, Text, useCombobox } from "@mantine/core"
-import { GalleryHorizontalEndIcon, LayoutListIcon, SearchIcon, Users2Icon } from "lucide-react"
+import {
+	Box,
+	Button,
+	Center,
+	Combobox,
+	Flex,
+	Group,
+	Loader,
+	LoadingOverlay,
+	Paper,
+	ScrollArea,
+	Stack,
+	Text,
+	useCombobox,
+} from "@mantine/core"
+import { GalleryHorizontalEndIcon, LayoutListIcon } from "lucide-react"
 import { useEffect, useState } from "react"
-//import { useLocation } from "react-router-dom"
-import { useNavigate } from "react-router-dom"
-import PrintYGO from "../components/YGO/PrintYGO"
-import { formatDisplayCollectionPrint } from "../types/mapper"
-import type { DisplayCollectionPrint, PrintWithCard } from "../types/ygo/schema"
-const GET_USER_COLLECTION_URL = "https://collectorsarchive.azurewebsites.net/api/DisplayCollection/DisplayCollection"
+import CardCollection from "../components/CardCollection"
+import CardLists from "../components/Cardlists"
+import type { CardsAndPrints, PrintingInformation } from "../types/api"
 
+const GET_USER_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
 
+type Tab = "collection" | "cardlists"
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
 	// react-router stores that info in "location.state", so this lets me pull it out
 	// when the user lands on the homepage.
 	const user = JSON.parse(localStorage.getItem("user") || "{}")
 	const userName = user.userName
-	const navigate = useNavigate()
 
-	// const [cards, setCards] = useState<CardData[]>([])
-	const [prints, setPrints] = useState<PrintWithCard[]>([])
+	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState("")
+	const [activeTab, setActiveTab] = useState<Tab>("collection")
 
 	useEffect(() => {
 		if (!userName) {
@@ -40,23 +52,11 @@ export default function HomePage() {
 				if (!response.ok) throw new Error("Failed to fetch collection")
 
 				const data = await response.json()
-				console.log("Backend response:", data) //CHECKING THE BACKEND RESPONSE
 
-				// Cards are nested under "collection" in the response
-				const prints: PrintWithCard[] = data.collection.map((print: DisplayCollectionPrint) => {
-					const printWithCard: PrintWithCard = {
-						print: formatDisplayCollectionPrint(print),
-						card: {
-							id: print.cardID,
-							name: print.cardName,
-						},
-					}
-					return printWithCard
-				})
+				const cardsInfo = data.cards
+				const printsInfo = data.printings
 
-				setPrints(prints)
-
-				console.log("First card:", data.collection[0])
+				setCardAndPrints({ cardsInfo, printsInfo })
 			} catch (err) {
 				setError("Could not load cards. Please try again later.")
 				console.error(err)
@@ -67,6 +67,9 @@ export default function HomePage() {
 
 		fetchCollection()
 	}, [userName])
+
+	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
+
 	return (
 		<Box mih="100vh" w="100%" py="md">
 			{/* this box is for header part  */}
@@ -78,69 +81,78 @@ export default function HomePage() {
 				<Text fz="xl" fw={400}>
 					Welcome{userName ? `, ${userName}` : ""}!
 				</Text>
-
-				{/* Search */}
-				<Group align="center" gap="xs" w="100%">
-					<Button
-						component="a"
-						href="/search"
-						size="lg"
-						variant="light"
-						color="green"
-						leftSection={<SearchIcon size={18} />}
-					>
-						{" "}
-						Search Page{" "}
-					</Button>
-				</Group>
 			</Stack>
 
 			<Stack gap="xl" mt="xl" align="center">
 				<Flex justify="flex-end" align="flex-end" w="100%">
-					<DropDownListForSearching navigate={navigate} />
+					<DropDownListForSearching />
 				</Flex>
 
 				<Flex justify="flex-start" gap="md" wrap="wrap">
-					<Button variant="light" color="green" leftSection={<GalleryHorizontalEndIcon size={16} />}>
-						Collected Cards
+					<Button
+						variant={activeTab === "collection" ? "filled" : "light"}
+						color="green"
+						leftSection={<GalleryHorizontalEndIcon size={16} />}
+						onClick={() => setActiveTab("collection")}
+					>
+						Collection
 					</Button>
-					<Button variant="light" color="grape" leftSection={<LayoutListIcon size={16} />}>
+					<Button
+						variant={activeTab === "cardlists" ? "filled" : "light"}
+						color="grape"
+						leftSection={<LayoutListIcon size={16} />}
+						onClick={() => setActiveTab("cardlists")}
+					>
 						Card Lists
-					</Button>
-					<Button variant="light" color="pink" leftSection={<Users2Icon size={16} />}>
-						Friends
 					</Button>
 				</Flex>
 
 				{/* CARD GRID */}
+				{activeTab === "collection" && (
+					<>
+						{loading ? (
+							<Center mt="xl">
+								<Loader size="lg" />
+							</Center>
+						) : error ? (
+							<Center mt="xl">
+								<Text c="red">{error}</Text>
+							</Center>
+						) : !printsInfo?.length ? (
+							<Center mt="xl">
+								<Text c="dimmed">No cards found in your collection.</Text>
+							</Center>
+						) : (
+							//<Grid gutter="lg" justify="center" w="75%">
+							//	{cards.map((card) => (
+							//		<Grid.Col key={card.cardID} span="content">
+							//			<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
+							//		</Grid.Col>
+							//	))}
+							//</Grid>
 
-				{loading ? (
-					<Center mt="xl">
-						<Loader size="lg" />
-					</Center>
-				) : error ? (
-					<Center mt="xl">
-						<Text c="red">{error}</Text>
-					</Center>
-				) : prints.length === 0 ? (
-					<Center mt="xl">
-						<Text c="dimmed">No cards found in your collection.</Text>
-					</Center>
-				) : (
-					//<Grid gutter="lg" justify="center" w="75%">
-					//	{cards.map((card) => (
-					//		<Grid.Col key={card.cardID} span="content">
-					//			<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
-					//		</Grid.Col>
-					//	))}
-					//</Grid>
-					<Stack w="100%">
-						{prints.map((print: PrintWithCard) => {
-							const printData = print.print
-							const cardData = print.card
-							return <PrintYGO key={printData.id} printData={printData} cardData={cardData} />
-						})}
-					</Stack>
+							/* Collection */
+							<Paper py="md" px="lg" w="100%" radius="md" withBorder>
+								<Text size="lg" fw={600} mb="md">
+									My Collection
+								</Text>
+
+								<ScrollArea style={{ height: "100vh" }} offsetScrollbars pos="relative">
+									<LoadingOverlay
+										visible={loading}
+										overlayProps={{ radius: "md", blur: 2 }}
+										loaderProps={{ type: "dots" }}
+									/>
+									<CardCollection cardsAndPrints={cardAndPrints} />
+								</ScrollArea>
+							</Paper>
+						)}
+					</>
+				)}
+				{activeTab === "cardlists" && (
+					<Box w="100%">
+						<CardLists />
+					</Box>
 				)}
 			</Stack>
 		</Box>
@@ -151,7 +163,7 @@ const GameTypes = ["Yu Gi Oh", "Pokémon", "Magic"]
 
 // I am importing this function for user to search game easly, can be with the rarity or alphabets or any other criteria, this can be
 // modified later inspired by mantine lool
-function DropDownListForSearching({ navigate }: { navigate: any }) {
+function DropDownListForSearching() {
 	const combobox = useCombobox({
 		onDropdownClose: () => combobox.resetSelectedOption(),
 	})
@@ -172,14 +184,11 @@ function DropDownListForSearching({ navigate }: { navigate: any }) {
 			onOptionSubmit={(val) => {
 				setValue(val)
 				combobox.closeDropdown()
-				navigate("/SingleCardDisplay")
 			}}
 		>
 			<Combobox.Target>
-				<Button variant="default" onClick={() => combobox.toggleDropdown()} style={{ width: 150 }}>
-					<Group gap="sm">
-						{value || "Display Games"}
-					</Group>
+				<Button onClick={() => combobox.toggleDropdown()} disabled>
+					{value || "Display Games"}
 				</Button>
 			</Combobox.Target>
 

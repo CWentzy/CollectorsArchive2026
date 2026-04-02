@@ -1,5 +1,5 @@
 import { ActionIcon, Button } from "@mantine/core"
-import { ScanSearchIcon } from "lucide-react"
+import { ScanLineIcon } from "lucide-react"
 
 interface CardScanButtonProps {
 	iconOnly?: boolean
@@ -8,12 +8,12 @@ interface CardScanButtonProps {
 
 export function CardScanButton({ iconOnly = false, onClick }: CardScanButtonProps) {
 	return iconOnly ? (
-		<ActionIcon size="lg" variant="gradient" onClick={onClick}>
-			<ScanSearchIcon />
+		<ActionIcon size="lg" variant="transparent" onClick={onClick}>
+			<ScanLineIcon />
 		</ActionIcon>
 	) : (
-		<Button size="sm" variant="gradient" onClick={onClick} leftSection={<ScanSearchIcon />}>
-			Scan Card
+		<Button size="sm" variant="filled" onClick={onClick} leftSection={<ScanLineIcon size={18} />}>
+			Scan
 		</Button>
 	)
 }

@@ -30,7 +30,9 @@ CREATE OR ALTER PROCEDURE DisplayCardYGO
 AS
 BEGIN
 
-SELECT YGOCard.CardID,
+SELECT
+    CardPrinting.GameID,
+    YGOCard.CardID,
     YGOCard.CardName,
     YGOCard.CardText,
     CardSuperType.SuperTypeName AS 'SuperType',
@@ -41,7 +43,8 @@ SELECT YGOCard.CardID,
     AttackValue,
     DefenseValue,
     LinkRating
-FROM YGOCard
+FROM CardPrinting
+    JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
     JOIN CardSuperType ON YGOCard.SuperType = CardSuperType.SuperTypeID
     JOIN CardSubType ON YGOCard.SubType = CardSubType.SubTypeID
     LEFT JOIN MonsterAttribute ON YGOCard.Attribute = MonsterAttribute.AttributeID
@@ -63,8 +66,11 @@ CREATE OR ALTER PROCEDURE DisplayCardPrintings
 AS
 BEGIN
 
-SELECT CardPrinting.PrintID,
-	CardSet.SetCode,
+SELECT 
+    CardPrinting.GameID,
+    CardPrinting.PrintID,
+    CardSet.CardSetID,
+	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
 	CardSet.SetName,
 	CardPrinting.CardRarity,
 	CardSet.ReleaseDate
@@ -90,16 +96,17 @@ BEGIN
 SELECT TOP 12 CardPrinting.PrintID,
 	YGOCard.CardID,
 	YGOCard.CardName,
+    CardSet.CardSetID,
 	CardSet.SetName,
 	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
 	CardPrinting.CardRarity,
 	UserCard.Quantity
 FROM UserCard
-	JOIN [User] ON UserCard.UserID = [User].UserID
+	JOIN UserProfile ON UserCard.UserProfileID = UserProfile.UserProfileID
 	JOIN CardPrinting ON UserCard.PrintID = CardPrinting.PrintID
 	JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
 	JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
-WHERE [User].UserName = @UserName
+WHERE UserProfile.Username = @UserName
     
 END
 

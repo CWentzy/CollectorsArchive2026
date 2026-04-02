@@ -6,7 +6,7 @@
  * 									components.
  */
 
-import type { Card } from "../../types/ygo/schema"
+import type { CardInformation, PrintingInformation } from "../../types/api"
 
 export const SEARCH_QUERY_MIN_LENGTH = 3
 export const SEARCH_QUERY_MAX_LENGTH = 100
@@ -25,6 +25,16 @@ export const Game = {
 } as const
 
 export type Game = (typeof Game)[keyof typeof Game]
+
+export const GameID: Record<Game, number> = {
+	ygo: 1,
+	mtg: 2,
+	pokemon: 3,
+}
+
+export type GameID = (typeof GameID)[keyof typeof GameID]
+
+export const GameToID = (game: Game): GameID => GameID[game]
 
 export const Language = {
 	en: "en",
@@ -64,5 +74,6 @@ export interface Set {
 
 export interface SearchResult {
 	type: SearchType
-	data: Card | Card[]
+	cardInfo: CardInformation | CardInformation[]
+	printInfo?: PrintingInformation | PrintingInformation[]
 }

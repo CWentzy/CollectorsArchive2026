@@ -10,12 +10,12 @@ import {
 	Accordion,
 	Box,
 	Button,
-	Divider,
 	Flex,
 	Group,
 	JsonInput,
 	LoadingOverlay,
 	Paper,
+	ScrollArea,
 	SegmentedControl,
 	Select,
 	Stack,
@@ -25,11 +25,10 @@ import {
 	useMantineTheme,
 } from "@mantine/core"
 import { useMediaQuery } from "@mantine/hooks"
-import { DicesIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
+import { DicesIcon, FunnelIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react"
 import { useState } from "react"
-import { formatCard } from "../../types/mapper"
-import type { Card } from "../../types/ygo/schema"
-import CardYGO from "../YGO/CardYGO"
+import type { CardInformation, CardsAndPrints } from "../../types/api"
+import CardCollection from "../CardCollection"
 import AdvancedFilters from "./AdvancedFilters"
 import {
 	CardSearchFormProvider,
@@ -40,10 +39,10 @@ import {
 import { buildGameValidators, getGameDefaults, getGameFieldKeys } from "./gameFilterConfigs"
 import {
 	Game,
+	GameToID,
 	SEARCH_QUERY_MAX_LENGTH,
 	SEARCH_QUERY_MIN_LENGTH,
 	SearchType,
-	type CardServerResponse,
 	type SearchResult,
 } from "./schema"
 
@@ -55,32 +54,16 @@ const initialFormValues: CardSearchFormValues = {
 	game: Game.ygo as Game | undefined,
 }
 
-const dummyResult: SearchResult = {
-	type: SearchType.card,
-	data: [
-		{
-			id: "17589298",
-			name: "Test Card",
-			printInfo: {
-				id: 0,
-				setCode: "Force of the Breaker",
-				cardRarity: "Super Rare",
-				imageUrl: "assets/images/card_placeholder_ygo.jpg",
-			},
-		},
-	],
-}
-
-function QuerySection() {
+function QuerySection({ isMobile }: { isMobile?: boolean }) {
 	const form = useCardSearchFormContext()
 	const [searchType, setSearchType] = useState<SearchType>(form.getValues().searchType)
 
 	form.watch("searchType", ({ value }) => setSearchType(value))
 
 	return (
-		<Stack gap={4}>
+		<Stack gap={4} w="100%">
 			{/* min height to avoid layout shift when error shows */}
-			<Flex gap="md" align="flex-start" mih={60}>
+			<Flex gap={isMobile ? "xs" : "md"} align="flex-start">
 				<SegmentedControl
 					key={form.key("searchType")}
 					{...form.getInputProps("searchType")}
@@ -221,21 +204,30 @@ function AdvancedFiltersSection() {
 }
 
 interface SearchResultProps {
-	result: SearchResult
+	cardsAndPrints: CardsAndPrints | null
 }
 
-function SearchResult({ result }: SearchResultProps) {
-	if (!result || (Array.isArray(result.data) && result.data.length === 0)) {
-		return <Text c="dimmed">No results to display.</Text>
+function SearchResult({ cardsAndPrints }: SearchResultProps) {
+	if (!cardsAndPrints) {
+		return null
+	}
+
+	const cards = cardsAndPrints?.cardsInfo as CardInformation[] | undefined
+
+	if (cards?.length === 0) {
+		return <Text c="dimmed">No results found. Try adjusting your search or filters.</Text>
 	}
 
 	return (
-		<Stack gap="md">
-			{(result.data as Card[]).map((item) => {
-				const cardData = item as Card
-				return <CardYGO key={cardData.id} cardData={cardData} />
-			})}
-		</Stack>
+		<Paper shadow="sm" py="md" px="lg" radius="md" withBorder>
+			<Text size="lg" fw={600} mb="md">
+				Search Results
+			</Text>
+
+			<ScrollArea style={{ height: "75vh" }} offsetScrollbars="present" type="auto">
+				<CardCollection cardsAndPrints={cardsAndPrints} />
+			</ScrollArea>
+		</Paper>
 	)
 }
 
@@ -243,11 +235,11 @@ export default function CardSearchForm() {
 	const theme = useMantineTheme()
 	const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`)
 
-	const [accordionValue, setAccordionValue] = useState<string | null>("search")
+	const [accordionValue, setAccordionValue] = useState<string | null>(null) // closed by default
 	const [searching, setSearching] = useState(false)
-	const [searchResult, setSearchResult] = useState<SearchResult>()
+	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 
-	const [debugValues, setDebugValues] = useState<typeof form.values>(initialFormValues) // for debugging - TODO: remove
+	const [debugJson, setDebugJson] = useState<string>() // for debugging - TODO: remove
 
 	const form = useCardSearchForm({
 		mode: "uncontrolled",
@@ -271,35 +263,52 @@ export default function CardSearchForm() {
 			},
 			...gameValidators,
 		},
-		onValuesChange: (values) => setDebugValues(values), // for debugging - TODO: remove
+
+		// for debugging - TODO: remove
+		onValuesChange: (values) => {
+			// Should be a copy of the payload below (where we fetch)
+			const payload = {
+				GameID: GameToID(values.game as Game),
+				Query: values.query,
+				SearchType: values.searchType,
+				AdvancedFilters: {}, // TODO: include advanced filters in the request body
+			}
+
+			setDebugJson(JSON.stringify(payload, null, 2))
+		},
 	})
 
 	const handleSubmit = async (values: typeof form.values) => {
 		try {
 			setSearching(true)
 
+			const payload = JSON.stringify({
+				// The API expects the following body
+				GameID: GameToID(values.game as Game),
+				Query: values.query,
+				SearchType: values.searchType,
+				AdvancedFilters: {}, // TODO: include advanced filters in the request body
+			})
+
 			// Search - get from /api/AdvancedSearchSet
-			const response = await fetch("https://collectorsarchive.azurewebsites.net/api/CardSearch/AdvancedSearchSet", {
+			const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/CardSearch/AdvancedSearchSet`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({
-					advancedFilters: {}, // TODO: include advanced filters in the request body
-					...values,
-				}),
+				body: payload,
 			})
 
 			if (!response.ok) {
 				throw new Error(`Search failed with status ${response.status}`)
 			}
 
-			const cardsList: CardServerResponse[] = await response.json()
+			const data = await response.json()
 
-			setSearchResult({
-				type: SearchType.card,
-				data: cardsList.map(formatCard),
-			})
+			const cardsInfo = data.cards
+			const printsInfo = data.printings
+
+			setCardAndPrints({ cardsInfo, printsInfo })
 		} catch (error) {
 			console.error("Error during search:", error)
 		} finally {
@@ -312,50 +321,56 @@ export default function CardSearchForm() {
 
 	return (
 		<Stack gap="xl" p={0}>
-			<Accordion value={accordionValue} onChange={setAccordionValue} variant="separated">
-				<Accordion.Item value="search">
-					<Accordion.Control icon={<SearchIcon />}>
-						<Text fw={500}>Search Tool</Text>
-					</Accordion.Control>
-					<Accordion.Panel pt="md" p="xs">
-						{/* Search Tool */}
-						<CardSearchFormProvider form={form}>
-							<form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
-								<Stack>
-									<QuerySection />
+			<CardSearchFormProvider form={form}>
+				<form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
+					<Stack gap="sm" p={0}>
+						<Flex gap="md" align="flex-start">
+							<Box flex={1}>
+								<QuerySection isMobile={isMobile} />
+							</Box>
 
-									<GameSelector isMobile={isMobile} />
+							<Button type="submit" loading={searching}>
+								{isMobile ? <SearchIcon size={16} /> : "Search"}
+							</Button>
+						</Flex>
 
-									<Box mt="lg">
-										{/* For debugging - TODO: remove */}
-										<div>
-											<Text size="xs" c="dimmed" fw={200}>
-												Live form values (for debugging):
-											</Text>
-											<JsonInput value={JSON.stringify(debugValues, null, 2)} readOnly rows={10} />
-										</div>
+						<Accordion
+							value={!cardAndPrints ? "search" : accordionValue}
+							onChange={setAccordionValue}
+							variant="separated"
+						>
+							<Accordion.Item value="search">
+								<Accordion.Control icon={<FunnelIcon size={16} />}>
+									<Text fw={500}>Game Filters</Text>
+								</Accordion.Control>
+								<Accordion.Panel pt="md" p="xs">
+									{/* Advanced stuff */}
+									<Stack>
+										<GameSelector isMobile={isMobile} />
 
-										<AdvancedFiltersSection />
-									</Box>
+										<Box mt="lg">
+											{/* For debugging - TODO: remove */}
+											<div>
+												<Text size="xs" c="dimmed" fw={200}>
+													Live form values (for debugging):
+												</Text>
+												<JsonInput value={debugJson} readOnly rows={10} />
+											</div>
 
-									<Group justify="flex-end">
-										<Button type="submit" loading={searching}>
-											Search
-										</Button>
-									</Group>
-								</Stack>
-							</form>
-						</CardSearchFormProvider>
-					</Accordion.Panel>
-				</Accordion.Item>
-			</Accordion>
-
-			<Divider label="Search Results" />
+											<AdvancedFiltersSection />
+										</Box>
+									</Stack>
+								</Accordion.Panel>
+							</Accordion.Item>
+						</Accordion>
+					</Stack>
+				</form>
+			</CardSearchFormProvider>
 
 			{/* Search Results */}
 			<Paper pos="relative">
 				<LoadingOverlay visible={searching} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
-				<SearchResult result={searchResult || dummyResult} />
+				<SearchResult cardsAndPrints={cardAndPrints} />
 			</Paper>
 		</Stack>
 	)
