@@ -14,7 +14,7 @@ namespace CollectorsArchive.Server.Models
         public int PrintID { get; set; }
         [Required]
         public int Quantity { get; set; }
-        [Required]
+        
         public string? CardEditionID { get; set; }
     }
 }

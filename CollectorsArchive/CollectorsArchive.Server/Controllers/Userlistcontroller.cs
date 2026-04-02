@@ -194,7 +194,7 @@ namespace CollectorsArchive.Server.Controllers
             return StatusCode(500, new { message = ex.Message, detail = ex.StackTrace });
             }
         }
-
+        //Heavily based on stored procedure, will add to list if not exists, otherwise increment quantity
         [HttpPost("AddPrintToList")]
         public async Task<IActionResult> AddPrintToList([FromBody] AddPrintToListRequest request)
         {
