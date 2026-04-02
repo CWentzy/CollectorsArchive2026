@@ -1,6 +1,8 @@
 ﻿using CollectorsArchive.Server.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace CollectorsArchive.Server.Controllers
 {
@@ -8,52 +10,65 @@ namespace CollectorsArchive.Server.Controllers
     [Route("api/[controller]")]
     public class UserCardController : ControllerBase
     {
-        private readonly AppDatabaseContents _db;
-
-        public UserCardController(AppDatabaseContents db)
+        private readonly IConfiguration _configuration;
+        public UserCardController(IConfiguration configuration)
         {
-            _db = db;
+            _configuration = configuration;
         }
 
-        [HttpPost("AddToCollection")]
-        public async Task<IActionResult> AddToCollection([FromBody] AddToCollectionRequest request)
+        
+        // CHANGED IT TO USE THE STORED PROCEDURE INSTEAD OF EF CORE FOR BETTER PERFORMANCE AND TO AVOID CONCURRENCY ISSUES
+        [HttpPost("IncrementDecrementFromCollection")]
+        public async Task<IActionResult> IncrementDecrementFromCollection(
+        [FromBody] IncrementDecrementFromCollectionRequest request)
         {
-            //if (request.UserId == 0 || string.IsNullOrWhiteSpace(request.PrintID))
-            //    return BadRequest(new { message = "UserID and PrintID are required." });
-
-            // check if this print already exists in their collection
-            var existing = await _db.UserCards
-                .FirstOrDefaultAsync(c => c.UserProfileID == request.UserId && c.PrintID == request.PrintID);
-
-            if (existing != null)
+            try
             {
-                // already have it, just bump the quantity
-                existing.Quantity += 1;
-                await _db.SaveChangesAsync();
-                return Ok(new { message = "Quantity updated.", quantity = existing.Quantity });
+                if (request.UserProfileId <= 0 || request.PrintID <= 0)
+                    return BadRequest(new { message = "Valid UserProfileId and PrintID are required." });
+
+                string connectionString = _configuration.GetConnectionString("ErmiyasDb");
+
+                int quantity = 0;
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand command = new SqlCommand("IncrementDecrementFromCollection", conn))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.AddWithValue("@UserProfileID", request.UserProfileId);
+                    command.Parameters.AddWithValue("@PrintID", request.PrintID);
+                    command.Parameters.AddWithValue("@Increment", request.Increment);
+
+                    await conn.OpenAsync();
+
+
+                    var result = await command.ExecuteScalarAsync(); //Using Scalar here now
+
+                    if (result != null)
+                    {
+                        quantity = Convert.ToInt32(result);
+                    }
+                }
+
+                return Ok(new { quantity });
             }
-
-            // first time adding this print
-            var newCard = new UserCard
+            catch (Exception ex)
             {
-                UserProfileID = request.UserId,
-                PrintID = request.PrintID,
-                Quantity = request.Quantity,
-                CardEditionID = request.CardEditionID
-            };
-
-            _db.UserCards.Add(newCard);
-            await _db.SaveChangesAsync();
-
-            return Ok(new { message = "Card added to collection.", quantity = newCard.Quantity });
+                return StatusCode(500, new
+                {
+                    message = ex.Message,
+                    detail = ex.StackTrace
+                });
+            }
         }
-    }
-
-    public class AddToCollectionRequest
-    {
-        public int UserId { get; set; }//THIS NEEDS CHANGE
-        public int PrintID { get; set; }
-        public int Quantity { get; set; } = 1;
-        public string CardEditionID { get; set; } = "1";
+        
+        public class IncrementDecrementFromCollectionRequest
+        {
+            public int UserProfileId { get; set; }
+            public int PrintID { get; set; }
+            public bool Increment { get; set; }
+        }
+        
     }
 }
