@@ -79,7 +79,7 @@ namespace CollectorsArchive.Server.Controllers
                         GameID = parameters.GameID,
                         CardID = reader["CardID"].ToString(),
                         PrintID = reader.GetInt32(3),
-                        SetID = reader.GetInt32(4),
+                        CardSetID = reader.GetInt32(4),
                         SetName = reader["SetName"].ToString(),
                         SetCode = reader["SetCode"].ToString(),
                         Rarity = reader["CardRarity"].ToString(),
@@ -165,7 +165,7 @@ namespace CollectorsArchive.Server.Controllers
                     {
                         GameID = 1, // YGO
                         PrintID = reader.GetInt32(3),
-                        SetID = reader.GetInt32(4),
+                        CardSetID = reader.GetInt32(4),
                         SetName = reader["SetName"].ToString(),
                         SetCode = reader["SetCode"].ToString(),
                         Rarity = reader["CardRarity"].ToString(),
@@ -213,7 +213,7 @@ namespace CollectorsArchive.Server.Controllers
                     {
                         GameID = 1, // YGO
                         PrintID = reader.GetInt32(3),
-                        SetID = reader.GetInt32(4),
+                        CardSetID = reader.GetInt32(4),
                         SetName = reader["SetName"].ToString(),
                         SetCode = reader["SetCode"].ToString(),
                         Rarity = reader["CardRarity"].ToString(),

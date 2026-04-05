@@ -41,7 +41,7 @@ export interface MTGCard {
 export interface PrintingInformation {
 	gameID: number
 	printID: string
-	setID: string
+	cardSetID: string
 	setName: string
 	setCode: string
 	rarity: string
