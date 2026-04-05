@@ -31,7 +31,7 @@ GO
 -- PARAMETERS:		@GameID ->      Specifies the game to determine which tables to SELECT from
 --                  @SetName ->     Specifies the name of the Set
 CREATE OR ALTER PROCEDURE AdvancedSearchBySet
-    @GameID VARCHAR (5),
+    @GameID INT IDENTITY(1, 1),
     @SetName VARCHAR (100)
 AS
 BEGIN
@@ -39,12 +39,12 @@ BEGIN
 SELECT 
     CardPrinting.GameID,
     CardPrinting.CardID,
-    CASE WHEN @GameID = 'ygo' THEN YGOCard.CardName
+    CASE WHEN @GameID = 1 THEN YGOCard.CardName
 		END AS 'CardName',
     CardPrinting.PrintID,
     CardPrinting.CardSetID,
     CardSet.SetName,
-    CASE WHEN @GameID = 'ygo' THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex
+    CASE WHEN @GameID = 1 THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex
         END AS 'SetCode',
     CardPrinting.CardRarity,
     CardSet.ReleaseDate

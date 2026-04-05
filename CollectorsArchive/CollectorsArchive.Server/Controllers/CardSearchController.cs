@@ -80,6 +80,7 @@ namespace CollectorsArchive.Server.Controllers
                         CardID = reader["CardID"].ToString(),
                         PrintID = reader.GetInt32(3),
                         CardSetID = reader.GetInt32(4),
+                        CardName = reader["CardName"].ToString(),
                         SetName = reader["SetName"].ToString(),
                         SetCode = reader["SetCode"].ToString(),
                         Rarity = reader["CardRarity"].ToString(),
