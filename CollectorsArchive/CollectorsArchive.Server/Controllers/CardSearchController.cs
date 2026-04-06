@@ -84,7 +84,7 @@ namespace CollectorsArchive.Server.Controllers
                         SetName = reader["SetName"].ToString(),
                         SetCode = reader["SetCode"].ToString(),
                         Rarity = reader["CardRarity"].ToString(),
-                        ReleaseDate = DateTime.MinValue
+                        ReleaseDate = reader["ReleaseDate"] != DBNull.Value ? reader.GetDateTime(8) : DateTime.MinValue
                     });
                 }
             }
@@ -218,7 +218,7 @@ namespace CollectorsArchive.Server.Controllers
                         SetName = reader["SetName"].ToString(),
                         SetCode = reader["SetCode"].ToString(),
                         Rarity = reader["CardRarity"].ToString(),
-                        ReleaseDate = DateTime.MinValue
+                        ReleaseDate = reader["ReleaseDate"] != DBNull.Value ? reader.GetDateTime(8) : DateTime.MinValue
                     });
                 }
             }
