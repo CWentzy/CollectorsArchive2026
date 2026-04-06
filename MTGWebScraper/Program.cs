@@ -20,7 +20,8 @@ namespace MTGWebScraper
         const string _startURL = "https://gatherer.wizards.com/sets";
 
         //const string _connectionString = "Data Source=localhost;Initial Catalog=CardCollectionPersonal;Integrated Security=true;";
-        const string _connectionString = "Server=tcp:collectorsarchive-server.database.windows.net,1433;Initial Catalog=CollectorsArchive;Persist Security Info=False;User ID=collectorsarchive-server-admin;Password=S4cudS$YEu9T4Esu;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        //const string _connectionString = "Server=tcp:collectorsarchive-server.database.windows.net,1433;Initial Catalog=CollectorsArchive;Persist Security Info=False;User ID=collectorsarchive-server-admin;Password=S4cudS$YEu9T4Esu;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        const string _connectionString = "Server=tcp:sv-collectorsarchive-server.database.windows.net,1433;Initial Catalog=sv-collectorsarchive-database;Persist Security Info=False;User ID=sv-collectorsarchive-server-admin;Password=Hx2TxV0nlcRAW$HZ;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 
         static readonly List<string> SuperTypes = new List<string> { "Basic", "Legendary", "Snow", "Host", "World", "Ongoing" };
         static readonly List<string> CardTypes = new List<string> { "Land", "Creature", "Artifact", "Enchantment", "Planeswalker", "Battle", "Sorcery", "Instant", "Kindred",

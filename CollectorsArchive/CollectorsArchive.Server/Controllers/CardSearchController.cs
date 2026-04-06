@@ -287,7 +287,7 @@ namespace CollectorsArchive.Server.Controllers
             var query = new StringBuilder();
 
             query.Append("WHERE CardPrinting.GameID IN (1) ");
-            if (parameters.Query != string.Empty) { query.Append($"AND CardName LIKE '%{parameters.Query}% "); }
+            if (parameters.Query != string.Empty) { query.Append($"AND CardName LIKE '%{parameters.Query}%' "); }
 
             if (filters.superTypes != null) { query.Append($"AND CardSuperType.SuperTypeName = '{filters.superTypes}' "); }
 

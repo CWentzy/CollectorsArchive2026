@@ -39,18 +39,23 @@ BEGIN
 SELECT 
     CardPrinting.GameID,
     CardPrinting.CardID,
-    CASE WHEN @GameID = 'ygo' THEN YGOCard.CardName
-		END AS 'CardName',
+    CASE 
+        WHEN @GameID = 'ygo' THEN YGOCard.CardName
+        WHEN @GameID = 'mtg' THEN MTGCard.CardNameEN
+	END AS 'CardName',
     CardPrinting.PrintID,
     CardPrinting.CardSetID,
     CardSet.SetName,
-    CASE WHEN @GameID = 'ygo' THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex
-        END AS 'SetCode',
+    CASE 
+        WHEN @GameID = 'ygo' THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex
+        WHEN @GameID = 'mtg' THEN CardSet.SetCode + ' ' + CardPrinting.CardSetIndex
+    END AS 'SetCode',
     CardPrinting.CardRarity,
     CardSet.ReleaseDate
 FROM CardPrinting
     JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
-    JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
+    LEFT JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
+    LEFT JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID
 WHERE CardSet.SetName = @SetName
 ORDER BY CardPrinting.CardSetIndex
 
@@ -86,5 +91,30 @@ FROM CardPrinting
     JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
 WHERE CardPrinting.CardID = @CardID
 ORDER BY YGOCard.CardName
+
+END
+
+
+
+CREATE OR ALTER PROCEDURE CVMTGSearch
+    @CardName VARCHAR(150)
+AS
+BEGIN
+
+SELECT
+    CardPrinting.GameID,
+    MTGCard.CardID,
+    MTGCard.CardNameEN,
+    CardPrinting.PrintID,
+    CardPrinting.CardSetID,
+    CardSet.SetName,
+	CardSet.SetCode + ' ' + CardPrinting.CardSetIndex AS 'SetCode',
+    CardPrinting.CardRarity,
+    CardSet.ReleaseDate
+FROM CardPrinting
+    JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
+    JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID
+WHERE MTGCard.CardNameEN = @CardName
+ORDER BY MTGCard.CardNameEN
 
 END
