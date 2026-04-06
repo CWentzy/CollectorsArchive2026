@@ -1,7 +1,7 @@
 import { Anchor, Flex, Group, Image, Card as MantineCard, Text } from "@mantine/core"
 import type { CardInformation, PrintingInformation } from "../types/api"
 import { getCardImageUrl } from "../utils"
-import type { GameID } from "./CardSearch/schema"
+import { GameIDToGame, type GameID } from "./CardSearch/schema"
 import QuantityPicker from "./QuantityPicker"
 
 interface PrintYGOProps {
@@ -26,7 +26,7 @@ export default function PrintYGO({ printInfo, cardInfo, withCardLink = true }: P
 
 					<div>
 						{withCardLink ? (
-							<Anchor href={`/card/${gameId}/${cardId}`} target="_blank">
+							<Anchor href={`/card/${GameIDToGame[gameId]}/${cardId}`} target="_blank">
 								<Text size="sm" fw={600}>
 									{cardName}
 								</Text>
