@@ -17,7 +17,7 @@ namespace CollectorsArchive.Server.Models.ApiOutput
         public string? CardName { get; set; }
 
         public required int PrintID { get; set; }
-        public required int SetID { get; set; }
+        public required int CardSetID { get; set; }
         public required string SetName { get; set; }
         public required string SetCode { get; set; }    // SetCode + SetIndex
         public required string Rarity { get; set; }

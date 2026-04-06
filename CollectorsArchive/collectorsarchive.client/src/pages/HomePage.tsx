@@ -16,10 +16,11 @@ import {
 import { GalleryHorizontalEndIcon, LayoutListIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import CardCollection from "../components/CardCollection"
+import CardLists from "../components/Cardlists"
 import type { CardsAndPrints, PrintingInformation } from "../types/api"
 
 const GET_USER_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
-
+type Tab = "collection" | "cardlists"
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
 	// react-router stores that info in "location.state", so this lets me pull it out
@@ -30,7 +31,7 @@ export default function HomePage() {
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState("")
-
+	const [activeTab, setActiveTab] = useState<Tab>("collection")
 	useEffect(() => {
 		if (!userName) {
 			setError("No user found. Please log in.")
@@ -86,52 +87,69 @@ export default function HomePage() {
 				</Flex>
 
 				<Flex justify="flex-start" gap="md" wrap="wrap">
-					<Button variant="light" color="green" leftSection={<GalleryHorizontalEndIcon size={16} />}>
-						Collection
+					<Button
+						variant={activeTab === "collection" ? "filled" : "light"}
+						color="green"
+						leftSection={<GalleryHorizontalEndIcon size={16} />}
+						onClick={() => setActiveTab("collection")}
+					>						Collection
 					</Button>
-					<Button variant="light" color="grape" leftSection={<LayoutListIcon size={16} />} disabled>
-						Card Lists
+					<Button
+						variant={activeTab === "cardlists" ? "filled" : "light"}
+						color="grape"
+						leftSection={<LayoutListIcon size={16} />}
+						onClick={() => setActiveTab("cardlists")}
+					>						Card Lists
 					</Button>
 				</Flex>
 
 				{/* CARD GRID */}
 
-				{loading ? (
-					<Center mt="xl">
-						<Loader size="lg" />
-					</Center>
-				) : error ? (
-					<Center mt="xl">
-						<Text c="red">{error}</Text>
-					</Center>
-				) : !printsInfo?.length ? (
-					<Center mt="xl">
-						<Text c="dimmed">No cards found in your collection.</Text>
-					</Center>
-				) : (
-					//<Grid gutter="lg" justify="center" w="75%">
-					//	{cards.map((card) => (
-					//		<Grid.Col key={card.cardID} span="content">
-					//			<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
-					//		</Grid.Col>
-					//	))}
-					//</Grid>
+				{activeTab === "collection" && (
+					<>
+						{loading ? (
+							<Center mt="xl">
+								<Loader size="lg" />
+							</Center>
+						) : error ? (
+							<Center mt="xl">
+								<Text c="red">{error}</Text>
+							</Center>
+						) : !printsInfo?.length ? (
+							<Center mt="xl">
+								<Text c="dimmed">No cards found in your collection.</Text>
+							</Center>
+						) : (
+							//<Grid gutter="lg" justify="center" w="75%">
+							//	{cards.map((card) => (
+							//		<Grid.Col key={card.cardID} span="content">
+							//			<CardItem id={card.cardID} name={card.cardName} navigate={navigate} />
+							//		</Grid.Col>
+							//	))}
+							//</Grid>
 
-					/* Collection */
-					<Paper py="md" px="lg" w="100%" radius="md" withBorder>
-						<Text size="lg" fw={600} mb="md">
-							Collection
-						</Text>
+							/* Collection */
+							<Paper py="md" px="lg" w="100%" radius="md" withBorder>
+								<Text size="lg" fw={600} mb="md">
+									My Collection
+								</Text>
 
-						<ScrollArea style={{ height: "100vh" }} offsetScrollbars pos="relative">
-							<LoadingOverlay
-								visible={loading}
-								overlayProps={{ radius: "md", blur: 2 }}
-								loaderProps={{ type: "dots" }}
-							/>
-							<CardCollection cardsAndPrints={cardAndPrints} />
-						</ScrollArea>
-					</Paper>
+								<ScrollArea style={{ height: "100vh" }} offsetScrollbars pos="relative">
+									<LoadingOverlay
+										visible={loading}
+										overlayProps={{ radius: "md", blur: 2 }}
+										loaderProps={{ type: "dots" }}
+									/>
+									<CardCollection cardsAndPrints={cardAndPrints} />
+								</ScrollArea>
+							</Paper>
+						)}
+					</>
+				)}
+				{activeTab === "cardlists" && (
+					<Box w="100%">
+						<CardLists />
+					</Box>
 				)}
 			</Stack>
 		</Box>
