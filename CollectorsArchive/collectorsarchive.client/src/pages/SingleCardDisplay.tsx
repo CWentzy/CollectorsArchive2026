@@ -208,7 +208,7 @@ export default function SingleCardDisplay() {
 
 	const cardInfo = cardAndPrints?.cardsInfo as CardInformation | undefined // single card
 	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
-	const cardImageUrl = cardInfo?.cardID ? getCardImageUrl(Game.ygo, cardInfo?.cardID) : null
+	const cardImageUrl = cardInfo?.cardID ? getCardImageUrl(cardInfo.gameID, cardInfo?.cardID) : null
 
 	return (
 		<Box py="xl">
