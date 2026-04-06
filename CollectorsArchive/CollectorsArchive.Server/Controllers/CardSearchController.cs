@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using System.Text.Json;
 
 
 namespace CollectorsArchive.Server.Controllers
@@ -122,8 +123,8 @@ namespace CollectorsArchive.Server.Controllers
                     cards.Add(new CardInformation
                     {
                         GameID = parameters.GameID,
-                        CardID = reader.GetString(0),
-                        CardName = reader.GetString(1)
+                        CardID = reader.GetString(1),
+                        CardName = reader.GetString(2)
                     });
                 }
             }
@@ -284,7 +285,7 @@ namespace CollectorsArchive.Server.Controllers
 
         private string ParameterCheckYGO(AdvancedSearch parameters)
         {
-            var filters = (SearchFiltersYGO)parameters.AdvancedFilters;
+            var filters = JsonSerializer.Deserialize<SearchFiltersYGO>(parameters.AdvancedFilters.ToString());
             var query = new StringBuilder();
 
             query.Append("WHERE CardPrinting.GameID IN (1) ");
@@ -344,7 +345,7 @@ namespace CollectorsArchive.Server.Controllers
 
         private string ParameterCheckMTG(AdvancedSearch parameters)
         {
-            var filters = (SearchFiltersMTG)parameters.AdvancedFilters;
+            var filters = JsonSerializer.Deserialize<SearchFiltersMTG>(parameters.AdvancedFilters.ToString());
             var query = new StringBuilder();
 
             query.Append("WHERE CardPrinting.GameID IN (2) ");

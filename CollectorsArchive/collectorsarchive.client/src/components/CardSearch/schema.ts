@@ -36,6 +36,12 @@ export type GameID = (typeof GameID)[keyof typeof GameID]
 
 export const GameToID = (game: Game): GameID => GameID[game]
 
+export const GameToFriendlyName: Record<Game, string> = {
+	ygo: "Yu-Gi-Oh!",
+	mtg: "Magic: The Gathering",
+	pokemon: "Pokémon",
+}
+
 export const Language = {
 	en: "en",
 	fr: "fr",

@@ -6,9 +6,21 @@
  * 									gets too big.
  */
 
-export function getCardImageUrl(gameID: string, cardID: string): string {
+import type { GameID } from "./components/CardSearch/schema"
+
+const CARD_IMAGE_BASE_URLS: Record<GameID, string> = {
+	1: import.meta.env.VITE_CARD_IMAGE_URL_YGO,
+	2: import.meta.env.VITE_CARD_IMAGE_URL_MTG,
+	3: import.meta.env.VITE_CARD_IMAGE_URL_POKEMON,
+}
+
+export function getCardImageUrl(gameID: GameID, cardID: string): string {
 	const unpaddedCardID = cardID.replace(/^0+/, "") // Remove zeroes from the start of the cardID
-	return `${import.meta.env.VITE_CARD_IMAGE_URL_YGO}/${unpaddedCardID}.jpg`
+	const baseUrl = CARD_IMAGE_BASE_URLS[gameID]
+
+	if (!baseUrl) return ""
+
+	return `${baseUrl}/${unpaddedCardID}.jpg`
 }
 
 export const formatDate = (dateStr: string | null) => {

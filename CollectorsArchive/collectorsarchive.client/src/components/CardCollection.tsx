@@ -49,10 +49,18 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 						)
 					}
 				})
-			) : (
-				<Text c="dimmed" size="sm">
-					This member hasn't added any cards to their collection yet.
+			) : !uniqueCards?.length ? (
+				<Text size="md" c="dimmed" mt="md">
+					No cards found.
 				</Text>
+			) : (
+				uniqueCards.map((card) => (
+					<PrintYGO
+						key={card.cardID}
+						printInfo={prints?.find((print) => print.cardID === card.cardID) || ({} as PrintingInformation)}
+						cardInfo={card}
+					/>
+				))
 			)}
 		</Stack>
 	)

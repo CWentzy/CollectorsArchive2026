@@ -1,7 +1,7 @@
 import { Anchor, Flex, Group, Image, Card as MantineCard, Text } from "@mantine/core"
 import type { CardInformation, PrintingInformation } from "../types/api"
 import { getCardImageUrl } from "../utils"
-import { Game } from "./CardSearch/schema"
+import type { GameID } from "./CardSearch/schema"
 import QuantityPicker from "./QuantityPicker"
 
 interface PrintYGOProps {
@@ -11,25 +11,29 @@ interface PrintYGOProps {
 }
 
 export default function PrintYGO({ printInfo, cardInfo, withCardLink = true }: PrintYGOProps) {
+	const gameId: GameID = cardInfo?.gameID || printInfo.gameID
+	const cardId = cardInfo?.cardID || printInfo.cardID
+	const cardName = cardInfo?.cardName || printInfo.cardName || "Unknown Card"
+
 	const releaseDate = printInfo.releaseDate ? new Date(printInfo.releaseDate).toLocaleDateString() : "Unknown"
-	const cardImageUrl = cardInfo?.cardID ? getCardImageUrl(Game.ygo, cardInfo?.cardID) : null
+	const cardImageUrl = cardId ? getCardImageUrl(gameId, cardId) : null
 
 	return (
 		<MantineCard key={printInfo.printID} padding="md" withBorder>
 			<Flex gap="md" justify="space-between" align="center" direction={{ base: "column", sm: "row" }}>
 				<Group align="center" wrap="nowrap">
-					<Image loading="lazy" src={cardImageUrl} alt={`${cardInfo?.cardName} image`} fit="contain" w={75} />
+					<Image loading="lazy" src={cardImageUrl} alt={`${cardName} image`} fit="contain" w={75} />
 
 					<div>
 						{withCardLink ? (
-							<Anchor href={`/card/${Game.ygo}/${cardInfo?.cardID}`} target="_blank">
+							<Anchor href={`/card/${gameId}/${cardId}`} target="_blank">
 								<Text size="sm" fw={600}>
-									{cardInfo?.cardName}
+									{cardName}
 								</Text>
 							</Anchor>
 						) : (
 							<Text size="sm" fw={600}>
-								{cardInfo?.cardName}
+								{cardName}
 							</Text>
 						)}
 
