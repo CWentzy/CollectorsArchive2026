@@ -60,7 +60,7 @@ namespace CollectorsArchive.Server.Controllers
                         {
                             GameID = reader.GetInt32("GameID"),
                             PrintID = reader.GetInt32("PrintID"),
-                            SetID = reader.GetInt32("SetID"),
+                            CardSetID = reader.GetInt32("CardSetID"),
                             SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
                             SetName = reader["SetName"]?.ToString() ?? string.Empty,
                             Rarity = reader["CardRarity"]?.ToString() ?? string.Empty,
