@@ -15,7 +15,7 @@ builder.Services.AddHostFiltering(options =>
 {
     options.AllowedHosts = new[]
     {
-        "sv-collectorsarchive.azurewebsites.net"
+        "collectorsarchiveserver.azurewebsites.net"
     };
 });
 
@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("https://lively-stone-0fe85110f.4.azurestaticapps.net")
+        policy.WithOrigins("https://ashy-coast-05051250f.6.azurestaticapps.net")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();
