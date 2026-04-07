@@ -1,4 +1,4 @@
-USE CollectorsArchive;
+USE collectorsarchivedb;
 GO
 
 -- ALTERING PROCEDURES: GetListCards, GetPrintQuantityInList, IncrementPrintInList, DecrementPrintInList, GetUserLists, CreateUserList, RenameUserList, DeleteUserList, IncrementDecrementFromCollection, DisplayUserCollection.
@@ -34,10 +34,6 @@ BEGIN
     WHERE ulc.UserListID = @UserListID
     ORDER BY ygo.CardName ASC, cp.PrintID ASC;
 END
-GO
-
-
-USE CollectorsArchive;
 GO
 
 --2. Get quantity of a print in a specific list
@@ -117,10 +113,10 @@ BEGIN
     END
 END
 GO
+--DONE
+
 
 -- OTHER PROCEDURES: GetUserLists, CreateUserList, RenameUserList, DeleteUserList
-USE CollectorsArchive;
-GO
 
 CREATE OR ALTER PROCEDURE GetUserLists
     @UserProfileID INT
@@ -171,34 +167,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE GetListCards
-    @UserListID INT
-AS
-BEGIN
-    SET NOCOUNT ON;
 
-    DECLARE @UserProfileID INT;
-    SELECT @UserProfileID = UserProfileID
-    FROM UserList
-    WHERE UserListID = @UserListID;
-
-    SELECT
-        ygo.CardID,
-        ygo.CardName,
-        cp.PrintID,
-        cs.SetCode,
-        cs.SetName,
-        cp.CardRarity,
-        cs.SetID,
-        ISNULL(uc.Quantity, 0) AS Quantity
-    FROM UserListCard ulc
-    INNER JOIN CardPrinting cp  ON cp.CardID  = ulc.CardID AND cp.GameID = ulc.GameID
-    INNER JOIN YGOCard     ygo  ON ygo.CardID = ulc.CardID
-    INNER JOIN CardSet      cs  ON cs.SetID   = cp.SetID
-    LEFT  JOIN UserCard     uc  ON uc.PrintID = cp.PrintID AND uc.UserProfileID = @UserProfileID
-    WHERE ulc.UserListID = @UserListID
-    ORDER BY ygo.CardName ASC, cp.PrintID ASC;
-END
 
 -- Increment the quantity in the collection part
 CREATE OR ALTER PROCEDURE IncrementDecrementFromCollection
@@ -260,7 +229,7 @@ BEGIN
     FROM UserCard
     WHERE UserProfileID = @UserProfileID AND PrintID = @PrintID;
 END
-
+GO
 
 CREATE OR ALTER PROCEDURE DisplayUserCollection
     @UserName NVARCHAR(100)
@@ -275,7 +244,7 @@ BEGIN
         cs.SetCode,
         cs.SetName,
         cp.CardRarity,
-        cs.CardSetID AS SetID,
+        cs.CardSetID,
         ISNULL(uc.Quantity, 0) AS Quantity
     FROM UserCard uc
     INNER JOIN CardPrinting cp  ON cp.PrintID       = uc.PrintID
@@ -283,6 +252,38 @@ BEGIN
     INNER JOIN CardSet      cs  ON cs.CardSetID      = cp.CardSetID
     INNER JOIN UserProfile  up  ON up.UserProfileID  = uc.UserProfileID
     WHERE up.UserName = @UserName
+    ORDER BY ygo.CardName ASC, cp.PrintID ASC;
+END
+GO
+
+CREATE OR ALTER PROCEDURE GetListCards
+    @UserListID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @UserProfileID INT;
+    SELECT @UserProfileID = UserProfileID
+    FROM UserList
+    WHERE UserListID = @UserListID;
+
+    SELECT
+        ygo.CardID,
+        ygo.CardName,
+        cp.PrintID,
+        cs.SetCode,
+        cs.SetName,
+        cp.CardRarity,
+        cs.CardSetID AS SetID,
+        ISNULL(uc.Quantity, 0) AS Quantity
+    FROM UserListCard ulc
+    -- Join directly on PrintID since that's all UserListCard stores now
+    INNER JOIN CardPrinting cp  ON cp.PrintID   = ulc.PrintID
+    INNER JOIN YGOCard     ygo  ON ygo.CardID   = cp.CardID
+    INNER JOIN CardSet      cs  ON cs.CardSetID = cp.CardSetID
+    LEFT  JOIN UserCard     uc  ON uc.PrintID   = ulc.PrintID
+                                AND uc.UserProfileID = @UserProfileID
+    WHERE ulc.UserListID = @UserListID
     ORDER BY ygo.CardName ASC, cp.PrintID ASC;
 END
 GO
