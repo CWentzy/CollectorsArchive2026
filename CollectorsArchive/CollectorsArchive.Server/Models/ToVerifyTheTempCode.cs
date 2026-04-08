@@ -1,6 +1,6 @@
 ﻿namespace CollectorsArchive.Server.Models
 {
-    public class TempLoginCode
+    public class ToVerifyTheTempCode
     {
         public int Id { get; set; }
         public string Email { get; set; }

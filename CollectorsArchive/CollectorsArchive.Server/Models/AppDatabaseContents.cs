@@ -13,7 +13,7 @@ namespace CollectorsArchive.Server
 
         // In your DbContext
         public DbSet<UserProfile> UserProfile { get; set; }
-        public DbSet<TempLoginCode> TempLoginCodes { get; set; }
+        public DbSet<ToVerifyTheTempCode> ToVerifyTheTempCode { get; set; }
 
         // public DbSet<UserProfile> UserProfiles { get; set; } THIS CAN BE SCRAPPED TOO
         public DbSet<UserCard> UserCards { get; set; }

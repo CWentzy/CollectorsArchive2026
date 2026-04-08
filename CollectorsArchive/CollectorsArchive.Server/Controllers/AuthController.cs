@@ -67,61 +67,8 @@ namespace CollectorsArchive.Server.Controllers
             });
         }
 
-
-        [HttpPost("ForNonGoogleNewUser")]
-        public async Task<IActionResult> RegisterNonGoogleUser([FromBody] NonGoogleUserRequestModel request)
-        {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
-                return BadRequest(new { message = "Email and Code are required." });
-
-            // Check if user already exists
-            var existingUser = await _db.UserProfile
-                .FirstOrDefaultAsync(u => u.Email == request.Email);
-
-            if (existingUser != null)
-                return Conflict(new { message = "A user with this email already exists." });
-
-            // Verify temp code
-            var record = await _db.TempLoginCodes
-                .FirstOrDefaultAsync(x => x.Email == request.Email && x.Code == request.Code);
-
-            if (record == null)
-                return BadRequest(new { message = "Invalid code." });
-
-            if (record.Expiration < DateTime.UtcNow)
-                return BadRequest(new { message = "Code expired." });
-
-            // Create user
-            var newUser = new UserProfile
-            {
-                Email = request.Email,
-                UserName = string.IsNullOrWhiteSpace(request.Name)
-                    ? request.Email.Split('@')[0]
-                    : request.Name,
-                GoogleSubject = null,
-                JoinDate = DateTime.UtcNow
-            };
-
-            _db.UserProfile.Add(newUser);
-            await _db.SaveChangesAsync();
-
-            // Remove used code
-            _db.TempLoginCodes.Remove(record);
-            await _db.SaveChangesAsync();
-
-            // Return user
-            return Ok(new
-            {
-                message = "Registration successful",
-                userId = newUser.UserId,
-                email = newUser.Email,
-                userName = newUser.UserName
-            });
-        }
-
-        [HttpPost("RequestForTempCode")]
-        public async Task<IActionResult> RequestTempCode([FromBody] TempCodeRequest request)
+        [HttpPost("InitialConfirmationCodeRequest")]
+        public async Task<IActionResult> RequestTempCode([FromBody] IntialTempCodeRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Email))
                 return BadRequest(new { message = "Email is required" });
@@ -133,16 +80,16 @@ namespace CollectorsArchive.Server.Controllers
 
                 //  first i need to check if there is already a code for this email in the database, if there is then i will update it with the new code and expiration time,
                 //  if there is not then i will create a new entry in the database with the email, code and expiration time
-                var existingEntry = await _db.TempLoginCodes.FirstOrDefaultAsync(x => x.Email == request.Email);
+                var existingEntry = await _db.ToVerifyTheTempCode.FirstOrDefaultAsync(x => x.Email == request.Email);
                 if (existingEntry != null)
                 {
                     existingEntry.Code = code;
                     existingEntry.Expiration = expiryTime;
-                    _db.TempLoginCodes.Update(existingEntry);
+                    _db.ToVerifyTheTempCode.Update(existingEntry);
                 }
                 else
                 {
-                    _db.TempLoginCodes.Add(new TempLoginCode { Email = request.Email, Code = code, Expiration = expiryTime });
+                    _db.ToVerifyTheTempCode.Add(new ToVerifyTheTempCode { Email = request.Email, Code = code, Expiration = expiryTime });
                 }
 
                 await _db.SaveChangesAsync();
@@ -174,10 +121,10 @@ namespace CollectorsArchive.Server.Controllers
 
 
         [HttpPost("VerfyingTemporaryCode")]
-        public async Task<IActionResult> VerifyTempCode([FromBody] TempCodeVerifyRequest request)
+        public async Task<IActionResult> VerifyTempCode([FromBody] ToVerifyTheTempCode request)
         {
             // Find the code
-            var record = await _db.TempLoginCodes
+            var record = await _db.ToVerifyTheTempCode
                 .FirstOrDefaultAsync(x => x.Email == request.Email && x.Code == request.Code);
 
             if (record == null)
@@ -205,7 +152,7 @@ namespace CollectorsArchive.Server.Controllers
             }
 
             // Cleanup the used code
-            _db.TempLoginCodes.Remove(record);
+            _db.ToVerifyTheTempCode.Remove(record);
             await _db.SaveChangesAsync();
 
             // Return everything the frontend needs
@@ -218,11 +165,6 @@ namespace CollectorsArchive.Server.Controllers
                 joinDate = user.JoinDate
             });
         }
-
-
-
-        // I need to creating another endpoit when users gives me their non google email i will first search in the database and
-        // then if the user is the db then i dont need to send them code again and again 
     }
 }
 
