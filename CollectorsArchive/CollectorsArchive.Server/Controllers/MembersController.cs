@@ -19,7 +19,7 @@ namespace CollectorsArchive.Server.Controllers
         [HttpGet("GetAllMembers")]
         public async Task<IActionResult> GetAllMembers()
         {
-            var members = await _db.UserInformation
+            var members = await _db.UserProfile
                 .Select(u => new
                 {
                     userId = u.UserId,

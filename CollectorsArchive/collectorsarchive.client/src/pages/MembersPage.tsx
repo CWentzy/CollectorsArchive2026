@@ -1,7 +1,9 @@
 import { Avatar, Box, Card, Grid, Group, Skeleton, Stack, Text, Title } from "@mantine/core"
+import { IconCalendar } from "@tabler/icons-react"
 import { Users2Icon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { formatDate } from "../utils"
 
 // Shape of member data returned from the API
 type Member = {
@@ -13,10 +15,6 @@ type Member = {
 
 const API_URL = `${import.meta.env.VITE_SERVER_URL}/api/Members/GetAllMembers`
 
-const formatDate = (dateStr: string | null) => {
-	if (!dateStr) return "Unknown"
-	return new Date(dateStr).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-}
 export default function MembersPage() {
 	const [members, setMembers] = useState<Member[]>([])
 	const [loading, setLoading] = useState(true)
@@ -75,24 +73,28 @@ export default function MembersPage() {
 										<Grid.Col key={member.userId} span={{ base: 12, sm: 6 }}>
 											<Card
 												shadow="sm"
-												padding="lg"
 												radius="md"
-												withBorder
-												h="100%"
 												style={{ cursor: "pointer" }}
 												onClick={() => handleMemberClick(member)}
 											>
 												<Group align="center">
-													<Avatar src={member.photoUrl ?? undefined} color="spell-green" radius="xl" size="lg">
-														{!member.photoUrl && member.userName[0].toUpperCase()}
-													</Avatar>
+													<Avatar
+														src={member.photoUrl}
+														radius="xl"
+														size="lg"
+														name={member?.userName}
+														color="initials"
+													/>
 													<Stack gap={4}>
 														<Text fw={700} fz="md">
 															{member.userName}
 														</Text>
-														<Text fz="xs" c="dimmed">
-															Joined {formatDate(member.joinDate)}
-														</Text>
+														<Group gap={6}>
+															<IconCalendar size={14} color="var(--mantine-color-dimmed)" />
+															<Text size="xs" c="dimmed">
+																Joined {formatDate(member.joinDate)}
+															</Text>
+														</Group>
 													</Stack>
 												</Group>
 											</Card>

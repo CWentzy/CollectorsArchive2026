@@ -11,7 +11,7 @@ namespace CollectorsArchive.Server.Models.ApiInput
 {
     public class SearchFiltersYGO
     {
-        public string[]? superTypes { get; set; }
+        public string? superTypes { get; set; }
         public string[]? subTypes { get; set; }
         public string[]? attributes { get; set; }
         public string? classificationOperator { get; set; }
@@ -22,5 +22,8 @@ namespace CollectorsArchive.Server.Models.ApiInput
         public int? maxAtk { get; set; }
         public int? minDef { get; set; }
         public int? maxDef { get; set; }
+
+        public int[]? attack { get; set; }
+        public int[]? defense { get; set; }
     }
 }

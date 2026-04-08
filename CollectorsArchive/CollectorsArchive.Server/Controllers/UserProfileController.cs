@@ -20,7 +20,7 @@ namespace CollectorsArchive.Server.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetProfile(int userId)
         {
-            var user = await _db.UserInformation
+            var user = await _db.UserProfile
                 .FirstOrDefaultAsync(u => u.UserId == userId);
 
             if (user == null)
@@ -41,7 +41,7 @@ namespace CollectorsArchive.Server.Controllers
         [HttpPut("{userId}")]
         public async Task<IActionResult> UpdateProfile(int userId, [FromBody] UpdateProfileRequest request)
         {
-            var user = await _db.UserInformation
+            var user = await _db.UserProfile
                 .FirstOrDefaultAsync(u => u.UserId == userId);
 
             if (user == null)

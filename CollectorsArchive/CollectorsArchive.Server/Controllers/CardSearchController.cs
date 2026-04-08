@@ -8,13 +8,14 @@
  *                  that captures specific print info.
  */
 
+using CollectorsArchive.Server.Models.ApiInput;
+using CollectorsArchive.Server.Models.ApiOutput;
+using CollectorsArchive.Server.Models.CardSearch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
-
-using CollectorsArchive.Server.Models.CardSearch;
-using CollectorsArchive.Server.Models.ApiInput;
+using System.Text.Json;
 
 
 namespace CollectorsArchive.Server.Controllers
@@ -46,9 +47,11 @@ namespace CollectorsArchive.Server.Controllers
         /// <param name="parameters">Search parameters provided by the user</param>
         /// <returns>Card List</returns>
         [HttpPost("AdvancedSearchSet")]
-        public IEnumerable<SearchOutputCard> AdvancedSearchBySet([FromBody] AdvancedSearch parameters)
+        public SearchOutputResult AdvancedSearchBySet([FromBody] AdvancedSearch parameters)
         {
-            List<SearchOutputCard> results = new();
+            List<CardInformation> cards = [];
+            List<PrintingInformation> printings = [];
+
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ErmiyasDB")))
             {
                 conn.Open();
@@ -57,28 +60,41 @@ namespace CollectorsArchive.Server.Controllers
                 cmd.CommandText = "AdvancedSearchBySet";
                 cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@GameID", parameters.game);
-                cmd.Parameters.AddWithValue("@SetName", parameters.query);
+                cmd.Parameters.AddWithValue("@GameID", parameters.GameID);
+                cmd.Parameters.AddWithValue("@SetName", parameters.Query);
 
                 cmd.Connection = conn;
+
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    results.Add(new SearchOutputCard
+                    cards.Add(new CardInformation
                     {
+                        GameID = parameters.GameID,
                         CardID = reader["CardID"].ToString(),
+                        CardName = reader["CardName"].ToString()
+                    });
+
+                    printings.Add(new PrintingInformation
+                    {
+                        GameID = parameters.GameID,
+                        CardID = reader["CardID"].ToString(),
+                        PrintID = reader.GetInt32(3),
+                        CardSetID = reader.GetInt32(4),
                         CardName = reader["CardName"].ToString(),
-                        PrintInfo = new SearchOutputPrinting
-                        {
-                            PrintID = reader.GetInt32(2),
-                            SetCode = reader["SetCode"].ToString(),
-                            CardRarity = reader["CardRarity"].ToString()
-                        }
+                        SetName = reader["SetName"].ToString(),
+                        SetCode = reader["SetCode"].ToString(),
+                        Rarity = reader["CardRarity"].ToString(),
+                        ReleaseDate = reader["ReleaseDate"] != DBNull.Value ? reader.GetDateTime(8) : DateTime.MinValue
                     });
                 }
             }
 
-            return results;
+            return new SearchOutputResult
+            {
+                Cards = cards,
+                Printings = printings
+            };
         }
 
 
@@ -89,9 +105,9 @@ namespace CollectorsArchive.Server.Controllers
         /// <param name="parameters">Search Parameters</param>
         /// <returns>Card List</returns>
         [HttpPost("AdvancedSearchCard")]
-        public IEnumerable<SearchOutputCard> AdvancedSearchByCard([FromBody] AdvancedSearch parameters)
+        public SearchOutputResult AdvancedSearchByCard([FromBody] AdvancedSearch parameters)
         {
-            List<SearchOutputCard> results = new();
+            List<CardInformation> cards = [];
 
             SqlCommand cmd = new SqlCommand();
 
@@ -104,24 +120,29 @@ namespace CollectorsArchive.Server.Controllers
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    results.Add(new SearchOutputCard
+                    cards.Add(new CardInformation
                     {
-                        CardID = reader.GetString(0),
-                        CardName = reader.GetString(1)
+                        GameID = parameters.GameID,
+                        CardID = reader.GetString(1),
+                        CardName = reader.GetString(2)
                     });
                 }
             }
 
-            return results;
+            return new SearchOutputResult
+            {
+                Cards = cards
+            };
         }
 
 
-        [HttpPost("CVSearch")]
-        public IEnumerable<SearchOutputCard> CVSearch([FromBody] CVSearchYGO parameters)
+        [HttpPost("CVYGOSearch")]
+        public SearchOutputResult CVYGOSearch([FromBody] CVSearchYGO parameters)
         {
-            List<SearchOutputCard> results = new();
-            SqlCommand cmd = new SqlCommand();
+            List<CardInformation> cards = [];
+            List<PrintingInformation> printings = [];
 
+            SqlCommand cmd = new SqlCommand();
 
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ErmiyasDB")))
             {
@@ -135,21 +156,79 @@ namespace CollectorsArchive.Server.Controllers
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    results.Add(new SearchOutputCard
+                    cards.Add(new CardInformation
                     {
+                        GameID = 1, // YGO
                         CardID = reader["CardID"].ToString(),
-                        CardName = reader["CardName"].ToString(),
-                        PrintInfo = new SearchOutputPrinting
-                        {
-                            PrintID = reader.GetInt32(2),
-                            SetCode = reader["SetCode"].ToString(),
-                            CardRarity = reader["CardRarity"].ToString()
-                        }
+                        CardName = reader["CardName"].ToString()
+                    });
+
+                    printings.Add(new PrintingInformation
+                    {
+                        GameID = 1, // YGO
+                        PrintID = reader.GetInt32(3),
+                        CardSetID = reader.GetInt32(4),
+                        SetName = reader["SetName"].ToString(),
+                        SetCode = reader["SetCode"].ToString(),
+                        Rarity = reader["CardRarity"].ToString(),
+                        ReleaseDate = DateTime.MinValue
                     });
                 }
             }
 
-            return results;
+            return new SearchOutputResult
+            {
+                Cards = cards,
+                Printings = printings
+            };
+        }
+
+
+        [HttpPost("CVMTGSearch")]
+        public SearchOutputResult CVMTGSearch([FromBody] CVSearchMTG parameters)
+        {
+            List<CardInformation> cards = [];
+            List<PrintingInformation> printings = [];
+
+            SqlCommand cmd = new SqlCommand();
+
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ErmiyasDB")))
+            {
+                conn.Open();
+                cmd.CommandText = "CVMTGSearch";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@CardName", parameters.cardName);
+                cmd.Connection = conn;
+
+                SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    cards.Add(new CardInformation
+                    {
+                        GameID = 1, // YGO
+                        CardID = reader["CardID"].ToString(),
+                        CardName = reader["CardName"].ToString()
+                    });
+
+                    printings.Add(new PrintingInformation
+                    {
+                        GameID = 1, // YGO
+                        PrintID = reader.GetInt32(3),
+                        CardSetID = reader.GetInt32(4),
+                        SetName = reader["SetName"].ToString(),
+                        SetCode = reader["SetCode"].ToString(),
+                        Rarity = reader["CardRarity"].ToString(),
+                        ReleaseDate = reader["ReleaseDate"] != DBNull.Value ? reader.GetDateTime(8) : DateTime.MinValue
+                    });
+                }
+            }
+
+            return new SearchOutputResult
+            {
+                Cards = cards,
+                Printings = printings
+            };
         }
 
 
@@ -165,43 +244,125 @@ namespace CollectorsArchive.Server.Controllers
             SqlCommand result = new SqlCommand();
             StringBuilder query = new StringBuilder();
 
-            query.Append("SELECT YGOCard.CardID, YGOCard.CardName" +
-                         "FROM YGOCard" +
-                            "JOIN");
+            // Query Start
+            query.Append("SELECT CardPrinting.GameID, CardPrinting.CardID, " +
+                            "CASE " +
+                                "WHEN CardPrinting.GameID = 1 THEN YGOCard.CardName " +
+                                "WHEN CardPrinting.GameID = 2 THEN MTGCard.CardNameEN " +
+                            "END AS 'CardName', " +
+                            "CardPrinting.PrintID, CardPrinting.CardSetID, CardSet.SetName, " +
+                            "CASE " +
+                                "WHEN CardPrinting.GameID = 1 THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex " +
+                                "WHEN CardPrinting.GameID = 2 THEN CardSet.SetCode + ' ' + CardPrinting.CardSetIndex " +
+                            "END AS 'SetCode', " +
+                            "CardPrinting.CardRarity, CardSet.ReleaseDate " +
+                         "FROM CardPrinting " +
+                            "JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID " +
+                            "LEFT JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID " +
+                            "LEFT JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID ");
 
-            // Adjust search query to reflect the parameters provided by the user
-            StringBuilder queryParameters = new StringBuilder();
-            SearchFiltersYGO filters = (SearchFiltersYGO)parameters.advancedFilters;
+            // Add Game Specific Clauses
+            switch (parameters.GameID)
+            {
+                case 1:
+                    query.Append(ParameterCheckYGO(parameters));
+                    break;
+                case 2:
+                    query.Append(ParameterCheckMTG(parameters));
+                    break;
+                default:
+                    query.Append(ParameterCheckALL(parameters.Query));
+                    break;
+            }
 
-            if (parameters.query != null) { queryParameters.Append($"YGOCard.CardName LIKE '%{parameters.query}%'"); }
-
-            // Filters with the ability to select multiples
-            //queryParameters.Append(SetupMultiParameter(filters.superTypes));
-            //queryParameters.Append(SetupMultiParameter(filters.subTypes));
-            //queryParameters.Append(SetupMultiParameter(filters.attributes));
-
+            // Finish Query
+            query.Append("ORDER BY CardName;");
 
             result.CommandText = query.ToString();
             return result;
         }
 
-        //private string SetupMultiParameter(string[]? selectedOptions)
-        //{
-        //    if (selectedOptions == null || selectedOptions.Length < 1) { return string.Empty; }
-        //    else if (selectedOptions.Length == 1)
-        //    {
 
-        //    }
-        //    else
-        //    {
+        private string ParameterCheckYGO(AdvancedSearch parameters)
+        {
+            var filters = JsonSerializer.Deserialize<SearchFiltersYGO>(parameters.AdvancedFilters.ToString());
+            var query = new StringBuilder();
 
-        //    }
+            query.Append("WHERE CardPrinting.GameID IN (1) ");
+            if (parameters.Query != string.Empty) { query.Append($"AND CardName LIKE '%{parameters.Query}%' "); }
 
-        //}
+            if (filters.superTypes != null) { query.Append($"AND CardSuperType.SuperTypeName = '{filters.superTypes}' "); }
 
-        //private string SetupRangeParameter(int[]? selectedOptions)
-        //{
+            if (filters.subTypes != null)
+            {
+                query.Append("AND CardSubType.SubTypeName IN (");
+                foreach (var type in filters.subTypes) { query.Append($"'{type}',"); }
+                query.Remove(query.Length - 1, 1);
+                query.Append(") ");
+            }
 
-        //}
+            if (filters.attributes != null)
+            {
+                query.Append("AND MonsterAttribute.AttributeNameEN IN (");
+                foreach (var attribute in filters.attributes) { query.Append($"'{attribute}',"); }
+                query.Remove(query.Length - 1, 1);
+                query.Append(") ");
+            }
+
+            // Determine if the classification search is an AND/OR type search
+            string conjunction = string.Empty;
+            if (filters.classificationOperator != null) { conjunction = filters.classificationOperator; }
+
+            if (filters.classifications != null)
+            {
+                query.Append("AND (");
+                foreach (var classification in filters.classifications) 
+                { 
+                    query.Append($"Classifications LIKE '%{classification}%' {conjunction} ");
+                }
+                query.Remove(query.Length - conjunction.Length + 1, conjunction.Length + 1);
+                query.Append(") ");
+            }
+            if (filters.classificationsExcluded != null)
+            {
+                query.Append("AND (");
+                foreach (var excluded in filters.classificationsExcluded)
+                {
+                    query.Append($"Classifications LIKE '%{excluded}%' AND ");
+                }
+                query.Remove(query.Length - 4, 4);
+                query.Append(") ");
+            }
+
+            if (filters.levelRange != null) { query.Append($"AND CardLevel BETWEEN {filters.levelRange[0]} AND {filters.levelRange[1]}"); }
+
+            if (filters.attack != null) { query.Append($"AND AttackValue BETWEEN {filters.attack[0]} AND {filters.attack[1]}"); }
+            if (filters.defense != null) { query.Append($"AND DefenseValue BETWEEN {filters.defense[0]} AND {filters.defense[1]}"); }
+
+            return query.ToString();
+        }
+
+
+        private string ParameterCheckMTG(AdvancedSearch parameters)
+        {
+            var filters = JsonSerializer.Deserialize<SearchFiltersMTG>(parameters.AdvancedFilters.ToString());
+            var query = new StringBuilder();
+
+            query.Append("WHERE CardPrinting.GameID IN (2) ");
+            if (parameters.Query != string.Empty) { query.Append($"AND CardName LIKE '%{parameters.Query}%"); }
+
+            return query.ToString();
+        }
+
+
+        private string ParameterCheckALL(string cardName)
+        {
+            var query = new StringBuilder();
+
+            query.Append("WHERE CardPrinting.GameID IN (1,2) ");    // This is a quick fix
+            if (cardName != string.Empty) { query.Append($"AND CardName LIKE '%{cardName}%' "); }
+
+            return query.ToString();
+        }
     }
 }

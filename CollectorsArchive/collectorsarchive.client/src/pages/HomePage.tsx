@@ -20,7 +20,6 @@ import CardLists from "../components/Cardlists"
 import type { CardsAndPrints, PrintingInformation } from "../types/api"
 
 const GET_USER_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
-
 type Tab = "collection" | "cardlists"
 export default function HomePage() {
 	// grabbing the data I passed from the login page (username + email).
@@ -33,7 +32,6 @@ export default function HomePage() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState("")
 	const [activeTab, setActiveTab] = useState<Tab>("collection")
-
 	useEffect(() => {
 		if (!userName) {
 			setError("No user found. Please log in.")
@@ -89,21 +87,24 @@ export default function HomePage() {
 				</Flex>
 
 				<Flex justify="flex-start" gap="md" wrap="wrap">
-					<Button variant={activeTab === "collection" ? "filled" : "light"}
+					<Button
+						variant={activeTab === "collection" ? "filled" : "light"}
 						color="green"
 						leftSection={<GalleryHorizontalEndIcon size={16} />}
-					onClick={() => setActiveTab("collection")}					>
-						Collection
+						onClick={() => setActiveTab("collection")}
+					>						Collection
 					</Button>
-					<Button variant={activeTab === "cardlists" ? "filled" : "light"}
+					<Button
+						variant={activeTab === "cardlists" ? "filled" : "light"}
 						color="grape"
 						leftSection={<LayoutListIcon size={16} />}
-					onClick={() => setActiveTab("cardlists")}					>
-						Card Lists
+						onClick={() => setActiveTab("cardlists")}
+					>						Card Lists
 					</Button>
 				</Flex>
 
 				{/* CARD GRID */}
+
 				{activeTab === "collection" && (
 					<>
 						{loading ? (
@@ -130,7 +131,7 @@ export default function HomePage() {
 							/* Collection */
 							<Paper py="md" px="lg" w="100%" radius="md" withBorder>
 								<Text size="lg" fw={600} mb="md">
-									Collection
+									My Collection
 								</Text>
 
 								<ScrollArea style={{ height: "100vh" }} offsetScrollbars pos="relative">
@@ -146,7 +147,6 @@ export default function HomePage() {
 					</>
 				)}
 				{activeTab === "cardlists" && (
-					
 					<Box w="100%">
 						<CardLists />
 					</Box>

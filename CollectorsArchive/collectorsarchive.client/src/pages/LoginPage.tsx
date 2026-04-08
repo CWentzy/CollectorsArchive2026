@@ -20,10 +20,8 @@ import { useState } from "react"
 
 const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
-const RegisterNewUserURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/RegisterNewUser`
 const LoginUsingGoogleURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/LoginUsingGoogle`
-const RequestForTempCodeURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/RequestForTempCode`
-const RegistrationForNonGoogleUsers = `${import.meta.env.VITE_SERVER_URL}/api/Auth/ForNonGoogleNewUser`
+const InitialRequestForTempCodeURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/InitialConfirmationCodeRequest`
 const VerfyingTemporaryCodeURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/VerfyingTemporaryCode`
 
 export default function LoginPage(props: PaperProps) {
@@ -48,41 +46,24 @@ export default function LoginPage(props: PaperProps) {
 				const googleSubject = userData.sub
 				const photoUrl = userData.picture
 
-				// try login first
+				// try login first and then if user is not registered or not found then authomatically register them as user
 				const backendResponse = await fetch(LoginUsingGoogleURL, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ googleSubject, photoUrl }),
+					body: JSON.stringify({
+						email,
+						name: userName, // the backend ecpects name not userName
+						googleSubject,
+						photoUrl,
+					}),
 				})
-
+				{
+					/* this is a time which will let user to stay login or authomatically will logged them out after 12 hrs  */
+				}
+				const loginTime = Date.now()
 				const loginData = await backendResponse.json()
 
-				// if user not found then register
-				let finalData = loginData
-				if (loginData.message === "User not found. Please register first.") {
-					const registerResponse = await fetch(RegisterNewUserURL, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							email,
-							name: userName,
-							googleSubject,
-							photoUrl,
-						}),
-					})
-					finalData = await registerResponse.json()
-				}
-
-				console.log(finalData)
-				localStorage.setItem(
-					"user",
-					JSON.stringify({
-						userId: finalData.userId,
-						email: finalData.email ?? email,
-						userName: finalData.userName ?? userName,
-						photoUrl: finalData.photoUrl ?? photoUrl,
-					})
-				)
+				localStorage.setItem("user", JSON.stringify({ ...loginData, loginTime }))
 				navigate("/home")
 			} catch (error) {
 				console.error("Failed to fetch user info from Google:", error)
@@ -110,34 +91,31 @@ export default function LoginPage(props: PaperProps) {
 						Welcome to Collector's Archive
 					</Text>
 				</Center>
-
 				<Group mb="md" mt="md" align="center" justify="center">
 					<Button fullWidth variant="light" leftSection={<IconBrandGoogleFilled size={16} />} onClick={() => login()}>
 						Sign in with Google
 					</Button>
 				</Group>
-
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
-
+				{/* This form is for non-google login, user will provide their email and then we will send them // a code to
+				their email and then they will provide that code to verify and login or register if they are new user */}
 				<form
 					onSubmit={form.onSubmit(async (values) => {
 						const { email } = values
 
-						// S BOTH login and register request code
-						const response = await fetch(RequestForTempCodeURL, {
+						// This endpoint should send a code to ANY valid email provided
+						const response = await fetch(InitialRequestForTempCodeURL, {
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
 							body: JSON.stringify({ email }),
 						})
 
-						if (!response.ok) {
-							console.log("Failed to send code")
-							return
+						if (response.ok) {
+							setSavedEmail(email)
+							setIsCodeStep(true)
+						} else {
+							console.log("Error sending code")
 						}
-
-						// save email and move to code step
-						setSavedEmail(email)
-						setIsCodeStep(true)
 					})}
 				>
 					<Stack>
@@ -156,62 +134,40 @@ export default function LoginPage(props: PaperProps) {
 					</Stack>
 
 					<Group justify="space-between" mt="xl">
-						<Anchor component="button" type="button" opacity={0.85} onClick={() => toggle()} size="xs">
-							{type === "register" ? "Already have an account? Login" : "Don't have an account? Register"}
-						</Anchor>
-
 						{/* VERIFY CODE */}
 						{isCodeStep ? (
 							<Button
 								type="button"
+								fullWidth
 								onClick={async () => {
-									let response
-
-									if (type === "register") {
-										// REGISTER create user
-										response = await fetch(RegistrationForNonGoogleUsers, {
-											method: "POST",
-											headers: { "Content-Type": "application/json" },
-											body: JSON.stringify({
-												email: savedEmail,
-												code,
-												name: parseEmailUsername(savedEmail),
-											}),
-										})
-									} else {
-										// LOGIN verify only
-										response = await fetch(VerfyingTemporaryCodeURL, {
-											method: "POST",
-											headers: { "Content-Type": "application/json" },
-											body: JSON.stringify({
-												email: savedEmail,
-												code,
-											}),
-										})
-									}
+									// Call one "VerifyAndLogin" endpoint
+									const response = await fetch(VerfyingTemporaryCodeURL, {
+										method: "POST",
+										headers: { "Content-Type": "application/json" },
+										body: JSON.stringify({
+											email: savedEmail,
+											code,
+											// If they are new, the backend uses this name
+											name: parseEmailUsername(savedEmail),
+										}),
+									})
 
 									if (response.ok) {
 										const data = await response.json()
-
-										localStorage.setItem(
-											"user",
-											JSON.stringify({
-												userName: data.userName,
-												email: data.email,
-												userId: data.userId,
-											})
-										)
-
+										const loginTime = Date.now()
+										localStorage.setItem("user", JSON.stringify({ ...data, loginTime }))
 										navigate("/home")
 									} else {
-										console.log("Invalid or expired code")
+										alert("Invalid or expired code")
 									}
 								}}
 							>
-								Verify Code
+								Verify & Login
 							</Button>
 						) : (
-							<Button type="submit">{upperFirst(type)}</Button>
+							<Button type="submit" fullWidth>
+								Continue
+							</Button>
 						)}
 					</Group>
 				</form>

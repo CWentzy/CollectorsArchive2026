@@ -4,9 +4,11 @@ import {
 	Box,
 	Button,
 	Card,
+	Center,
 	Divider,
 	Flex,
 	Group,
+	Loader,
 	LoadingOverlay,
 	Paper,
 	ScrollArea,
@@ -16,14 +18,18 @@ import {
 import { IconCalendar, IconCards, IconChevronLeft, IconLayoutList } from "@tabler/icons-react"
 import { GalleryHorizontalEndIcon, LayoutListIcon } from "lucide-react"
 import { useEffect, useState } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 import CardCollection from "../components/CardCollection"
 import CardLists from "../components/Cardlists"
 import type { CardsAndPrints, PrintingInformation } from "../types/api"
+import { formatDate } from "../utils"
+
+const GET_USER_PROFILE = `${import.meta.env.VITE_SERVER_URL}/api/UserProfile`
 const GET_USER_COLLECTION_URL = `${import.meta.env.VITE_SERVER_URL}/api/DisplayCollection/DisplayCollection`
 
 type Member = {
 	userId: number
+	bio: string | null
 	userName: string
 	photoUrl: string | null
 	joinDate: string | null
@@ -31,12 +37,9 @@ type Member = {
 
 type Tab = "collection" | "cardlists" //To track which tab is active
 
-const formatDate = (dateStr: string | null) => {
-	if (!dateStr) return "Unknown"
-	return new Date(dateStr).toLocaleDateString("en-US", { month: "long", year: "numeric" })
-}
+export default function ProfilePage() {
+	const { userId } = useParams()
 
-export default function MemberProfilePage() {
 	const location = useLocation()
 	const navigate = useNavigate()
 	const member = location.state?.member as Member | undefined
@@ -44,7 +47,25 @@ export default function MemberProfilePage() {
 
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
+	const [member, setMember] = useState<Member | null>(location.state?.member)
 	const [activeTab, setActiveTab] = useState<Tab>("collection")
+
+	useEffect(() => {
+		if (member) return
+
+		const fetchUserProfile = async () => {
+			try {
+				const response = await fetch(`${GET_USER_PROFILE}/${userId}`)
+				if (!response.ok) throw new Error("Failed to fetch user profile")
+				const data = await response.json()
+				setMember(data)
+			} catch (err) {
+				console.error(err)
+			}
+		}
+
+		fetchUserProfile()
+	}, [userId, member])
 
 	useEffect(() => {
 		const fetchCollection = async () => {
@@ -113,103 +134,109 @@ export default function MemberProfilePage() {
 					Back to Members
 				</Button>
 
-				{/* Profile header */}
-				<Card shadow="sm" padding="xl" radius="md" withBorder>
-					<Group align="flex-start" gap="xl" wrap="wrap">
-						{/* Avatar */}
-						<Avatar
-							src={member.photoUrl ?? undefined}
-							size={90}
-							radius="xl"
-							color="spell-green"
-							variant="filled"
-							style={{
-								fontSize: "2.2rem",
-								fontWeight: 700,
-								flexShrink: 0,
-								border: "3px solid var(--mantine-color-spell-green-4)",
-							}}
-						>
-							{!member.photoUrl && member.userName[0]?.toUpperCase()}
-						</Avatar>
+				{!member ? (
+					<Center style={{ height: "50vh" }}>{loading ? <Loader type="dots" /> : <Text>User not found</Text>}</Center>
+				) : (
+					<>
+						<Card shadow="sm" p={{ base: "md", sm: "xl" }} radius="md">
+							<Flex gap={{ base: "md", sm: "lg" }} direction={{ base: "column", sm: "row" }} align="center">
+								{/* Avatar */}
+								<Avatar src={member.photoUrl} size={90} radius={90} name={member?.userName} color="initials" />
 
-						{/* Name, bio, join date */}
-						<Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
-							<Group gap="sm" align="center">
-								<Text fw={700} size="xl" lh={1.2}>
-									{member.userName}
-								</Text>
-								<Badge variant="light" color="spell-green" size="sm" radius="sm">
-									Collector
-								</Badge>
-							</Group>
+								{/* Name, bio, join date */}
+								<Flex direction="column" gap="sm" align={{ base: "center", sm: "flex-start" }}>
+									<Flex
+										direction={{ base: "column", sm: "row" }}
+										rowGap={6}
+										columnGap="sm"
+										align="center"
+										justify={{ base: "center", sm: "flex-start" }}
+									>
+										<Text fw={700} size="xl" lh={1.2}>
+											{member.userName}
+										</Text>
+										<Badge variant="light" color="spell-green" size="xs" radius="sm">
+											Collector
+										</Badge>
+									</Flex>
 
-							<Text size="sm" c="dimmed" fs="italic">
-								No bio yet.
-							</Text>
+									{member.bio && (
+										<Text size="sm" c="dimmed" fs="italic" ta={{ base: "center", sm: "left" }}>
+											{member.bio}
+										</Text>
+									)}
 
-							<Group gap="xs" mt={2}>
-								<IconCalendar size={13} color="var(--mantine-color-dimmed)" />
-								<Text size="xs" c="dimmed">
-									Joined {formatDate(member.joinDate)}
-								</Text>
-							</Group>
-						</Stack>
+									<Flex gap={6} align="center" justify={{ base: "center", sm: "flex-start" }}>
+										<IconCalendar size={14} color="var(--mantine-color-dimmed)" />
+										<Text size="xs" c="dimmed">
+											Joined {formatDate(member.joinDate)}
+										</Text>
+									</Flex>
+								</Flex>
 
-						{/* Stats */}
-						<Stack gap="xs" style={{ flexShrink: 0 }}>
-							<Group gap="xs">
-								<IconCards size={14} color="var(--mantine-color-spell-green-5)" />
-								<Text size="sm">Cards Collected</Text>
-								<Text size="sm" fw={700} ml="xs" c="spell-green">
-									{printsInfo?.length ?? "--"}
-								</Text>
-							</Group>
-							<Group gap="xs">
-								<IconLayoutList size={14} color="var(--mantine-color-spell-green-5)" />
-								<Text size="sm">Card Lists</Text>
-								<Text size="sm" fw={700} ml="xs" c="spell-green">
-									--
-								</Text>
-							</Group>
-						</Stack>
-					</Group>
-				</Card>
+								{/* Stats */}
+								<Flex direction="column" gap="xs" ml={{ sm: "auto" }} align="flex-start" mt={{ base: "xs", sm: 0 }}>
+									<Group gap="xs">
+										<IconCards size={16} color="var(--mantine-color-dimmed)" />
+										<Text size="sm">Cards Collected</Text>
+										<Text size="sm" fw={700} ml="xs" c="spell-green">
+											{printsInfo?.length ?? "—"}
+										</Text>
+									</Group>
 
-				<Divider />
+									<Group gap="xs">
+										<IconLayoutList size={16} color="var(--mantine-color-dimmed)" />
+										<Text size="sm">Card Lists</Text>
+										<Text size="sm" fw={700} ml="xs" c="spell-green">
+											—
+										</Text>
+									</Group>
+								</Flex>
+							</Flex>
+						</Card>
 
-				{/* Filter + category buttons */}
-				<Stack gap="md">
-					{/* <Flex justify="flex-end" w="100%">
+						<Divider />
+
+						{/* Filter + category buttons */}
+						<Stack gap="md">
+							{/* <Flex justify="flex-end" w="100%">
 						<DropDownListForSearching />
 					</Flex> */}
-					<Flex justify="flex-start" gap="md" wrap="wrap">
-						<Button variant={activeTab === "collection" ? "filled" : "light"}
-							color="green"
-							leftSection={<GalleryHorizontalEndIcon size={16} />}
-							onClick={() => setActiveTab("collection")}>
-							Collection
-						</Button>
-						<Button variant={activeTab === "cardlists" ? "filled" : "light"}
-							color="grape"
-							leftSection={<LayoutListIcon size={16} />}
-							onClick={() => setActiveTab("cardlists")}>
-							Card Lists
-						</Button>
-					</Flex>
-				</Stack>
+							<Flex justify="flex-start" gap="md" wrap="wrap">
+								<Button
+									variant={activeTab === "collection" ? "filled" : "light"}
+									color="green"
+									leftSection={<GalleryHorizontalEndIcon size={16} />}
+									onClick={() => setActiveTab("collection")}
+								>
+									Collection
+								</Button>
+								<Button
+									variant={activeTab === "cardlists" ? "filled" : "light"}
+									color="grape"
+									leftSection={<LayoutListIcon size={16} />}
+									onClick={() => setActiveTab("cardlists")}
+								>
+									Card Lists
+								</Button>
+							</Flex>
+						</Stack>
 
-				{activeTab === "collection" && (
-					<Paper shadow="sm" py="md" px="lg" radius="md" withBorder>
-						<Text size="lg" fw={600} mb="md">
-							Collection
-						</Text>
-						<ScrollArea style={{ height: "50vh" }} offsetScrollbars="present" pos="relative">
-							<LoadingOverlay visible={loading} overlayProps={{ radius: "md", blur: 2 }} loaderProps={{ type: "dots" }} />
-							<CardCollection cardsAndPrints={cardAndPrints} />
-						</ScrollArea>
-					</Paper>
-				)}
+						{activeTab === "collection" && (
+							<Paper shadow="sm" py="md" px="lg" radius="md" withBorder>
+								<Text size="lg" fw={600} mb="md">
+									Collection
+								</Text>
+								<ScrollArea style={{ height: "50vh" }} offsetScrollbars="present" pos="relative">
+									<LoadingOverlay
+										visible={loading}
+										overlayProps={{ radius: "md", blur: 2 }}
+										loaderProps={{ type: "dots" }}
+									/>
+									<CardCollection cardsAndPrints={cardAndPrints} />
+								</ScrollArea>
+							</Paper>
+						)}
 
 				{activeTab === "cardlists" && (
 					

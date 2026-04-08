@@ -15,12 +15,12 @@ GO
 -- =============================CONFIRM THE CORRECT DATABASE EXISTS============================= --
 -- ============================================================================================= --
 
-IF DB_ID('CollectorsArchive') IS NULL
+IF DB_ID('sv-collectorsarchive-database') IS NULL
 BEGIN
     RETURN;
 END
 
-USE CollectorsArchive;
+USE [sv-collectorsarchive-database];
 GO
 
 
@@ -37,15 +37,16 @@ BEGIN
 
 -- =====================================DROP EXISTING TABLES==================================== --
 
-	IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CardMonsterClassification'))
-	BEGIN
-		DROP TABLE CardMonsterClassification;
-	END
+	-- NO LONGER IN USE --
+	--IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CardMonsterClassification'))
+	--BEGIN
+	--	DROP TABLE CardMonsterClassification;
+	--END
 
-	IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MonsterClassification'))
-	BEGIN
-		DROP TABLE MonsterClassification;
-	END
+	--IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MonsterClassification'))
+	--BEGIN
+	--	DROP TABLE MonsterClassification;
+	--END
 
     IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'YGOCard'))
 	BEGIN
@@ -114,7 +115,7 @@ BEGIN
 		SuperType INT FOREIGN KEY REFERENCES CardSuperType(SuperTypeID),
 		SubType INT FOREIGN KEY REFERENCES CardSubType(SubTypeID),
 
-		-- Monster Classifications is done through a separate table --
+		Classifications VARCHAR (150),
 
 		-- Monster Specific Card Traits --
 		PendulumScale TINYINT,		-- Values range from 0 - 13
@@ -125,20 +126,21 @@ BEGIN
 		LinkRating TINYINT			-- Values range from 0 - 8
 	);
 
-	CREATE TABLE MonsterClassification (
-		ClassificationID INT IDENTITY(1,1) PRIMARY KEY,
-		ClassificationName VARCHAR (20),
-		ClassificationNameFR VARCHAR (20),
-		ClassificationNameDE VARCHAR (20),
-		ClassificationNameIT VARCHAR (20),
-		ClassificationNamePT VARCHAR (20)
-	);
+	-- NO LONGER IN USE --
+	--CREATE TABLE MonsterClassification (
+	--	ClassificationID INT IDENTITY(1,1) PRIMARY KEY,
+	--	ClassificationName VARCHAR (20),
+	--	ClassificationNameFR VARCHAR (20),
+	--	ClassificationNameDE VARCHAR (20),
+	--	ClassificationNameIT VARCHAR (20),
+	--	ClassificationNamePT VARCHAR (20)
+	--);
 
-	CREATE TABLE CardMonsterClassification (
-		CardClassificationID INT IDENTITY(1,1) PRIMARY KEY,
-		CardID VARCHAR (10) FOREIGN KEY REFERENCES YGOCard(CardID),
-		ClassificationID INT FOREIGN KEY REFERENCES MonsterClassification(ClassificationID)
-	);
+	--CREATE TABLE CardMonsterClassification (
+	--	CardClassificationID INT IDENTITY(1,1) PRIMARY KEY,
+	--	CardID VARCHAR (10) FOREIGN KEY REFERENCES YGOCard(CardID),
+	--	ClassificationID INT FOREIGN KEY REFERENCES MonsterClassification(ClassificationID)
+	--);
 
 
 -- =================================POPULATE DESCRIPTOR TABLES================================== --
@@ -203,22 +205,22 @@ BEGIN
 		('DARK', 'TÉNÈBRES', 'FINSTERNIS', 'OSCURITÀ', 'TREVAS'), 
 		('DIVINE', 'DIVIN', 'GÖTTLICH', 'DIVINO', 'DIVINO');
 
-
-	INSERT INTO MonsterClassification (ClassificationName, ClassificationNameFR, ClassificationNameDE, ClassificationNameIT, ClassificationNamePT) VALUES
-		('Normal', 'Normal', 'Normal', 'Normale',  'Normal'), 
-		('Effect', 'Effet', 'Effekt', 'Effetto', 'Efeito'), 
-		('Ritual', 'Rituel', 'Ritual', 'Rituale', 'Ritual'), 
-		('Fusion', 'Fusion', 'Fusion', 'Fusione', 'Fusão'), 
-		('Synchro', 'Synchro', 'Synchro', 'Synchro', 'Sincro'), 
-		('Xyz', 'Xyz', 'Xyz', 'Xyz', 'Xyz'), 
-		('Toon', 'Toon', 'Toon', 'Toon', 'Toon'), 
-		('Flip', 'Flip', 'Flipp', 'Scoperta', 'Virar'),
-		('Spirit', 'Spirit', 'Spirit', 'Spirit', 'Espírito'), 
-		('Union', 'Union', 'Union', 'Unione', 'União'), 
-		('Gemini', 'Gémeau', 'Zwilling', 'Gemello', 'Gêmeos'), 
-		('Tuner', 'Syntoniseur', 'Empfänger', 'Tuner', 'Regulador'), 
-		('Pendulum', 'Pendule', 'Pendel', 'Pendulum', 'Pêndulo'), 
-		('Link', 'Lien', 'Link', 'Link', 'Link');
+	-- NO LONGER IN USE --
+	--INSERT INTO MonsterClassification (ClassificationName, ClassificationNameFR, ClassificationNameDE, ClassificationNameIT, ClassificationNamePT) VALUES
+	--	('Normal', 'Normal', 'Normal', 'Normale',  'Normal'), 
+	--	('Effect', 'Effet', 'Effekt', 'Effetto', 'Efeito'), 
+	--	('Ritual', 'Rituel', 'Ritual', 'Rituale', 'Ritual'), 
+	--	('Fusion', 'Fusion', 'Fusion', 'Fusione', 'Fusão'), 
+	--	('Synchro', 'Synchro', 'Synchro', 'Synchro', 'Sincro'), 
+	--	('Xyz', 'Xyz', 'Xyz', 'Xyz', 'Xyz'), 
+	--	('Toon', 'Toon', 'Toon', 'Toon', 'Toon'), 
+	--	('Flip', 'Flip', 'Flipp', 'Scoperta', 'Virar'),
+	--	('Spirit', 'Spirit', 'Spirit', 'Spirit', 'Espírito'), 
+	--	('Union', 'Union', 'Union', 'Unione', 'União'), 
+	--	('Gemini', 'Gémeau', 'Zwilling', 'Gemello', 'Gêmeos'), 
+	--	('Tuner', 'Syntoniseur', 'Empfänger', 'Tuner', 'Regulador'), 
+	--	('Pendulum', 'Pendule', 'Pendel', 'Pendulum', 'Pêndulo'), 
+	--	('Link', 'Lien', 'Link', 'Link', 'Link');
 
 
 END

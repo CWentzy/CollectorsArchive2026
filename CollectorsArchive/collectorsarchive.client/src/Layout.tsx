@@ -1,28 +1,26 @@
 import { AppShell, Avatar, Button, Container, Grid, Group, Modal } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
-import { IconUser } from "@tabler/icons-react"
-import { Outlet, useLocation } from "react-router-dom"
 import { useMemo } from "react"
+import { Outlet } from "react-router-dom"
 import { CardScanButton } from "./components/CardScan/CardScanButton"
 //import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
 import CardScanOverlay from "./components/CardScan/CardScanOverlay"
 import CardSearchButton from "./components/CardSearch/CardSearchButton"
+import CreditsFooter from "./components/CreditsFooter"
 import Logo from "./components/Logo"
 import { ProfilePanel, type UserProfile } from "./components/ProfilePanel"
 
 function ProfileMenu({ user, toggleProfile }: { user: UserProfile; toggleProfile: () => void }) {
 	return (
 		<Avatar
+			src={user.photoUrl}
 			style={{ cursor: "pointer" }}
-			size="sm"
+			size="md"
 			radius="xl"
-			color="spell-green"
-			variant="filled"
+			name={user?.userName}
+			color="initials"
 			onClick={toggleProfile}
-		>
-			{/*Profile URL can be viewwed on the header now as well*/}
-			{!user?.photoUrl && (user?.userName?.[0]?.toUpperCase() ?? <IconUser size={16} />)}
-		</Avatar>
+		/>
 	)
 }
 
@@ -31,8 +29,7 @@ export function Layout() {
 	const [profileOpened, { toggle: toggleProfile, close: closeProfile }] = useDisclosure(false)
 
 	// Re-read user from localStorage whenever the route changes
-	const location = useLocation()
-	const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "null"), [location])
+	const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "null"), [])
 	const isLoggedIn = !!user
 
 	return (
@@ -99,6 +96,9 @@ export function Layout() {
 				<Container size="xl">
 					<Outlet />
 				</Container>
+
+				<CreditsFooter />
+
 				<Modal opened={scanOpened} onClose={close} fullScreen withCloseButton={false} keepMounted={false} padding={0}>
 					<CardScanOverlay onClose={close} />
 				</Modal>

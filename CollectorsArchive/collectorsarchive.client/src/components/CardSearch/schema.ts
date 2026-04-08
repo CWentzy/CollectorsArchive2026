@@ -18,21 +18,34 @@ export const SearchType = {
 
 export type SearchType = (typeof SearchType)[keyof typeof SearchType]
 
+// Game
 export const Game = {
 	ygo: "ygo",
 	mtg: "mtg",
 	pokemon: "pokemon",
 } as const
 
-export type Game = (typeof Game)[keyof typeof Game]
-
-export const GameIDs: Record<Game, number> = {
+export const GameID: Record<Game, number> = {
 	ygo: 1,
 	mtg: 2,
 	pokemon: 3,
 }
 
-export type GameIDs = (typeof GameIDs)[keyof typeof GameIDs]
+export const GameIDToGame: Record<number, Game> = {
+	1: "ygo",
+	2: "mtg",
+	3: "pokemon",
+}
+
+export type Game = (typeof Game)[keyof typeof Game]
+export type GameID = (typeof GameID)[keyof typeof GameID]
+
+export const GameToID = (game: Game): GameID => GameID[game]
+export const GameToFriendlyName: Record<Game, string> = {
+	ygo: "Yu-Gi-Oh!",
+	mtg: "Magic: The Gathering",
+	pokemon: "Pokémon",
+}
 
 export const Language = {
 	en: "en",
