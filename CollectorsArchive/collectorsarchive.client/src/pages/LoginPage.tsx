@@ -97,8 +97,8 @@ export default function LoginPage(props: PaperProps) {
 					</Button>
 				</Group>
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
-				// This form is for non-google login, user will provide their email and then we will send them // a code to
-				their email and then they will provide that code to verify and login or register if they are new user
+				{/* This form is for non-google login, user will provide their email and then we will send them // a code to
+				their email and then they will provide that code to verify and login or register if they are new user */}
 				<form
 					onSubmit={form.onSubmit(async (values) => {
 						const { email } = values
