@@ -4,11 +4,9 @@ import {
 	Box,
 	Button,
 	Card,
-	Center,
 	Divider,
 	Flex,
 	Group,
-	Loader,
 	LoadingOverlay,
 	Paper,
 	ScrollArea,
@@ -42,12 +40,12 @@ export default function ProfilePage() {
 
 	const location = useLocation()
 	const navigate = useNavigate()
-	const member = location.state?.member as Member | undefined
+	//const member = location.state?.member as Member | undefined
 	
 
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
-	const [member, setMember] = useState<Member | null>(location.state?.member)
+	const [member, setMember] = useState<Member | null>(location.state?.member ?? null)
 	const [activeTab, setActiveTab] = useState<Tab>("collection")
 
 	useEffect(() => {
@@ -134,10 +132,6 @@ export default function ProfilePage() {
 					Back to Members
 				</Button>
 
-				{!member ? (
-					<Center style={{ height: "50vh" }}>{loading ? <Loader type="dots" /> : <Text>User not found</Text>}</Center>
-				) : (
-					<>
 						<Card shadow="sm" p={{ base: "md", sm: "xl" }} radius="md">
 							<Flex gap={{ base: "md", sm: "lg" }} direction={{ base: "column", sm: "row" }} align="center">
 								{/* Avatar */}
@@ -239,13 +233,13 @@ export default function ProfilePage() {
 						)}
 
 				{activeTab === "cardlists" && (
-					
 					<CardLists userProfileID={member.userId} isOwner={isOwner} />
 				)}
 			</Stack>
 		</Box>
 	)
 }
+
 
 /* const GameTypes = ["Yu Gi Oh", "Pokémon", "Magic"]
 
