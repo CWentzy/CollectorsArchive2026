@@ -40,6 +40,7 @@ export default function MemberProfilePage() {
 	const location = useLocation()
 	const navigate = useNavigate()
 	const member = location.state?.member as Member | undefined
+	
 
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
@@ -92,6 +93,8 @@ export default function MemberProfilePage() {
 			</Box>
 		)
 	}
+	const loggedInUser = JSON.parse(localStorage.getItem("user") || "null")
+	const isOwner = loggedInUser?.userId === member.userId
 
 	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
 
@@ -210,7 +213,7 @@ export default function MemberProfilePage() {
 
 				{activeTab === "cardlists" && (
 					
-					<CardLists userProfileID={member.userId} />
+					<CardLists userProfileID={member.userId} isOwner={isOwner} />
 				)}
 			</Stack>
 		</Box>
