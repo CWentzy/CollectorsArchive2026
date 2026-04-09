@@ -156,7 +156,7 @@ export default function HomePage() {
 	)
 }
 
-const GameTypes = ["Yu Gi Oh", "Pokémon", "Magic"]
+const GameTypes = ["Yu Gi Oh", "Magic"]
 
 // I am importing this function for user to search game easly, can be with the rarity or alphabets or any other criteria, this can be
 // modified later inspired by mantine lool
