@@ -1,4 +1,5 @@
 import { Anchor, Flex, Group, Image, Card as MantineCard, Text } from "@mantine/core"
+import { useState, useEffect } from "react"
 import type { CardInformation, PrintingInformation } from "../types/api"
 import { getCardImageUrl } from "../utils"
 import { GameIDToGame, type GameID } from "./CardSearch/schema"
@@ -14,10 +15,15 @@ export default function Printing({ printInfo, cardInfo, withCardLink = true }: P
 	const gameId: GameID = cardInfo?.gameID || printInfo.gameID
 	const cardId = cardInfo?.cardID || printInfo.cardID
 	const cardName = cardInfo?.cardName || printInfo.cardName || "Unknown Card"
+	const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"))
 
 	const releaseDate = printInfo.releaseDate ? new Date(printInfo.releaseDate).toLocaleDateString() : "Unknown"
 	const cardImageUrl = cardId ? getCardImageUrl(gameId, cardId, cardName) : null
-
+	useEffect(() => {
+		const handleAuthChange = () => setIsLoggedIn(!!localStorage.getItem("user"))
+		window.addEventListener("authChange", handleAuthChange)
+        return () => window.removeEventListener("authChange", handleAuthChange)
+	}, [])
 	return (
 		<MantineCard key={printInfo.printID} padding="md" withBorder>
 			<Flex gap="md" justify="space-between" align="center" direction={{ base: "column", sm: "row" }}>
@@ -62,7 +68,9 @@ export default function Printing({ printInfo, cardInfo, withCardLink = true }: P
 				</Group>
 
 				<Flex direction={{ base: "row", sm: "column" }} justify="center" align="flex-end">
-					<QuantityPicker printID={printInfo.printID ?? undefined} initialQuantity={printInfo.quantity ?? 0} />
+					{isLoggedIn && (
+						<QuantityPicker printID={printInfo.printID ?? undefined} initialQuantity={printInfo.quantity ?? 0} />
+					)}
 				</Flex>
 			</Flex>
 		</MantineCard>

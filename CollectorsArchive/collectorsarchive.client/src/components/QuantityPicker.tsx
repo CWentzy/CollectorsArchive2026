@@ -24,9 +24,10 @@ interface UserListOption {
 interface QuantityPickerProps {
 	printID?: string
 	initialQuantity?: number
+    defaultListID?: number
 }
 
-export default function QuantityPicker({ printID, initialQuantity }: QuantityPickerProps) {
+export default function QuantityPicker({ printID, initialQuantity, defaultListID}: QuantityPickerProps) {
 	const [collectionQty, setCollectionQty] = useState(initialQuantity ?? 0)
 	const [listQty, setListQty] = useState(0)
 	const [loading, setLoading] = useState(false)
@@ -48,6 +49,10 @@ export default function QuantityPicker({ printID, initialQuantity }: QuantityPic
 				const res = await fetch(`${GET_USER_LISTS_URL}?userProfileID=${user.userId}`)
 				const data = await res.json()
 				setUserLists(data)
+				if (defaultListID) {
+					const match = data.find((l: UserListOption) => l.userListID === defaultListID)
+					if (match) setSelectedList(match)
+				}
 			} catch (err) {
 				console.error("Failed to fetch user lists: ", err)
 			}
