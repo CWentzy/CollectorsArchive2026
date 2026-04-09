@@ -195,8 +195,8 @@ export default function SingleCardDisplay() {
 
 			const data = await response.json()
 
-			const printsInfo = data.printings
-			const cardsInfo = data.card
+			const printsInfo = data.printsInfo
+			const cardsInfo = data.cardsInfo
 
 			setCardAndPrints({ cardsInfo, printsInfo })
 

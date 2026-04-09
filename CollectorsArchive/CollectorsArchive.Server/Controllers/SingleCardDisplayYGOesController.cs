@@ -126,8 +126,8 @@ namespace CollectorsArchive.Server.Controllers
                 return Ok(new
                 {
                     message = "Here is the card detail information.",
-                    card = cardDisplayYGO.First(),
-                    printings = printInfoDisplayDetails
+                    cardsInfo = cardDisplayYGO.First(),
+                    printsInfo = printInfoDisplayDetails
                 });
             }
             catch (Exception ex)
