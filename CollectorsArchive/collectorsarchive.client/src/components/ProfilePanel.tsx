@@ -135,10 +135,14 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	// Fetch collection whenever the panel opens or username changes
 	useEffect(() => {
-		// check the user who logged in
-		const nameToUse = member?.userName ?? profile?.userName ?? user?.userName
+		// (if viewing someone else then the loaded profile
+		const nameToUse = member?.userName || profile?.userName
 
-		if (!nameToUse) return
+		// then  fetch this if the name isn't ready yet
+		if (!nameToUse) {
+			console.log(` {nameToUse}Waiting for profile data `)
+			return
+		}
 
 		const loadCollection = async () => {
 			try {
