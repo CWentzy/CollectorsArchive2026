@@ -42,11 +42,25 @@ export default function ProfilePage() {
 	const navigate = useNavigate()
 	//const member = location.state?.member as Member | undefined
 	
-
+	const [listsCount, setListsCount] = useState<number | null>(null)
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [member, setMember] = useState<Member | null>(location.state?.member ?? null)
 	const [activeTab, setActiveTab] = useState<Tab>("collection")
+
+	useEffect(() => {
+		if (!member?.userId) return
+		const fetchListsCount = async () => {
+			try {
+				const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${member.userId}`)
+				const data = await res.json()
+				setListsCount(data.length)
+			} catch (err) {
+				console.error(err)
+			}
+		}
+		fetchListsCount()
+	}, [member])
 
 	useEffect(() => {
 		if (member) return
@@ -182,7 +196,7 @@ export default function ProfilePage() {
 										<IconLayoutList size={16} color="var(--mantine-color-dimmed)" />
 										<Text size="sm">Card Lists</Text>
 										<Text size="sm" fw={700} ml="xs" c="spell-green">
-											—
+											{listsCount ?? "—"}
 										</Text>
 									</Group>
 								</Flex>
@@ -239,44 +253,3 @@ export default function ProfilePage() {
 		</Box>
 	)
 }
-
-
-/* const GameTypes = ["Yu Gi Oh", "Pokémon", "Magic"]
-
-function DropDownListForSearching() {
-	const combobox = useCombobox({
-		onDropdownClose: () => combobox.resetSelectedOption(),
-	})
-	const [value, setValue] = useState<string | null>(null)
-	const options = GameTypes.map((item) => (
-		<Combobox.Option value={item} key={item}>
-			{item}
-		</Combobox.Option>
-	))
-	return (
-		<Combobox
-			store={combobox}
-			onOptionSubmit={(val) => {
-				setValue(val)
-				combobox.closeDropdown()
-			}}
-		>
-			<Combobox.Target>
-				<Select
-					miw={150}
-					component="button"
-					type="button"
-					pointer
-					rightSection={<Combobox.Chevron />}
-					rightSectionPointerEvents="none"
-					onClick={() => combobox.toggleDropdown()}
-				>
-					{value || "Display Games"}
-				</Select>
-			</Combobox.Target>
-			<Combobox.Dropdown>
-				<Combobox.Options>{options}</Combobox.Options>
-			</Combobox.Dropdown>
-		</Combobox>
-	)
-} */

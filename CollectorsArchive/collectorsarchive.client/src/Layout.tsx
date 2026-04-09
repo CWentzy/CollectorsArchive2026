@@ -1,8 +1,9 @@
 import { AppShell, Avatar, Button, Container, Grid, Group, Modal } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
-import { useMemo } from "react"
+//import { useMemo } from "react"
 import { Outlet } from "react-router-dom"
 import { CardScanButton } from "./components/CardScan/CardScanButton"
+import { useState, useEffect } from "react"
 //import { CardScanOverlay } from "./components/CardScan/CardScanOverlay"
 import CardScanOverlay from "./components/CardScan/CardScanOverlay"
 import CardSearchButton from "./components/CardSearch/CardSearchButton"
@@ -29,9 +30,17 @@ export function Layout() {
 	const [profileOpened, { toggle: toggleProfile, close: closeProfile }] = useDisclosure(false)
 
 	// Re-read user from localStorage whenever the route changes
-	const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "null"), [])
-	const isLoggedIn = !!user
+	//const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "null"), [])
+	const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user") || "null"))
 
+	const isLoggedIn = !!user
+	useEffect(() => {
+		const handleAuthChange = () => {
+			setUser(JSON.parse(localStorage.getItem("user") || "null"))
+		}
+		window.addEventListener("authChange", handleAuthChange)
+		return () => window.removeEventListener("authChange", handleAuthChange)
+	}, [])
 	return (
 		<AppShell
 			header={{ height: 60 }}

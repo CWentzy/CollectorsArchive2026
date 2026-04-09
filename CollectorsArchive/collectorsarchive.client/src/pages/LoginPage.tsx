@@ -64,6 +64,7 @@ export default function LoginPage(props: PaperProps) {
 				const loginData = await backendResponse.json()
 
 				localStorage.setItem("user", JSON.stringify({ ...loginData, loginTime }))
+				window.dispatchEvent(new Event("authChange"))
 				navigate("/home")
 			} catch (error) {
 				console.error("Failed to fetch user info from Google:", error)
@@ -156,6 +157,7 @@ export default function LoginPage(props: PaperProps) {
 										const data = await response.json()
 										const loginTime = Date.now()
 										localStorage.setItem("user", JSON.stringify({ ...data, loginTime }))
+										window.dispatchEvent(new Event("authChange"))
 										navigate("/home")
 									} else {
 										alert("Invalid or expired code")
