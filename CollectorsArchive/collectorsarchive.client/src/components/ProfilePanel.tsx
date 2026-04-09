@@ -149,7 +149,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 				const collectionResponse = await fetch(GET_USER_COLLECTION, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ UserName: nameToUse }),
+					body: JSON.stringify({ userName: nameToUse }),
 				})
 
 				if (!collectionResponse.ok) throw new Error()
