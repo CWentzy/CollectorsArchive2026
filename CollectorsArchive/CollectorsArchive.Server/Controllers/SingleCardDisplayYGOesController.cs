@@ -39,51 +39,102 @@ namespace CollectorsArchive.Server.Controllers
                 {
                     await conn.OpenAsync();
 
-                    // calling the procedure that Get card details here 
-                    using (SqlCommand cmdForDisplayCardDetails = new SqlCommand("DisplayCardYGO", conn))
+                    SqlCommand cmd = new SqlCommand();
+                    switch (request.GameID)
                     {
-                        cmdForDisplayCardDetails.CommandType = CommandType.StoredProcedure;
-                        cmdForDisplayCardDetails.Parameters.AddWithValue("@CardID", request.CardID);
+                        case 1:
+                            cmd.CommandText = "DisplayCardYGO";
+                            break;
+                        case 2:
+                            cmd.CommandText = "DisplayCardMTG";
+                            break;
+                    }
+                    cmd.Connection = conn;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@CardID", request.CardID);
 
-                        using (SqlDataReader reader = await cmdForDisplayCardDetails.ExecuteReaderAsync())
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
                         {
-                            while (await reader.ReadAsync())
+                            switch (request.GameID)
                             {
-                                //cardDisplayYGO.Add(new CardDisplayYGO
-                                //{
-                                //    CardID = reader["CardID"]?.ToString() ?? string.Empty,
-                                //    name = reader["CardName"]?.ToString() ?? string.Empty,
-                                //    superType = reader["SuperType"]?.ToString() ?? string.Empty,
-                                //    subType = reader["SubType"]?.ToString() ?? string.Empty,
-                                //    cardText = reader["CardText"]?.ToString() ?? "No description available.",
-                                //    attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
-                                //    level = reader["CardLevel"] as int?,
-                                //    Atk = reader["AttackValue"] as int?,
-                                //    Def = reader["DefenseValue"] as int?,
-                                //    PendulumScale = reader["PendulumScale"] as int?,
-                                //    LinkRating = reader["LinkRating"] as int?
-                                //});
-                                cardDisplayYGO.Add(new CardInformation
-                                {
-                                    GameID = reader.GetInt32("GameID"),
-                                    CardID = reader["CardID"]?.ToString() ?? string.Empty,
-                                    CardName = reader["CardName"]?.ToString() ?? string.Empty,
-                                    CardText = reader["CardText"]?.ToString() ?? "No description available.",
-                                    CardAttributes = new YGOCard 
+                                case 1:
+                                    cardDisplayYGO.Add(new CardInformation
                                     {
-                                        SuperType = reader["SuperType"]?.ToString() ?? string.Empty,
-                                        SubType = reader["SubType"]?.ToString() ?? string.Empty,
-                                        Attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
-                                        Level = reader["CardLevel"] as byte?,
-                                        Attack = reader["AttackValue"] as short?,
-                                        Defense = reader["DefenseValue"] as short?,
-                                        PendulumScale = reader["PendulumScale"] as byte?,
-                                        LinkRating = reader["LinkRating"] as byte?
-                                    }
-                                });
+                                        GameID = reader.GetInt32("GameID"),
+                                        CardID = reader["CardID"]?.ToString() ?? string.Empty,
+                                        CardName = reader["CardName"]?.ToString() ?? string.Empty,
+                                        CardText = reader["CardText"]?.ToString() ?? "No description available.",
+                                        CardAttributes = new YGOCard
+                                        {
+                                            SuperType = reader["SuperType"]?.ToString() ?? string.Empty,
+                                            SubType = reader["SubType"]?.ToString() ?? string.Empty,
+                                            Attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
+                                            Level = reader["CardLevel"] as byte?,
+                                            Attack = reader["AttackValue"] as short?,
+                                            Defense = reader["DefenseValue"] as short?,
+                                            PendulumScale = reader["PendulumScale"] as byte?,
+                                            LinkRating = reader["LinkRating"] as byte?
+                                        }
+                                    });
+                                    break;
+                                case 2:
+                                    cardDisplayYGO.Add(new CardInformation 
+                                    {
+                                        GameID = reader.GetInt32("GameID"),
+                                        CardID = reader["CardID"]?.ToString() ?? string.Empty,
+                                        CardName = reader["CardNameEN"]?.ToString() ?? string.Empty,
+                                        CardText = reader["CardTextEN"]?.ToString() ?? "No description available.",
+                                        CardAttributes = new MTGCard 
+                                        {
+                                            ManaCost = reader["CardManaCost"]?.ToString() ?? string.Empty,
+                                            SuperType = reader["SuperType"]?.ToString() ?? string.Empty,
+                                            Type = reader["CardType"]?.ToString() ?? string.Empty,
+                                            SubTypes = reader["SubType"]?.ToString() ?? string.Empty,
+                                            Power = reader["PowerValue"]?.ToString() ?? string.Empty,
+                                            Toughness = reader["ToughnessValue"]?.ToString() ?? string.Empty,
+                                            Loyalty = reader["Loyalty"]?.ToString() ?? string.Empty
+                                        }
+                                    });
+                                    break;
                             }
                         }
                     }
+
+
+
+                    //// calling the procedure that Get card details here 
+                    //using (SqlCommand cmdForDisplayCardDetails = new SqlCommand("DisplayCardYGO", conn))
+                    //{
+                    //    cmdForDisplayCardDetails.CommandType = CommandType.StoredProcedure;
+                    //    cmdForDisplayCardDetails.Parameters.AddWithValue("@CardID", request.CardID);
+
+                    //    using (SqlDataReader reader = await cmdForDisplayCardDetails.ExecuteReaderAsync())
+                    //    {
+                    //        while (await reader.ReadAsync())
+                    //        {
+                    //            cardDisplayYGO.Add(new CardInformation
+                    //            {
+                    //                GameID = reader.GetInt32("GameID"),
+                    //                CardID = reader["CardID"]?.ToString() ?? string.Empty,
+                    //                CardName = reader["CardName"]?.ToString() ?? string.Empty,
+                    //                CardText = reader["CardText"]?.ToString() ?? "No description available.",
+                    //                CardAttributes = new YGOCard 
+                    //                {
+                    //                    SuperType = reader["SuperType"]?.ToString() ?? string.Empty,
+                    //                    SubType = reader["SubType"]?.ToString() ?? string.Empty,
+                    //                    Attribute = reader["Attribute"] == DBNull.Value ? null : reader["Attribute"].ToString(),
+                    //                    Level = reader["CardLevel"] as byte?,
+                    //                    Attack = reader["AttackValue"] as short?,
+                    //                    Defense = reader["DefenseValue"] as short?,
+                    //                    PendulumScale = reader["PendulumScale"] as byte?,
+                    //                    LinkRating = reader["LinkRating"] as byte?
+                    //                }
+                    //            });
+                    //        }
+                    //    }
+                    //}
 
                     if (cardDisplayYGO.Count == 0)
                     {

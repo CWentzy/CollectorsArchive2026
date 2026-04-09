@@ -14,7 +14,7 @@ export type NormalizedNameRoi = {
 // Name ROI
 export const NAME_ROI: NormalizedNameRoi[] = [
     {
-        x: 0.038,
+        x: 0.05,
         y: 0.045,
         w: 0.80,
         h: 0.06,

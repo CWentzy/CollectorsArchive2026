@@ -53,5 +53,8 @@ namespace CollectorsArchive.Server.Models.ApiOutput
         // Creature specific attributes
         public string? Power { get; set; }
         public string? Toughness { get; set; }
+
+        // Planeswalker specific attributes
+        public string? Loyalty { get; set; }
     }
 }

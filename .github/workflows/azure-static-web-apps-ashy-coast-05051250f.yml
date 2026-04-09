@@ -35,7 +35,9 @@ jobs:
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_CARD_IMAGE_URL_YGO: ${{ vars.VITE_CARD_IMAGE_URL_YGO }}
-          VITE_CARD_IMAGE_URL_MTG: ${{ vars.VITE_CARD_IMAGE_URL_MTG }}
+          VITE_CARD_IMAGE_URL_MTG_A_G: ${{ vars.VITE_CARD_IMAGE_URL_MTG_A_G }}
+          VITE_CARD_IMAGE_URL_MTG_H_Z: ${{ vars.VITE_CARD_IMAGE_URL_MTG_H_Z }}
+          
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
