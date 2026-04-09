@@ -27,7 +27,8 @@ interface QuantityPickerProps {
     defaultListID?: number
 }
 
-export default function QuantityPicker({ printID, initialQuantity, defaultListID}: QuantityPickerProps) {
+export default function QuantityPicker({ printID, initialQuantity, defaultListID }: QuantityPickerProps) {
+	console.log("QuantityPicker defaultListID:", defaultListID)
 	const [collectionQty, setCollectionQty] = useState(initialQuantity ?? 0)
 	const [listQty, setListQty] = useState(0)
 	const [loading, setLoading] = useState(false)
@@ -58,7 +59,7 @@ export default function QuantityPicker({ printID, initialQuantity, defaultListID
 			}
 		}
 		fetchLists()
-	}, [user?.userId])
+	}, [user?.userId, defaultListID])
 	// Fetching list quantity when 
 	useEffect(() => {
 		if (!selectedList || !printID) return
