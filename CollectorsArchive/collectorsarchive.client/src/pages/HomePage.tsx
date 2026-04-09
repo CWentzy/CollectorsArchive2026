@@ -51,8 +51,8 @@ export default function HomePage() {
 
 				const data = await response.json()
 
-				const cardsInfo = data.cards
-				const printsInfo = data.printings
+				const cardsInfo = data.cardsInfo
+				const printsInfo = data.printsInfo
 
 				setCardAndPrints({ cardsInfo, printsInfo })
 			} catch (err) {
@@ -148,7 +148,7 @@ export default function HomePage() {
 				)}
 				{activeTab === "cardlists" && (
 					<Box w="100%">
-						<CardLists />
+						<CardLists isOwner={true} />
 					</Box>
 				)}
 			</Stack>

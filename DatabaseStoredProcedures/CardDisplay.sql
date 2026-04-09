@@ -19,7 +19,7 @@ BEGIN
     RETURN;
 END
 
-USE CollectorsArchive;
+USE collectorsarchivedb;
 GO
 
 
@@ -52,6 +52,34 @@ WHERE YGOCard.CardID = @CardID
 
 END
 
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER PROCEDURE DisplayCardMTG
+    @CardID VARCHAR(10)
+AS
+BEGIN
+
+SELECT
+    CardPrinting.GameID,
+    MTGCard.CardID,
+    MTGCard.CardNameEN,
+    MTGCard.CardTextEN,
+    MTGCard.CardManaCost,
+    MTGCard.SuperType,
+    MTGCard.CardType,
+    MTGCard.SubType,
+    MTGCard.Loyalty,
+    MTGCard.PowerValue,
+    MTGCard.ToughnessValue
+FROM CardPrinting
+    JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID
+WHERE MTGCard.CardID = @CardID
+
+END
 
 
 SET ANSI_NULLS ON
@@ -93,21 +121,32 @@ CREATE OR ALTER PROCEDURE DisplayUserCollection
 AS
 BEGIN
 
-SELECT TOP 12 CardPrinting.PrintID,
-	YGOCard.CardID,
-	YGOCard.CardName,
-    CardSet.CardSetID,
-	CardSet.SetName,
-	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
-	CardPrinting.CardRarity,
-	UserCard.Quantity
-FROM UserCard
-	JOIN UserProfile ON UserCard.UserProfileID = UserProfile.UserProfileID
-	JOIN CardPrinting ON UserCard.PrintID = CardPrinting.PrintID
-	JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
-	JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
-WHERE UserProfile.Username = @UserName
-    
+SELECT 
+    CardPrinting.GameID,
+    CardPrinting.CardID,
+    CASE 
+        WHEN CardPrinting.GameID = 1 THEN YGOCard.CardName
+        WHEN CardPrinting.GameID = 2 THEN MTGCard.CardNameEN
+	END AS 'CardName',
+    CardPrinting.PrintID,
+    CardPrinting.CardSetID,
+    CardSet.SetName,
+    CASE 
+        WHEN CardPrinting.GameID = 1 THEN CardSet.SetCode + '-' + CardPrinting.CardSetIndex
+        WHEN CardPrinting.GameID = 2 THEN CardSet.SetCode + ' ' + CardPrinting.CardSetIndex
+    END AS 'SetCode',
+    CardPrinting.CardRarity,
+    CardSet.ReleaseDate,
+    UserCard.Quantity
+FROM CardPrinting
+    JOIN UserCard ON CardPrinting.PrintID = UserCard.PrintID
+    JOIN UserProfile ON UserCard.UserProfileID = UserProfile.UserProfileID
+    JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
+    LEFT JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
+    LEFT JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID
+WHERE UserProfile.username = @UserName
+ORDER BY 'CardName'
+
 END
 
 
@@ -130,6 +169,7 @@ CREATE OR ALTER PROCEDURE DisplayUserCollection
 AS
 BEGIN
 
+-- VERSION 1 --
 SELECT TOP 12
     UserCard.PrintID AS 'CardID',
     YGOCard.CardName
@@ -137,6 +177,22 @@ FROM UserCard
     JOIN YGOCard ON UserCard.PrintID = YGOCard.CardID
     JOIN dbo.[User] ON UserCard.UserID = [User].UserID
 WHERE [User].UserName = @UserName
+
+-- VERSION 2 --
+SELECT TOP 12 CardPrinting.PrintID,
+	YGOCard.CardID,
+	YGOCard.CardName,
+    CardSet.CardSetID,
+	CardSet.SetName,
+	CardSet.SetCode + '-' + CardPrinting.CardSetIndex AS 'SetCode',
+	CardPrinting.CardRarity,
+	UserCard.Quantity
+FROM UserCard
+	JOIN UserProfile ON UserCard.UserProfileID = UserProfile.UserProfileID
+	JOIN CardPrinting ON UserCard.PrintID = CardPrinting.PrintID
+	JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID
+	JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID
+WHERE UserProfile.Username = @UserName
     
 END
 

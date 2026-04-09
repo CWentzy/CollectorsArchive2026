@@ -13,6 +13,7 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 
 namespace YGODataUtility
@@ -186,6 +187,8 @@ namespace YGODataUtility
 
             if (result == null) { cmd = card.GetInsertCommand(); }
             else { return; }
+            
+            if (cmd.CommandText == string.Empty) { return; }
 
             cmd.Connection = conn;
             cmd.ExecuteNonQuery();

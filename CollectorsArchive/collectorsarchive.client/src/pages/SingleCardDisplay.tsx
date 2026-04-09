@@ -17,12 +17,11 @@ import {
 import { CopyCheckIcon, CopyIcon, ShieldHalfIcon, SwordsIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Game, GameID } from "../components/CardSearch/schema"
-import PrintYGO from "../components/PrintYGO"
+import { Game, GameID, GameIDToGame } from "../components/CardSearch/schema"
+import Printing from "../components/Printing"
 import type { CardInformation, CardsAndPrints, MTGCard, PrintingInformation, YGOCard } from "../types/api"
 import { getCardImageUrl } from "../utils"
 
-const ygoCardImageUrl = "/assets/images/card_placeholder_ygo.jpg"
 const SingleCardDisplayYGO = `${import.meta.env.VITE_SERVER_URL}/api/SingleCardDisplayYGOes/SingleCardDisplayYGO`
 
 function CardAttributesYGO({ attributes }: { attributes: YGOCard }) {
@@ -195,8 +194,8 @@ export default function SingleCardDisplay() {
 
 			const data = await response.json()
 
-			const printsInfo = data.printings
-			const cardsInfo = data.card
+			const printsInfo = data.printsInfo
+			const cardsInfo = data.cardsInfo
 
 			setCardAndPrints({ cardsInfo, printsInfo })
 
@@ -208,7 +207,7 @@ export default function SingleCardDisplay() {
 
 	const cardInfo = cardAndPrints?.cardsInfo as CardInformation | undefined // single card
 	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
-	const cardImageUrl = cardInfo?.cardID ? getCardImageUrl(cardInfo.gameID, cardInfo?.cardID) : null
+	const cardImageUrl = cardInfo?.cardID ? getCardImageUrl(cardInfo.gameID, cardInfo?.cardID, cardInfo?.cardName) : null
 
 	return (
 		<Box py="xl">
@@ -223,17 +222,17 @@ export default function SingleCardDisplay() {
 					<Box w={{ base: "100%", md: "auto" }}>
 						<Group align="center" justify="center" w="100%">
 							{/* TODO: Replace with real card image from backend */}
-							{gameID === GameID.ygo && (
-								<Image
-									src={cardImageUrl}
-									loading="lazy"
-									fallbackSrc={ygoCardImageUrl}
-									alt={cardInfo?.cardName ?? "Card Image"}
-									fit="contain"
-									h={{ base: 320, md: 520 }}
-									mah={{ base: 320, md: 520 }}
-								/>
-							)}
+
+							{/* this will display all cards either ygio or mtg */}
+							<Image
+								src={cardImageUrl}
+								loading="lazy"
+								fallbackSrc={`/assets/images/card_placeholder_${GameIDToGame[gameID]}.jpg`}
+								alt={cardInfo?.cardName ?? "Card Image"}
+								fit="contain"
+								h={{ base: 320, md: 520 }}
+								mah={{ base: 320, md: 520 }}
+							/>
 						</Group>
 					</Box>
 
@@ -306,7 +305,7 @@ export default function SingleCardDisplay() {
 					<Stack gap="xs">
 						{printsInfo?.length ? (
 							printsInfo.map((print) => (
-								<PrintYGO key={print.printID} printInfo={print} cardInfo={cardInfo} withCardLink={false} />
+								<Printing key={print.printID} printInfo={print} cardInfo={cardInfo} withCardLink={false} />
 							))
 						) : (
 							<Text c="dimmed" size="sm">

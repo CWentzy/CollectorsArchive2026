@@ -22,7 +22,7 @@ import { useDisclosure, useHover } from "@mantine/hooks"
 import { IconCards, IconEdit, IconLayoutList, IconLogout, IconMoon, IconSun } from "@tabler/icons-react"
 import { XIcon } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { formatDate } from "../utils"
 
 const GET_USER_PROFILE = `${import.meta.env.VITE_SERVER_URL}/api/UserProfile`
@@ -41,16 +41,27 @@ export type UserProfile = {
 	joinDate: string
 }
 
+type Member = {
+	userId: number
+	bio: string | null
+	userName: string
+	photoUrl: string | null
+	joinDate: string | null
+}
+
 export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 	const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "null"), [])
+	const location = useLocation()
 
 	const [profile, setProfile] = useState<UserProfile | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 
 	const [cards, setCards] = useState<{ cardID: string; cardName: string }[]>([])
+	const [listsCount, setListsCount] = useState<number | null>(null)
 	const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 	const { hovered, ref } = useHover()
+	const member: Member | null = location.state?.member ?? null
 
 	// Refs to track which userID/userName we've fetched profile/collection for to prevent unnecessary re-fetches
 	const fetchedProfileForUserRef = useRef<number | null>(null)
@@ -101,6 +112,22 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 		loadProfile()
 	}, [opened, userId])
+
+	useEffect(() => {
+		if (!member?.userId) return
+		const fetchListsCount = async () => {
+			try {
+				const res = await fetch(
+					`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${member.userId}`
+				)
+				const data = await res.json()
+				setListsCount(data.length)
+			} catch (err) {
+				console.error(err)
+			}
+		}
+		fetchListsCount()
+	}, [member])
 
 	// Fetch collection whenever the panel opens or username changes
 	useEffect(() => {
@@ -203,6 +230,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	const handleLogout = () => {
 		localStorage.removeItem("user")
+		window.dispatchEvent(new Event("authChange"))
 		onClose()
 		navigate("/login")
 	}
@@ -213,7 +241,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 			<Modal opened={editOpened} onClose={closeEdit} title="Edit Profile" centered size="sm">
 				<form onSubmit={form.onSubmit(handleSave)}>
 					<Stack gap="sm">
-						<TextInput label="Username" placeholder="Enter username" {...form.getInputProps("userName")} />
+						<TextInput label="Username" placeholder="Enter username" {...form.getInputProps("userName")} disabled />
 						<Textarea
 							label="Bio"
 							placeholder="Tell the world about your collection..."
@@ -340,7 +368,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 											<IconLayoutList size={16} color="var(--mantine-color-dimmed)" />
 											<Text size="sm">Card Lists</Text>
 											<Text size="sm" fw={600} ml="auto" c="spell-green">
-												—
+												{listsCount ?? "—"}
 											</Text>
 										</Group>
 									</Stack>

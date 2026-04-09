@@ -33,8 +33,9 @@ namespace CollectorsArchive.Server.Controllers
             List<PrintingInformation> collectionPrintings = [];
 
             string connectionString = _configuration.GetConnectionString("ErmiyasDb");
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
             using (SqlCommand command = new SqlCommand(collectionStoreProcedureName, conn))
             {
                 // declare the procedure that im calling
@@ -59,6 +60,7 @@ namespace CollectorsArchive.Server.Controllers
                         collectionPrintings.Add(new PrintingInformation
                         {
                             GameID = reader.GetInt32("GameID"),
+                            CardID = reader["CardID"].ToString(),
                             PrintID = reader.GetInt32("PrintID"),
                             CardSetID = reader.GetInt32("CardSetID"),
                             SetCode = reader["SetCode"]?.ToString() ?? string.Empty,
@@ -71,6 +73,11 @@ namespace CollectorsArchive.Server.Controllers
                     }
                 }
             }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message, details = ex.InnerException?.Message });
+            }
 
             //if (collectionCards == null || collectionCards.Count == 0 || collectionPrintings == null || collectionPrintings.Count == 0)
             //{
@@ -81,8 +88,8 @@ namespace CollectorsArchive.Server.Controllers
             {
                 message = "Collection retrieved successfully.",
                 userName = request.UserName,
-                cards = collectionCards,
-                printings = collectionPrintings
+                cardsInfo = collectionCards,
+                printsInfo = collectionPrintings
             });
         }
     }

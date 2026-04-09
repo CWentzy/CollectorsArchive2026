@@ -1,7 +1,7 @@
 import { Button, Group, Stack, Text } from "@mantine/core"
 import { useState } from "react"
 import type { CardInformation, CardsAndPrints, PrintingInformation } from "../../types/api"
-import PrintYGO from "../PrintYGO"
+import Printing from "../Printing"
 import YgoScanner from "./YgoScanner"
 
 type ScanMode = "YGO" | "MTG"
@@ -58,8 +58,8 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 
 			const data = await response.json()
 
-			const cardsInfo = data.cards[0] // TODO: if we always get back 1 card, then update controller to just send back 1 card instead of array
-			const printsInfo = data.printings
+			const cardsInfo = data.cardsInfo[0] // TODO: if we always get back 1 card, then update controller to just send back 1 card instead of array
+			const printsInfo = data.printsInfo
 
 			if (result.mode === "YGO") {
 				setCardAndPrints({ cardsInfo, printsInfo })
@@ -117,7 +117,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 					{printsInfo?.length && (
 						<Stack gap="md">
 							{printsInfo.map((print) => (
-								<PrintYGO key={print.printID} printInfo={print} cardInfo={cardInfo} />
+								<Printing key={print.printID} printInfo={print} cardInfo={cardInfo} />
 							))}
 						</Stack>
 					)}

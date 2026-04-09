@@ -157,6 +157,8 @@ namespace YGODataUtility
 
             if (superType == "MONSTER")
             {
+                if (atk == null || def == null) { cmd.CommandText = string.Empty; return cmd; }
+
                 cmd.Parameters.AddWithValue("@subType", race);
                 cmd.Parameters.AddWithValue("@attribute", attribute);
                 cmd.Parameters.AddWithValue("@atk", atk);

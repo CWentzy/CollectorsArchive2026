@@ -4,25 +4,32 @@ import { getCardImageUrl } from "../utils"
 import { GameIDToGame, type GameID } from "./CardSearch/schema"
 import QuantityPicker from "./QuantityPicker"
 
-interface PrintYGOProps {
+interface PrintingProps {
 	printInfo: PrintingInformation
 	cardInfo?: CardInformation
 	withCardLink?: boolean
 }
 
-export default function PrintYGO({ printInfo, cardInfo, withCardLink = true }: PrintYGOProps) {
+export default function Printing({ printInfo, cardInfo, withCardLink = true }: PrintingProps) {
 	const gameId: GameID = cardInfo?.gameID || printInfo.gameID
 	const cardId = cardInfo?.cardID || printInfo.cardID
 	const cardName = cardInfo?.cardName || printInfo.cardName || "Unknown Card"
 
 	const releaseDate = printInfo.releaseDate ? new Date(printInfo.releaseDate).toLocaleDateString() : "Unknown"
-	const cardImageUrl = cardId ? getCardImageUrl(gameId, cardId) : null
+	const cardImageUrl = cardId ? getCardImageUrl(gameId, cardId, cardName) : null
 
 	return (
 		<MantineCard key={printInfo.printID} padding="md" withBorder>
 			<Flex gap="md" justify="space-between" align="center" direction={{ base: "column", sm: "row" }}>
 				<Group align="center" wrap="nowrap">
-					<Image loading="lazy" src={cardImageUrl} alt={`${cardName} image`} fit="contain" w={75} />
+					<Image
+						loading="lazy"
+						src={cardImageUrl}
+						fallbackSrc={`/assets/images/card_placeholder_${GameIDToGame[gameId]}.jpg`}
+						alt={`${cardName} image`}
+						fit="contain"
+						w={75}
+					/>
 
 					<div>
 						{withCardLink ? (

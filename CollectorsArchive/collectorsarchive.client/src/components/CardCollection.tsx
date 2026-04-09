@@ -1,6 +1,6 @@
 import { Accordion, Badge, Group, Stack, Text } from "@mantine/core"
 import type { CardInformation, CardsAndPrints, PrintingInformation } from "../types/api"
-import PrintYGO from "./PrintYGO"
+import Printing from "./Printing"
 
 export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: CardsAndPrints | null }) {
 	const cards = cardsAndPrints?.cardsInfo as CardInformation[] | undefined
@@ -12,9 +12,12 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 	return (
 		<Stack w="100%">
 			{uniqueCards?.length && prints?.length ? (
+				// For each card (unique)
 				uniqueCards.map((card) => {
+					// Find all prints of that card by matching cardID
 					const cardPrints = prints.filter((print) => print.cardID === card.cardID)
 
+					// If there are multiple prints for the same card, show them in an accordion
 					if (cardPrints.length > 1) {
 						return (
 							<Accordion key={card.cardID} variant="separated" radius="md">
@@ -32,7 +35,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 											{prints
 												.filter((print) => print.cardID === card.cardID)
 												.map((print) => (
-													<PrintYGO key={print.printID} printInfo={print} cardInfo={card} />
+													<Printing key={print.printID} printInfo={print} cardInfo={card} />
 												))}
 										</Stack>
 									</Accordion.Panel>
@@ -40,10 +43,11 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 							</Accordion>
 						)
 					} else {
+						// If there's only one print, show it without accordion
 						return (
-							<PrintYGO
+							<Printing
 								key={card.cardID}
-								printInfo={prints.find((print) => print.cardID === card.cardID) as PrintingInformation}
+								printInfo={prints.find((print) => print.cardID === card.cardID) || ({} as PrintingInformation)}
 								cardInfo={card}
 							/>
 						)
@@ -55,7 +59,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 				</Text>
 			) : (
 				uniqueCards.map((card) => (
-					<PrintYGO
+					<Printing
 						key={card.cardID}
 						printInfo={prints?.find((print) => print.cardID === card.cardID) || ({} as PrintingInformation)}
 						cardInfo={card}

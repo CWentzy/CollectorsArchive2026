@@ -39,9 +39,10 @@ interface UserList {
 //EACH PROFILE PAGE PASSES ITS OWN UserProfileID TO THIS COMPONENT, SO IT CAN FETCH THE LISTS FOR THE CORRECT USER
 interface CardListsProps {
 	userProfileID?: number
+	isOwner?: boolean
 }
 // ─── Component ─────────────────────────────────────────────────────────────────
-export default function CardLists({ userProfileID: propUserProfileID }: CardListsProps) {
+export default function CardLists({ userProfileID: propUserProfileID, isOwner = false }: CardListsProps) {
 	const user = JSON.parse(localStorage.getItem("user") || "null")
 	const userProfileID = propUserProfileID ?? user?.userId
 
@@ -96,7 +97,7 @@ export default function CardLists({ userProfileID: propUserProfileID }: CardList
 		try {
 			const res = await fetch(`${GET_LIST_CARDS_URL}?userListID=${userListID}`)
 			const data = await res.json()
-			setListCards({ cardsInfo: data.cards, printsInfo: data.printings })
+			setListCards({ cardsInfo: data.cardsInfo, printsInfo: data.printsInfo })
 		} catch (err) {
 			console.error("Failed to fetch list cards:", err)
 		} finally {
@@ -243,15 +244,17 @@ export default function CardLists({ userProfileID: propUserProfileID }: CardList
 							<Text size="sm" fw={600} tt="uppercase" c="dimmed">
 								All Lists
 							</Text>
-							<ActionIcon
-								variant="subtle"
-								color="spell-green"
-								size="sm"
-								onClick={openCreate}
-								title="Create new list"
-							>
-								<IconPlus size={14} />
-							</ActionIcon>
+							{isOwner && (
+								<ActionIcon
+									variant="subtle"
+									color="spell-green"
+									size="sm"
+									onClick={openCreate}
+									title="Create new list"
+								>
+									<IconPlus size={14} />
+								</ActionIcon>
+							)}
 						</Group>
 
 						<Divider />
@@ -301,6 +304,7 @@ export default function CardLists({ userProfileID: propUserProfileID }: CardList
 								{/* Header */}
 								<Group justify="space-between" px="lg" py="sm">
 									<Title order={5}>{selectedList.userListName}</Title>
+									{isOwner && (
 									<Group gap="xs">
 										<Button
 											size="xs"
@@ -322,7 +326,8 @@ export default function CardLists({ userProfileID: propUserProfileID }: CardList
 										>
 											Delete List
 										</Button>
-									</Group>
+										</Group>
+									)}
 								</Group>
 
 								<Divider />

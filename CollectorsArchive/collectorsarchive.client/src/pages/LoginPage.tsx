@@ -20,10 +20,8 @@ import { useState } from "react"
 
 const GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
-const RegisterNewUserURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/RegisterNewUser`
 const LoginUsingGoogleURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/LoginUsingGoogle`
-const RequestForTempCodeURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/RequestForTempCode`
-const RegistrationForNonGoogleUsers = `${import.meta.env.VITE_SERVER_URL}/api/Auth/ForNonGoogleNewUser`
+const InitialRequestForTempCodeURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/InitialConfirmationCodeRequest`
 const VerfyingTemporaryCodeURL = `${import.meta.env.VITE_SERVER_URL}/api/Auth/VerfyingTemporaryCode`
 
 export default function LoginPage(props: PaperProps) {
@@ -66,6 +64,7 @@ export default function LoginPage(props: PaperProps) {
 				const loginData = await backendResponse.json()
 
 				localStorage.setItem("user", JSON.stringify({ ...loginData, loginTime }))
+				window.dispatchEvent(new Event("authChange"))
 				navigate("/home")
 			} catch (error) {
 				console.error("Failed to fetch user info from Google:", error)
@@ -93,21 +92,20 @@ export default function LoginPage(props: PaperProps) {
 						Welcome to Collector's Archive
 					</Text>
 				</Center>
-
 				<Group mb="md" mt="md" align="center" justify="center">
 					<Button fullWidth variant="light" leftSection={<IconBrandGoogleFilled size={16} />} onClick={() => login()}>
 						Sign in with Google
 					</Button>
 				</Group>
-
 				<Divider label="or continue with email" labelPosition="center" my="lg" />
-
+				{/* This form is for non-google login, user will provide their email and then we will send them // a code to
+				their email and then they will provide that code to verify and login or register if they are new user */}
 				<form
 					onSubmit={form.onSubmit(async (values) => {
 						const { email } = values
 
 						// This endpoint should send a code to ANY valid email provided
-						const response = await fetch(RequestForTempCodeURL, {
+						const response = await fetch(InitialRequestForTempCodeURL, {
 							method: "POST",
 							headers: { "Content-Type": "application/json" },
 							body: JSON.stringify({ email }),
@@ -159,6 +157,7 @@ export default function LoginPage(props: PaperProps) {
 										const data = await response.json()
 										const loginTime = Date.now()
 										localStorage.setItem("user", JSON.stringify({ ...data, loginTime }))
+										window.dispatchEvent(new Event("authChange"))
 										navigate("/home")
 									} else {
 										alert("Invalid or expired code")
