@@ -21,6 +21,7 @@ import {
 	Text,
 } from "@mantine/core"
 import { ShieldHalfIcon, SwordsIcon } from "lucide-react"
+import { useState } from "react"
 import { useCardSearchFormContext } from "../CardSearchFormContext"
 import {
 	Attribute,
@@ -74,8 +75,22 @@ function ChipSection<T extends string>({ title, fieldPath, data }: { title: stri
 function MonsterFilters() {
 	const form = useCardSearchFormContext()
 
+	const [lastRange, setLastRange] = useState<[number, number] | undefined>(undefined)
+	const [pendulumDisabled, setPendulumDisabled] = useState(true)
+
 	const levelRange = form.getValues().levelRange || [MIN_CARD_LEVEL, MAX_CARD_LEVEL]
 	const pendulumRange = form.getValues().pendulumRange || [MIN_PENDULUM_LEVEL, MAX_PENDULUM_LEVEL]
+
+	function handlePendulumToggle() {
+		if (pendulumDisabled) {
+			form.setFieldValue("pendulumRange", lastRange || [MIN_PENDULUM_LEVEL, MAX_PENDULUM_LEVEL])
+		} else {
+			setLastRange(form.getValues().pendulumRange)
+			form.setFieldValue("pendulumRange", undefined)
+		}
+
+		setPendulumDisabled((prev) => !prev)
+	}
 
 	return (
 		<Stack gap="md" p="sm">
@@ -112,7 +127,7 @@ function MonsterFilters() {
 						.map((type) => ({
 							label: type,
 							value: type,
-							disabled: form.getValues().excludedClassifications?.includes(type),
+							disabled: form.getValues().classificationsExcluded?.includes(type),
 						}))}
 				/>
 
@@ -121,14 +136,14 @@ function MonsterFilters() {
 						key={form.key("classificationsOperator")}
 						{...form.getInputProps("classificationsOperator")}
 						data={[
-							{ label: "AND", value: "and" },
-							{ label: "OR", value: "or" },
+							{ label: "AND", value: "AND" },
+							{ label: "OR", value: "OR" },
 						]}
 						size="xs"
 						w={100}
 					/>
 					<Text size="xs" c="dimmed">
-						{form.getValues().classificationsOperator === "and"
+						{form.getValues().classificationsOperator === "AND"
 							? "Card must match all selected types"
 							: "Card can match any of the selected types"}
 					</Text>
@@ -137,8 +152,8 @@ function MonsterFilters() {
 
 			{/* Exclude Card Types */}
 			<MultiSelect
-				key={form.key("excludedClassifications")}
-				{...form.getInputProps("excludedClassifications")}
+				key={form.key("classificationsExcluded")}
+				{...form.getInputProps("classificationsExcluded")}
 				label="Exclude Card Types"
 				description="Options are disabled if they are already included in the 'Card Types' filter above."
 				clearable
@@ -166,16 +181,19 @@ function MonsterFilters() {
 					minRange={0}
 					step={1}
 				></RangeSlider>
-				<Text size="xs" c="dimmed">
-					{levelRange[0] === levelRange[1] ? levelRange[0] : `${levelRange[0]} - ${levelRange[1]}`}
-				</Text>
+				<Text size="xs">{levelRange[0] === levelRange[1] ? levelRange[0] : `${levelRange[0]} - ${levelRange[1]}`}</Text>
 			</Stack>
 
 			{/* Pendulum */}
-			<Stack gap={4}>
-				<Text size="sm" fw={500}>
-					Pendulum
-				</Text>
+			<Stack gap="xs">
+				<Group gap="xs" align="center">
+					<Text size="sm" fw={500}>
+						Pendulum
+					</Text>
+					<Button size="compact-xs" variant="light" onClick={() => handlePendulumToggle()}>
+						{pendulumDisabled ? "Enable Filter" : "Disable Filter"}
+					</Button>
+				</Group>
 				<RangeSlider
 					key={form.key("pendulumRange")}
 					{...form.getInputProps("pendulumRange")}
@@ -183,8 +201,9 @@ function MonsterFilters() {
 					max={MAX_PENDULUM_LEVEL}
 					minRange={0}
 					step={1}
+					disabled={pendulumDisabled}
 				></RangeSlider>
-				<Text size="xs" c="dimmed">
+				<Text size="xs" c={pendulumDisabled ? "dimmed" : undefined}>
 					{pendulumRange[0] === pendulumRange[1] ? pendulumRange[0] : `${pendulumRange[0]} - ${pendulumRange[1]}`}
 				</Text>
 			</Stack>
@@ -273,14 +292,25 @@ function TrapFilters() {
 }
 
 export default function YGOAdvancedFilters() {
+	const [tab, setTab] = useState<SuperType | null>(null)
+	const form = useCardSearchFormContext()
+
+	function handleTabChange(value: string | null) {
+		setTab(value as SuperType)
+		form.setFieldValue("superType", value as SuperType)
+	}
+
 	return (
-		<Tabs defaultValue={SuperType.monster} variant="default">
+		<Tabs variant="default" value={tab} onChange={handleTabChange}>
 			<Tabs.List>
 				{Object.values(SuperType).map((type) => (
 					<Tabs.Tab value={type} key={type}>
 						{type} Card
 					</Tabs.Tab>
 				))}
+				<Button variant="transparent" c={tab === null ? "spell-green" : "dimmed"} onClick={() => handleTabChange(null)}>
+					{tab === null ? "Filters Disabled" : "Disable Filters"}
+				</Button>
 			</Tabs.List>
 
 			<Tabs.Panel value={SuperType.monster} pt="xs">

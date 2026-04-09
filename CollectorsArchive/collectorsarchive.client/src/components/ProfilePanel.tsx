@@ -77,6 +77,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	const userId = profile?.userId ?? user?.userId
 	const userName = profile?.userName ?? user?.userName ?? "User"
+	console.log(userName, "username in profile panel")
 	const email = user?.email ?? ""
 
 	// Fetch profile whenever the panel opens or userId changes
@@ -114,55 +115,52 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 	}, [opened, userId])
 
 	useEffect(() => {
-		if (!member?.userId) return
+		const idToUse = member?.userId ?? user?.userId
+
+		if (!idToUse) return
+
 		const fetchListsCount = async () => {
 			try {
-				const res = await fetch(
-					`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${member.userId}`
-				)
+				const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${idToUse}`)
 				const data = await res.json()
 				setListsCount(data.length)
 			} catch (err) {
-				console.error(err)
+				console.error("Failed to fetch list count:", err)
+				setListsCount(0)
 			}
 		}
+
 		fetchListsCount()
-	}, [member])
+	}, [profile, member, user])
 
 	// Fetch collection whenever the panel opens or username changes
 	useEffect(() => {
-		if (!opened || !userName) return
-		if (fetchedCollectionForUserNameRef.current === userName) return
+		// check the user who logged in
+		const nameToUse = member?.userName ?? profile?.userName ?? user?.userName
+
+		if (!nameToUse) return
 
 		const loadCollection = async () => {
-			if (!userName) return
-
-			// Avoid refetching collection if we already have it for the current username
-			if (fetchedCollectionForUserNameRef.current === userName) {
-				return
-			}
-
 			try {
 				const collectionResponse = await fetch(GET_USER_COLLECTION, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ UserName: userName }),
+					body: JSON.stringify({ UserName: nameToUse }),
 				})
 				if (!collectionResponse.ok) throw new Error()
 
 				const col = await collectionResponse.json()
 
+				// then here update the cards state with the collection data we get from the api
 				setCards(col.collection ?? [])
-				fetchedCollectionForUserNameRef.current = userName
 			} catch (err) {
-				console.error("Failed to fetch collection:", err)
+				console.error("Collection fetch error:", err)
 				setCards([])
-				fetchedCollectionForUserNameRef.current = null
 			}
 		}
 
 		loadCollection()
-	}, [opened, userName])
+	}, [member, profile, user])
 
 	const handleOpenEdit = () => {
 		form.setValues({
@@ -356,19 +354,19 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 									{/* ── Stats ── */}
 									<Stack gap="xs">
-										<Group gap="xs" align="center">
-											<IconCards size={16} color="var(--mantine-color-dimmed)" />
-											<Text size="sm">Cards Collected</Text>
-											<Text size="sm" fw={600} ml="auto" c="spell-green">
+										{/* Cards Collected Row */}
+										<Group justify="space-between">
+											<Text size="sm"> Collected Cards </Text>
+											<Text size="sm" fw={500}>
 												{cards.length}
 											</Text>
 										</Group>
 
-										<Group gap="xs" align="center">
-											<IconLayoutList size={16} color="var(--mantine-color-dimmed)" />
+										{/* Card Lists Row */}
+										<Group justify="space-between">
 											<Text size="sm">Card Lists</Text>
-											<Text size="sm" fw={600} ml="auto" c="spell-green">
-												{listsCount ?? "—"}
+											<Text size="sm" fw={500}>
+												{listsCount ?? 0}
 											</Text>
 										</Group>
 									</Stack>
