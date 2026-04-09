@@ -11,15 +11,16 @@ namespace CollectorsArchive.Server.Models.ApiInput
 {
     public class SearchFiltersYGO
     {
-        public string? superTypes { get; set; }
+        public string? superType { get; set; }
         public string[]? subTypes { get; set; }
         public string[]? attributes { get; set; }
 
-        public string? classificationOperator { get; set; }
+        public string? classificationsOperator { get; set; }
         public string[]? classifications { get; set; }
         public string[]? classificationsExcluded { get; set; }
 
         public int[]? levelRange { get; set; }
+        public int[]? pendulumRange { get; set; }
         public int[]? attack { get; set; }
         public int[]? defense { get; set; }
     }

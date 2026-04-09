@@ -298,6 +298,9 @@ export default function YGOAdvancedFilters() {
 	function handleTabChange(value: string | null) {
 		setTab(value as SuperType)
 		form.setFieldValue("superType", value as SuperType)
+
+		// Clear all sub-type fields when switching tabs or disabling filters
+		form.setFieldValue("subTypes", undefined)
 	}
 
 	return (
