@@ -116,7 +116,9 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	useEffect(() => {
 		const idToUse = member?.userId ?? user?.userId
-		if (!member?.userId) return
+
+		if (!idToUse) return
+
 		const fetchListsCount = async () => {
 			try {
 				const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${idToUse}`)
@@ -136,8 +138,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 		// check the user who logged in
 		const nameToUse = member?.userName ?? profile?.userName ?? user?.userName
 
-		// is the user is not found dont call api and just return
-		if (!nameToUse || nameToUse === "User") return
+		if (!nameToUse) return
 
 		const loadCollection = async () => {
 			try {
