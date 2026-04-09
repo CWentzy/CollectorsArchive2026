@@ -353,19 +353,19 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 									{/* ── Stats ── */}
 									<Stack gap="xs">
-										<Group gap="xs" align="center">
-											<IconCards size={16} color="var(--mantine-color-dimmed)" />
-											<Text size="sm">Cards Collected</Text>
-											<Text size="sm" fw={600} ml="auto" c="spell-green">
+										{/* Cards Collected Row */}
+										<Group justify="space-between">
+											<Text size="sm"> Collected Cards </Text>
+											<Text size="sm" fw={500}>
 												{cards.length}
 											</Text>
 										</Group>
 
-										<Group gap="xs" align="center">
-											<IconLayoutList size={16} color="var(--mantine-color-dimmed)" />
+										{/* Card Lists Row */}
+										<Group justify="space-between">
 											<Text size="sm">Card Lists</Text>
-											<Text size="sm" fw={600} ml="auto" c="spell-green">
-												{listsCount ?? "—"}
+											<Text size="sm" fw={500}>
+												{listsCount ?? 0}
 											</Text>
 										</Group>
 									</Stack>
