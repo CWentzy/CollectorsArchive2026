@@ -8,8 +8,8 @@ import {
 	Loader,
 	Modal,
 	ScrollArea,
-	Stack,
 	Select,
+	Stack,
 	Text,
 	TextInput,
 	Title,
@@ -22,7 +22,6 @@ import type { CardsAndPrints } from "../types/api"
 import CardCollection from "./CardCollection"
 
 // ─── API URL Placeholders ──────────────────────────────────────────────────────
-// TODO: Replace these with your real .NET API endpoints
 const BASE_URL = import.meta.env.VITE_SERVER_URL
 
 const GET_USER_LISTS_URL = `${BASE_URL}/api/UserList/GetUserLists`
@@ -181,13 +180,7 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 			>
 				Edit Name
 			</Button>
-			<Button
-				size="xs"
-				variant="light"
-				color="red"
-				leftSection={<IconTrash size={13} />}
-				onClick={openDelete}
-			>
+			<Button size="xs" variant="light" color="red" leftSection={<IconTrash size={13} />} onClick={openDelete}>
 				Delete
 			</Button>
 		</Group>
@@ -206,12 +199,7 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 						onChange={(e) => setNewListName(e.currentTarget.value)}
 						onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
 					/>
-					<Button
-						color="spell-green"
-						onClick={handleCreateList}
-						loading={actionLoading}
-						disabled={!newListName.trim()}
-					>
+					<Button color="spell-green" onClick={handleCreateList} loading={actionLoading} disabled={!newListName.trim()}>
 						Create
 					</Button>
 				</Stack>
@@ -227,12 +215,7 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 						onChange={(e) => setRenameValue(e.currentTarget.value)}
 						onKeyDown={(e) => e.key === "Enter" && handleRenameList()}
 					/>
-					<Button
-						color="spell-green"
-						onClick={handleRenameList}
-						loading={actionLoading}
-						disabled={!renameValue.trim()}
-					>
+					<Button color="spell-green" onClick={handleRenameList} loading={actionLoading} disabled={!renameValue.trim()}>
 						Save
 					</Button>
 				</Stack>
@@ -263,7 +246,6 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 			<Card withBorder radius="md" p={0}>
 				{isMobile ? (
 					<Stack gap={0}>
-
 						<Group px="md" py="sm" gap="xs" wrap="nowrap">
 							{loadingLists ? (
 								<Loader size="sm" />
@@ -280,7 +262,9 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 								/>
 							)}
 							{isOwner && (
-								<ActionIcon variant="subtle" color="spell-green" size="lg" onClick={openCreate} title="Create new list"> {/* ADDED: create button next to dropdown, size="lg" for easier tap target */}
+								<ActionIcon variant="subtle" color="spell-green" size="lg" onClick={openCreate} title="Create new list">
+									{" "}
+									{/* ADDED: create button next to dropdown, size="lg" for easier tap target */}
 									<IconPlus size={16} />
 								</ActionIcon>
 							)}
@@ -290,7 +274,9 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 
 						{selectedList && (
 							<Group justify="space-between" px="md" py="xs">
-								<Text size="sm" fw={600}>{selectedList.userListName}</Text>
+								<Text size="sm" fw={600}>
+									{selectedList.userListName}
+								</Text>
 								{listActionButtons}
 							</Group>
 						)}
@@ -299,7 +285,9 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 
 						<ScrollArea h={500} px="md" py="md">
 							{loadingCards ? (
-								<Group justify="center" pt="xl"><Loader size="sm" /></Group>
+								<Group justify="center" pt="xl">
+									<Loader size="sm" />
+								</Group>
 							) : selectedList ? (
 								<CardCollection cardsAndPrints={listCards} />
 							) : (
@@ -311,7 +299,6 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 					</Stack>
 				) : (
 					<Group align="stretch" gap={0} wrap="nowrap">
-
 						{/* ── Left Panel: List Sidebar ── */}
 						<Box w={220} style={{ borderRight: "1px solid var(--mantine-color-dark-4)", flexShrink: 0 }}>
 							<Group justify="space-between" px="md" py="sm">
@@ -354,9 +341,7 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 													py={6}
 													style={{
 														borderRadius: "var(--mantine-radius-sm)",
-														backgroundColor: isSelected
-															? "var(--mantine-color-spell-green-9)"
-															: "transparent",
+														backgroundColor: isSelected ? "var(--mantine-color-spell-green-9)" : "transparent",
 														transition: "background-color 100ms ease",
 													}}
 												>
@@ -420,9 +405,7 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 							) : (
 								<Group justify="center" align="center" h={540}>
 									<Text c="dimmed" size="sm">
-										{lists.length === 0
-											? "Create a list to get started."
-											: "Select a list to view its cards."}
+										{lists.length === 0 ? "Create a list to get started." : "Select a list to view its cards."}
 									</Text>
 								</Group>
 							)}

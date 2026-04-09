@@ -61,13 +61,13 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 
 			const data = await response.json()
 
-			const cardsInfo = data.cardsInfo[0] // TODO: if we always get back 1 card, then update controller to just send back 1 card instead of array
+			const cardsInfo = data.cardsInfo[0]
 			const printsInfo = data.printsInfo
 
 			if (result.mode === "YGO") {
 				setCardAndPrints({ cardsInfo, printsInfo })
 			} else {
-                setCardAndPrints({ cardsInfo, printsInfo })
+				setCardAndPrints({ cardsInfo, printsInfo })
 			}
 		} catch (error) {
 			console.error("POST failed, but scan still worked:", error)

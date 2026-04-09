@@ -13,6 +13,7 @@ import {
 	Table,
 	Text,
 	Title,
+	Typography,
 } from "@mantine/core"
 import { CopyCheckIcon, CopyIcon, ShieldHalfIcon, SwordsIcon } from "lucide-react"
 import { useEffect, useState } from "react"
@@ -221,9 +222,6 @@ export default function SingleCardDisplay() {
 					{/* Card Image Column */}
 					<Box w={{ base: "100%", md: "auto" }}>
 						<Group align="center" justify="center" w="100%">
-							{/* TODO: Replace with real card image from backend */}
-
-							{/* this will display all cards either ygio or mtg */}
 							<Image
 								src={cardImageUrl}
 								loading="lazy"
@@ -257,9 +255,22 @@ export default function SingleCardDisplay() {
 
 									{/* Description — card text is a description of the card */}
 									<div>
-										<Text c="dimmed" size="sm">
-											{cardInfo?.cardText ?? "No description available for this card."}
-										</Text>
+										{/* Hacky way to deal with the MTG webscraping which has html tags in card text */}
+										{gameID === GameID.mtg && cardInfo?.cardText ? (
+											<Typography>
+												<Text c="dimmed" size="sm">
+													<div
+														dangerouslySetInnerHTML={{
+															__html: cardInfo?.cardText,
+														}}
+													/>
+												</Text>
+											</Typography>
+										) : (
+											<Text c="dimmed" size="sm">
+												{cardInfo?.cardText ?? "No description available for this card."}
+											</Text>
+										)}
 									</div>
 								</Stack>
 

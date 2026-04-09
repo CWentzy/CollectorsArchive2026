@@ -60,7 +60,7 @@ const gameValidators = buildGameValidators()
 
 const initialFormValues: CardSearchFormValues = {
 	query: "" as string,
-	searchType: SearchType.set as SearchType,
+	searchType: SearchType.card as SearchType,
 	game: Game.ygo as Game | undefined,
 }
 
@@ -104,7 +104,6 @@ function GameSelector({ isMobile }: { isMobile?: boolean }) {
 		{ label: "All Games", value: "all" },
 		{ label: GameToFriendlyName[Game.ygo], value: Game.ygo },
 		{ label: GameToFriendlyName[Game.mtg], value: Game.mtg },
-		{ label: GameToFriendlyName[Game.pokemon], value: Game.pokemon },
 	]
 
 	function handleGameChange(value: string | null) {
@@ -188,17 +187,12 @@ function AdvancedFiltersSection({
 	onChange: (value: string | null) => void
 }) {
 	const form = useCardSearchFormContext()
-	const [searchType, setSearchType] = useState<SearchType>(form.getValues().searchType)
 	const [game, setGame] = useState<Game | undefined>(form.getValues().game)
 
-	const handleSearchTypeWatch = useCallback(({ value }: { value: SearchType }) => {
-		setSearchType(value)
-	}, [])
 	const handleGameWatch = useCallback(({ value }: { value: Game | undefined }) => {
 		setGame(value)
 	}, [])
 
-	form.watch("searchType", handleSearchTypeWatch)
 	form.watch("game", handleGameWatch)
 
 	return (
@@ -215,7 +209,7 @@ function AdvancedFiltersSection({
 					</Group>
 				</Accordion.Control>
 				<Accordion.Panel>
-					<AdvancedFilters searchType={searchType} game={game} />
+					<AdvancedFilters game={game} />
 				</Accordion.Panel>
 			</Accordion.Item>
 		</Accordion>
@@ -305,6 +299,8 @@ function buildFiltersPayload(values: CardSearchFormValues) {
 	switch (game) {
 		case Game.ygo: {
 			const superType: SuperType | undefined = values.superType
+
+			if (!superType) return {}
 
 			// Spell and Trap cards only use subTypes filter
 			if (superType === SuperType.spell || superType === SuperType.trap) {
@@ -429,6 +425,8 @@ export default function CardSearchForm() {
 		}
 	}
 
+	const hasFilters = form?.getValues().game === "ygo"
+
 	return (
 		<Stack gap="xl" p={0}>
 			<CardSearchFormProvider form={form}>
@@ -442,16 +440,18 @@ export default function CardSearchForm() {
 								<GameSelector isMobile={isMobile} />
 							</Stack>
 
-							<Stack gap={6}>
-								<Text size="xs" fw={600} c="dimmed">
-									2. APPLY FILTERS
-								</Text>
-								<AdvancedFiltersSection accordionValue={accordionValue} onChange={setAccordionValue} />
-							</Stack>
+							{hasFilters && (
+								<Stack gap={6}>
+									<Text size="xs" fw={600} c="dimmed">
+										2. APPLY FILTERS
+									</Text>
+									<AdvancedFiltersSection accordionValue={accordionValue} onChange={setAccordionValue} />
+								</Stack>
+							)}
 
 							<Stack gap={6}>
 								<Text size="xs" fw={600} c="dimmed">
-									3. ENTER SEARCH QUERY
+									{hasFilters ? "3" : "2"}. ENTER SEARCH QUERY
 								</Text>
 
 								<Flex gap="md" align="flex-start">
