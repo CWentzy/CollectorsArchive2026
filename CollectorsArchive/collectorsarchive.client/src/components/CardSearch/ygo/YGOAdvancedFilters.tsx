@@ -78,8 +78,24 @@ function MonsterFilters() {
 	const [lastRange, setLastRange] = useState<[number, number] | undefined>(undefined)
 	const [pendulumDisabled, setPendulumDisabled] = useState(true)
 
-	const levelRange = form.getValues().levelRange || [MIN_CARD_LEVEL, MAX_CARD_LEVEL]
-	const pendulumRange = form.getValues().pendulumRange || [MIN_PENDULUM_LEVEL, MAX_PENDULUM_LEVEL]
+	// Watch live values cuz the form is uncontrolled
+	const [liveLevelRange, setLiveLevelRange] = useState<[number, number]>(
+		form.getValues().levelRange || [MIN_CARD_LEVEL, MAX_CARD_LEVEL]
+	)
+	const [livePendulumRange, setLivePendulumRange] = useState<[number, number]>(
+		form.getValues().pendulumRange || [MIN_PENDULUM_LEVEL, MAX_PENDULUM_LEVEL]
+	)
+	const [liveClassifications, setLiveClassifications] = useState<Classification[]>(
+		form.getValues().classifications || []
+	)
+	const [liveClassificationsExcluded, setLiveExcludedClassifications] = useState<Classification[]>(
+		form.getValues().classificationsExcluded || []
+	)
+
+	form.watch("levelRange", ({ value }) => setLiveLevelRange(value || [MIN_CARD_LEVEL, MAX_CARD_LEVEL]))
+	form.watch("pendulumRange", ({ value }) => setLivePendulumRange(value || [MIN_PENDULUM_LEVEL, MAX_PENDULUM_LEVEL]))
+	form.watch("classifications", updateClassificationData)
+	form.watch("classificationsExcluded", updateClassificationData)
 
 	function handlePendulumToggle() {
 		if (pendulumDisabled) {
@@ -90,6 +106,14 @@ function MonsterFilters() {
 		}
 
 		setPendulumDisabled((prev) => !prev)
+	}
+
+	function updateClassificationData() {
+		const classifications = form.getValues().classifications || []
+		const classificationsExcluded = form.getValues().classificationsExcluded || []
+
+		setLiveClassifications(classifications)
+		setLiveExcludedClassifications(classificationsExcluded)
 	}
 
 	return (
@@ -109,10 +133,12 @@ function MonsterFilters() {
 				clearable
 				hidePickedOptions
 				searchable
+				selectFirstOptionOnChange
+				selectFirstOptionOnDropdownOpen
 				data={Object.values(MonsterSubType).sort((a, b) => a.localeCompare(b))}
 			/>
 
-			{/* Card Types */}
+			{/* Card Types (Classifications) */}
 			<Stack gap="xs">
 				<MultiSelect
 					key={form.key("classifications")}
@@ -122,12 +148,14 @@ function MonsterFilters() {
 					clearable
 					hidePickedOptions
 					searchable
+					selectFirstOptionOnChange
+					selectFirstOptionOnDropdownOpen
 					data={Object.values(Classification)
 						.sort((a, b) => a.localeCompare(b))
 						.map((type) => ({
 							label: type,
 							value: type,
-							disabled: form.getValues().classificationsExcluded?.includes(type),
+							disabled: liveClassificationsExcluded?.includes(type),
 						}))}
 				/>
 
@@ -150,7 +178,7 @@ function MonsterFilters() {
 				</Group>
 			</Stack>
 
-			{/* Exclude Card Types */}
+			{/* Exclude Card Types (Classifications) */}
 			<MultiSelect
 				key={form.key("classificationsExcluded")}
 				{...form.getInputProps("classificationsExcluded")}
@@ -159,12 +187,14 @@ function MonsterFilters() {
 				clearable
 				hidePickedOptions
 				searchable
+				selectFirstOptionOnChange
+				selectFirstOptionOnDropdownOpen
 				data={Object.values(Classification)
 					.sort((a, b) => a.localeCompare(b))
 					.map((type) => ({
 						label: type,
 						value: type,
-						disabled: form.getValues().classifications?.includes(type),
+						disabled: liveClassifications?.includes(type),
 					}))}
 			/>
 
@@ -181,7 +211,9 @@ function MonsterFilters() {
 					minRange={0}
 					step={1}
 				></RangeSlider>
-				<Text size="xs">{levelRange[0] === levelRange[1] ? levelRange[0] : `${levelRange[0]} - ${levelRange[1]}`}</Text>
+				<Text size="xs">
+					{liveLevelRange[0] === liveLevelRange[1] ? liveLevelRange[0] : `${liveLevelRange[0]} - ${liveLevelRange[1]}`}
+				</Text>
 			</Stack>
 
 			{/* Pendulum */}
@@ -204,7 +236,9 @@ function MonsterFilters() {
 					disabled={pendulumDisabled}
 				></RangeSlider>
 				<Text size="xs" c={pendulumDisabled ? "dimmed" : undefined}>
-					{pendulumRange[0] === pendulumRange[1] ? pendulumRange[0] : `${pendulumRange[0]} - ${pendulumRange[1]}`}
+					{livePendulumRange[0] === livePendulumRange[1]
+						? livePendulumRange[0]
+						: `${livePendulumRange[0]} - ${livePendulumRange[1]}`}
 				</Text>
 			</Stack>
 
