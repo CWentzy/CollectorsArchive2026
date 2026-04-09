@@ -184,8 +184,8 @@ namespace CollectorsArchive.Server.Controllers
 
                 return Ok(new
                 {
-                    cards,
-                    printings,
+                    cardsInfo = cards,
+                    printsInfo = printings,
                 });
             }
             catch (Exception ex)
