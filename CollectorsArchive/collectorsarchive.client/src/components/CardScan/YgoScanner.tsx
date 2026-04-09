@@ -34,6 +34,8 @@ import { findCardBoundsInsideGuide, warpCardToCanvas, cropBoundsToCanvas } from 
 type YgoLiveScannerProps = {
     onScanComplete?: (result: ScanResult) => void | Promise<void>;
     onClose?: () => void;
+    scanMode: ScanMode;
+    onScanModeChange: (mode: ScanMode) => void;
 };
 
 type ScanMode = "YGO" | "MTG";
@@ -49,6 +51,8 @@ type ScanResult = {
 export default function YgoLiveScanner({
     onScanComplete,
     onClose,
+    scanMode,
+    onScanModeChange
 }: YgoLiveScannerProps) {
     // Refs for video element, offscreen canvas, guide box, media stream, and analysis interval
     const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -100,7 +104,7 @@ export default function YgoLiveScanner({
     const lastSharpnessTimeRef = useRef(new Date().getTime());
 
     //Toggle state for YGO and MTG
-    const [scanMode, setScanMode] = useState<ScanMode>("YGO");
+    //const [scanMode, setScanMode] = useState<ScanMode>("YGO");
 
     // Worker ref for Tesseract OCR
     const workerRef = useRef<any>(null);
@@ -637,7 +641,7 @@ export default function YgoLiveScanner({
                 <label className="status-small">Scanner Mode</label>
                 <select
                     value={scanMode}
-                    onChange={(e) => setScanMode(e.target.value as ScanMode)}
+                    onChange={(e) => onScanModeChange(e.target.value as ScanMode)}
                     style={{
                         width: "100%",
                         marginTop: 8,

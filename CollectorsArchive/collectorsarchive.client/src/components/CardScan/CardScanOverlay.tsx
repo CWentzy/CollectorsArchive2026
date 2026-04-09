@@ -19,6 +19,8 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [errorMessage, setErrorMessage] = useState("")
+	const [searchValue, setSearchValue] = useState("")
+	const [scanMode, setScanMode] = useState<ScanMode>("YGO")
 
 	async function handleScanComplete(result: ScanResult) {
 		console.log("Scan result:", result)
@@ -29,6 +31,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 
 			let payload: Record<string, string>
 			let url = ""
+			setSearchValue(result.value)
 
 			if (result.mode === "YGO") {
 				payload = {
@@ -80,11 +83,12 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 	function handleRescan() {
 		setCardAndPrints(null)
 		setErrorMessage("")
+		setSearchValue("")
 	}
 
 	return (
 		<div className="card-scan-overlay">
-			{!cardAndPrints && !loading && <YgoScanner onClose={onClose} onScanComplete={handleScanComplete} />}
+			{!cardAndPrints && !loading && <YgoScanner onClose={onClose} onScanComplete={handleScanComplete} scanMode={scanMode} onScanModeChange={setScanMode} />}
 
 			{loading && (
 				<div style={{ padding: 24 }}>
@@ -109,7 +113,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 						</Group>
 					</Group>
 
-					{printsInfo?.length === 0 && <Text>No matches found.</Text>}
+					{printsInfo?.length === 0 && <Text>No matches found with {searchValue}.</Text>}
 
 					{printsInfo?.length && (
 						<Stack gap="md">
