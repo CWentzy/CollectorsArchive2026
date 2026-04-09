@@ -115,12 +115,11 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 	}, [opened, userId])
 
 	useEffect(() => {
+		const idToUse = member?.userId ?? user?.userId
 		if (!member?.userId) return
 		const fetchListsCount = async () => {
 			try {
-				const res = await fetch(
-					`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${member.userId}`
-				)
+				const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${idToUse}`)
 				const data = await res.json()
 				setListsCount(data.length)
 			} catch (err) {
@@ -132,38 +131,28 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	// Fetch collection whenever the panel opens or username changes
 	useEffect(() => {
-		if (!opened || !userName) return
-		if (fetchedCollectionForUserNameRef.current === userName) return
+		const nameToUse = member?.userName ?? user?.userName
+		if (!nameToUse) return
 
 		const loadCollection = async () => {
-			if (!userName) return
-
-			// Avoid refetching collection if we already have it for the current username
-			if (fetchedCollectionForUserNameRef.current === userName) {
-				return
-			}
-
 			try {
 				const collectionResponse = await fetch(GET_USER_COLLECTION, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ UserName: userName }),
+					body: JSON.stringify({ UserName: nameToUse }),
 				})
 				if (!collectionResponse.ok) throw new Error()
 
 				const col = await collectionResponse.json()
-
 				setCards(col.collection ?? [])
-				fetchedCollectionForUserNameRef.current = userName
 			} catch (err) {
 				console.error("Failed to fetch collection:", err)
 				setCards([])
-				fetchedCollectionForUserNameRef.current = null
 			}
 		}
 
 		loadCollection()
-	}, [opened, userName])
+	}, [member, user])
 
 	const handleOpenEdit = () => {
 		form.setValues({
