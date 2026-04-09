@@ -6,23 +6,17 @@
  * 									filter components based on the selected game in the card search form.
  */
 
-import { Text } from "@mantine/core"
-import type { Game, SearchType } from "./schema"
+import type { Game } from "./schema"
 import YGOAdvancedFilters from "./ygo/YGOAdvancedFilters"
 
 interface AdvancedFiltersProps {
-	searchType: SearchType
 	game: Game | undefined
 }
 
-export default function AdvancedFilters({ searchType, game }: AdvancedFiltersProps) {
+export default function AdvancedFilters({ game }: AdvancedFiltersProps) {
 	if (game === "ygo") {
 		return <YGOAdvancedFilters />
 	}
 
-	return (
-		<Text c="dimmed" size="sm">
-			Advanced filtering options to search by '{searchType}' in game '{game}' will go here.
-		</Text>
-	)
+	return null
 }
