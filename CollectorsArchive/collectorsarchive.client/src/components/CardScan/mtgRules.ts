@@ -16,7 +16,7 @@ export const NAME_ROI: NormalizedNameRoi[] = [
     {
         x: 0.05,
         y: 0.045,
-        w: 0.80,
+        w: 0.75,
         h: 0.06,
     },
 ];

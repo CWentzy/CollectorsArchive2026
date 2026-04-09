@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createWorker } from "tesseract.js";
 import "./scanner.css";
 import { CloseButton } from "@mantine/core";
+import { Button } from "@mantine/core";
+import { RefreshCcw } from "lucide-react";
 import {
     type NormalizedPasscodeRoi,
     PASSCODE_ROI,
@@ -103,6 +105,24 @@ export default function YgoLiveScanner({
 
     // Worker ref for Tesseract OCR
     const workerRef = useRef<any>(null);
+
+    const resetScanner = () => {
+        capturedRef.current = false;
+        goodFrameCountRef.current = 0;
+        setGoodFrameCount(0);
+
+        recentMaxSharpnessRef.current = 0;
+        frameCounterRef.current = 0;
+        setMaxSharpnessSeen(0);
+
+
+        setCapturedImage(null);
+        setProcessedImage(null);
+        setPasscodeText("");
+        setPasscodeAttempts([]);
+        setRawPasscodeAttempts([]);
+        setScanStatus("Waiting for card...");
+    };
 
     // Main function to run OCR on the captured card image and extract passcode, setcode, and name
     const runYgoOcr = useCallback(async (cardCanvas: HTMLCanvasElement) => {
@@ -266,7 +286,7 @@ export default function YgoLiveScanner({
             value: finalValue,
         };
 
-        //await onScanComplete?.(result);
+        await onScanComplete?.(result);
     }, [onScanComplete, scanMode]);
 
     useEffect(() => {
@@ -496,7 +516,7 @@ export default function YgoLiveScanner({
                     recentMaxSharpnessRef.current = sharpnessScore;
 
                     
-                    const newThreshold = Math.max(10, sharpnessScore - 1);  //CHnage to 2 if 1 less than max is too strict
+                    const newThreshold = Math.max(8, sharpnessScore - 1);  //CHnage to 2, if 1 less than max is too strict
 
                     setSharpnessThreshold(newThreshold);
                     setMaxSharpnessSeen(sharpnessScore);
@@ -649,7 +669,8 @@ export default function YgoLiveScanner({
                 />
             </div>
             <CloseButton
-                variant="transparent"
+                style={{ color: "#3FAF8E" }}
+                variant="filled"
                 size="xl"
                 radius="xl"
                 onClick={onClose}
@@ -657,6 +678,19 @@ export default function YgoLiveScanner({
                 top={20}
                 right={20}
             />
+            <Button
+                style={{ color: "#3FAF8E" }}
+                variant="transparent"
+                size="xl"
+                radius="xl"
+                onClick={resetScanner}
+                pos="absolute"
+                top={13}
+                right={70}
+                title="Reset Scanner"
+            >
+                <RefreshCcw />
+            </Button>
             <div className="video-shell">
                 <video
                     ref={videoRef}
