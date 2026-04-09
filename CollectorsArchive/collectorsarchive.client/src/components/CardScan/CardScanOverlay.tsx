@@ -58,16 +58,13 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 
 			const data = await response.json()
 
-			const cardsInfo = data.cardsInfo[0] // TODO: if we always get back 1 card, then update controller to just send back 1 card instead of array
+			const cardsInfo = data.cardsInfo[0]
 			const printsInfo = data.printsInfo
 
 			if (result.mode === "YGO") {
 				setCardAndPrints({ cardsInfo, printsInfo })
 			} else {
-				//Nothing set up for MTG display yet... Auto error and log
-				console.log("MTG response received:", data)
-				setCardAndPrints(null)
-				setErrorMessage("MTG response received. UI mapping not added yet.")
+				setCardAndPrints({ cardsInfo, printsInfo })
 			}
 		} catch (error) {
 			console.error("POST failed, but scan still worked:", error)

@@ -58,6 +58,7 @@ export function preprocessYgoDarkCanvas(
     }
 }
 
+
 export function preprocessMtgNameCanvas(
     sourceCanvas: HTMLCanvasElement,
     outputCanvas: HTMLCanvasElement

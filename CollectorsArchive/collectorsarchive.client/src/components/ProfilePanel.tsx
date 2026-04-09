@@ -135,24 +135,29 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	// Fetch collection whenever the panel opens or username changes
 	useEffect(() => {
-		const idToUse = member?.userId ?? user?.userId
+		const nameToUse = member?.userName ?? profile?.userName
 
-		if (!idToUse) return
+		if (!nameToUse || nameToUse.trim() === "") {
+			console.log("Skipping fetch — username not ready")
+			return
+		}
+
+		if (fetchedCollectionForUserNameRef.current === nameToUse) return
 
 		const loadCollection = async () => {
 			try {
 				const collectionResponse = await fetch(GET_USER_COLLECTION, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ userName: idToUse }),
+					body: JSON.stringify({ UserName: nameToUse }),
 				})
 
 				if (!collectionResponse.ok) throw new Error()
 
 				const col = await collectionResponse.json()
 
-				setCards(col.collection ?? [])
-				fetchedCollectionForUserNameRef.current = idToUse
+				setCards(col.cardsInfo ?? [])
+				fetchedCollectionForUserNameRef.current = nameToUse
 			} catch (err) {
 				console.error("Collection fetch error:", err)
 				setCards([])

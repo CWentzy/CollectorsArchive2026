@@ -278,10 +278,7 @@ namespace CollectorsArchive.Server.Controllers
                          "FROM CardPrinting " +
                             "JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID " +
                             "LEFT JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID " +
-                            "LEFT JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID " +
-                            "JOIN CardSuperType ON YGOCard.SuperType = CardSuperType.SuperTypeID " +
-                            "JOIN CardSubType ON YGOCard.SubType = CardSubType.SubTypeID " +
-                            "LEFT JOIN MonsterAttribute ON YGOCard.Attribute = MonsterAttribute.AttributeID ");
+                            "LEFT JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID ");
 
             // Add Game Specific Clauses
             switch (parameters.GameID)
@@ -309,6 +306,10 @@ namespace CollectorsArchive.Server.Controllers
         {
             var filters = JsonSerializer.Deserialize<SearchFiltersYGO>(parameters.AdvancedFilters.ToString());
             var query = new StringBuilder();
+
+            query.Append("JOIN CardSuperType ON YGOCard.SuperType = CardSuperType.SuperTypeID " +
+                        "JOIN CardSubType ON YGOCard.SubType = CardSubType.SubTypeID " +
+                        "LEFT JOIN MonsterAttribute ON YGOCard.Attribute = MonsterAttribute.AttributeID ");
 
             query.Append("WHERE CardPrinting.GameID IN (1) ");
             if (parameters.Query != string.Empty) { query.Append($"AND CardName LIKE '%{parameters.Query}%' "); }

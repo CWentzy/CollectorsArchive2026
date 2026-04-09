@@ -13,7 +13,6 @@ const CARD_IMAGE_BASE_URLS: Record<GameID, string> = {
 	1: import.meta.env.VITE_CARD_IMAGE_URL_YGO,
 	2: import.meta.env.VITE_CARD_IMAGE_URL_MTG_A_G,
 	3: import.meta.env.VITE_CARD_IMAGE_URL_MTG_H_Z,
-	4: import.meta.env.VITE_CARD_IMAGE_URL_POKEMON,
 }
 
 export function getCardImageUrl(gameID: GameID, cardID: string, cardName: string): string {
