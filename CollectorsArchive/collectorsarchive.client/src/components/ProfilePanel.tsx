@@ -77,6 +77,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	const userId = profile?.userId ?? user?.userId
 	const userName = profile?.userName ?? user?.userName ?? "User"
+	console.log(userName, "username in profile panel")
 	const email = user?.email ?? ""
 
 	// Fetch profile whenever the panel opens or userId changes
