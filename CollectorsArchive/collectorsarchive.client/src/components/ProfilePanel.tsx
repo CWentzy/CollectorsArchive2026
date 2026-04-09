@@ -135,14 +135,14 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	// Fetch collection whenever the panel opens or username changes
 	useEffect(() => {
-		// if viewing someone else then the loaded profile
-		const nameToUse = member?.userName || profile?.userName
+		const nameToUse = member?.userName ?? profile?.userName
 
-		// then fetch this if the name isn't ready yet
-		if (!nameToUse) {
-			console.log(`Waiting for profile data. Current nameToUse: ${nameToUse}`)
+		if (!nameToUse || nameToUse.trim() === "") {
+			console.log("Skipping fetch — username not ready")
 			return
 		}
+
+		if (fetchedCollectionForUserNameRef.current === nameToUse) return
 
 		const loadCollection = async () => {
 			try {
@@ -151,12 +151,13 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ UserName: nameToUse }),
 				})
+
 				if (!collectionResponse.ok) throw new Error()
 
 				const col = await collectionResponse.json()
 
-				// then here update the cards state with the collection data we get from the api
 				setCards(col.collection ?? [])
+				fetchedCollectionForUserNameRef.current = nameToUse
 			} catch (err) {
 				console.error("Collection fetch error:", err)
 				setCards([])
@@ -164,8 +165,7 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 		}
 
 		loadCollection()
-	}, [member, profile, user])
-
+	}, [member?.userName, profile?.userName])
 	const handleOpenEdit = () => {
 		form.setValues({
 			userName: profile?.userName ?? "",
