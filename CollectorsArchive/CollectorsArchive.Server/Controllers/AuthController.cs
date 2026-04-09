@@ -48,8 +48,8 @@ namespace CollectorsArchive.Server.Controllers
             }
             else
             {
-                // Update photo if changed
-                if (!string.IsNullOrWhiteSpace(request.PhotoUrl) && user.PhotoUrl != request.PhotoUrl)
+                // Set photo url if not present
+                if (string.IsNullOrWhiteSpace(user.PhotoUrl))
                 {
                     user.PhotoUrl = request.PhotoUrl;
                     await _db.SaveChangesAsync();
