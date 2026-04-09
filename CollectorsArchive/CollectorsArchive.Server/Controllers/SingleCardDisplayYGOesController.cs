@@ -88,12 +88,13 @@ namespace CollectorsArchive.Server.Controllers
                                         CardText = reader["CardTextEN"]?.ToString() ?? "No description available.",
                                         CardAttributes = new MTGCard 
                                         {
-                                            ManaCost = reader["CardManaCost"].ToString() ?? string.Empty,
-                                            SuperType = reader["SuperType"].ToString() ?? string.Empty,
-                                            Type = reader["CardType"].ToString() ?? string.Empty,
-                                            SubTypes = reader["SubTypes"].ToString() ?? string.Empty,
-                                            Power = reader["PowerValue"].ToString() ?? string.Empty,
-                                            Toughness = reader["ToughnessValue"].ToString() ?? string.Empty
+                                            ManaCost = reader["CardManaCost"]?.ToString() ?? string.Empty,
+                                            SuperType = reader["SuperType"]?.ToString() ?? string.Empty,
+                                            Type = reader["CardType"]?.ToString() ?? string.Empty,
+                                            SubTypes = reader["SubTypes"]?.ToString() ?? string.Empty,
+                                            Power = reader["PowerValue"]?.ToString() ?? string.Empty,
+                                            Toughness = reader["ToughnessValue"]?.ToString() ?? string.Empty,
+                                            Loyalty = reader["Loyalty"]?.ToString() ?? string.Empty
                                         }
                                     });
                                     break;
