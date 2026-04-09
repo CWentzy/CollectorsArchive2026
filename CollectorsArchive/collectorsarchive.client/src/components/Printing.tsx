@@ -9,9 +9,10 @@ interface PrintingProps {
 	printInfo: PrintingInformation
 	cardInfo?: CardInformation
 	withCardLink?: boolean
+	defaultListID?: number
 }
 
-export default function Printing({ printInfo, cardInfo, withCardLink = true }: PrintingProps) {
+export default function Printing({ printInfo, cardInfo, withCardLink = true, defaultListID }: PrintingProps) {
 	const gameId: GameID = cardInfo?.gameID || printInfo.gameID
 	const cardId = cardInfo?.cardID || printInfo.cardID
 	const cardName = cardInfo?.cardName || printInfo.cardName || "Unknown Card"
@@ -69,7 +70,7 @@ export default function Printing({ printInfo, cardInfo, withCardLink = true }: P
 
 				<Flex direction={{ base: "row", sm: "column" }} justify="center" align="flex-end">
 					{isLoggedIn && (
-						<QuantityPicker printID={printInfo.printID ?? undefined} initialQuantity={printInfo.quantity ?? 0} />
+						<QuantityPicker printID={printInfo.printID ?? undefined} initialQuantity={printInfo.quantity ?? 0} defaultListID={defaultListID} />
 					)}
 				</Flex>
 			</Flex>

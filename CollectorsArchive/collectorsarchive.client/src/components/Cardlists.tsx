@@ -289,7 +289,7 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 									<Loader size="sm" />
 								</Group>
 							) : selectedList ? (
-								<CardCollection cardsAndPrints={listCards} />
+									<CardCollection cardsAndPrints={listCards} defaultListID={selectedList?.userListID} />
 							) : (
 								<Text c="dimmed" size="sm" ta="center" pt="xl">
 									{lists.length === 0 ? "Create a list to get started." : "Select a list to view its cards."}

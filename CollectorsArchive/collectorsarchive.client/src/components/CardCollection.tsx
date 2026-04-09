@@ -2,7 +2,7 @@ import { Accordion, Badge, Group, Stack, Text } from "@mantine/core"
 import type { CardInformation, CardsAndPrints, PrintingInformation } from "../types/api"
 import Printing from "./Printing"
 
-export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: CardsAndPrints | null }) {
+export default function CardCollection({ cardsAndPrints, defaultListID }: { cardsAndPrints: CardsAndPrints | null, defaultListID?: number }) {
 	const cards = cardsAndPrints?.cardsInfo as CardInformation[] | undefined
 	const prints = cardsAndPrints?.printsInfo as PrintingInformation[] | undefined
 
@@ -35,7 +35,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 											{prints
 												.filter((print) => print.cardID === card.cardID)
 												.map((print) => (
-													<Printing key={print.printID} printInfo={print} cardInfo={card} />
+													<Printing key={print.printID} printInfo={print} cardInfo={card} defaultListID={defaultListID} />
 												))}
 										</Stack>
 									</Accordion.Panel>
@@ -49,6 +49,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 								key={card.cardID}
 								printInfo={prints.find((print) => print.cardID === card.cardID) || ({} as PrintingInformation)}
 								cardInfo={card}
+								defaultListID={defaultListID}
 							/>
 						)
 					}
@@ -63,6 +64,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 						key={card.cardID}
 						printInfo={prints?.find((print) => print.cardID === card.cardID) || ({} as PrintingInformation)}
 						cardInfo={card}
+						defaultListID={defaultListID}
 					/>
 				))
 			)}
