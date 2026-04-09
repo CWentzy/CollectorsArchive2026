@@ -699,25 +699,21 @@ export default function YgoLiveScanner({
                 <div className="overlay">
                     <div ref={guideRef} className="card-guide">
                         <div className="roi-label">Card guide</div>
-
-                        <div className="sub-roi name-roi">Name</div>
-                        <div className="sub-roi passcode-roi">Passcode</div>
-                        <div className="sub-roi setcode-roi">Set Code</div>
                     </div>
                 </div>
 
                 <div className="debug-panel">
                     <div>Mode: {scanMode}</div>
-                    <div>Brightness: {brightness?.toFixed(2)}</div>
+                    {/*<div>Brightness: {brightness?.toFixed(2)}</div>*/}
                     <div>Sharpness: {sharpness?.toFixed(2)}</div>
-                    <div>Stable Frames: {goodFrameCount}</div>
-                    <div>Status: {status}</div>
-                    <div>Base Threshold: {sharpnessThreshold}</div>
-                    <div>Max Sharpness Seen: {maxSharpnessSeen.toFixed(2)}</div>
-                    <div>
-                        Active Threshold:{" "}
-                        {Math.max(sharpnessThreshold, maxSharpnessSeen - 2).toFixed(2)}
-                    </div>
+                    {/*<div>Stable Frames: {goodFrameCount}</div>*/}
+                    <div>Status: {scanStatus}</div>
+                    {/*<div>Base Threshold: {sharpnessThreshold}</div>*/}
+                    {/*<div>Max Sharpness Seen: {maxSharpnessSeen.toFixed(2)}</div>*/}
+                    {/*<div>*/}
+                    {/*    Active Threshold:{" "}*/}
+                    {/*    {Math.max(sharpnessThreshold, maxSharpnessSeen - 2).toFixed(2)}*/}
+                    {/*</div>*/}
                 </div>
             </div>
 
@@ -726,21 +722,21 @@ export default function YgoLiveScanner({
                 <p className="status-small">Passcode: {passcodeText || "—"}</p>
             </div>
 
-            <p className="status">{status}</p>
+            {/*<p className="status">{status}</p>*/}
 
-            <p className="status-small">
-                {cameraReady
-                    ? `Guide brightness: ${brightness !== null ? brightness.toFixed(1) : "Measuring..."
-                    }`
-                    : "Waiting for camera..."}
-            </p>
+            {/*<p className="status-small">*/}
+            {/*    {cameraReady*/}
+            {/*        ? `Guide brightness: ${brightness !== null ? brightness.toFixed(1) : "Measuring..."*/}
+            {/*        }`*/}
+            {/*        : "Waiting for camera..."}*/}
+            {/*</p>*/}
 
-            <p className="status-small">
-                {cameraReady
-                    ? `Guide sharpness: ${sharpness !== null ? sharpness.toFixed(1) : "Measuring..."
-                    }`
-                    : ""}
-            </p>
+            {/*<p className="status-small">*/}
+            {/*    {cameraReady*/}
+            {/*        ? `Guide sharpness: ${sharpness !== null ? sharpness.toFixed(1) : "Measuring..."*/}
+            {/*        }`*/}
+            {/*        : ""}*/}
+            {/*</p>*/}
 
 
             {/*DEBUG INFO AND IMAGES (REMOVE IN PRODUCTION): User will never see it if left in bc debug is only showed when on scan complete is turned off.*/}
