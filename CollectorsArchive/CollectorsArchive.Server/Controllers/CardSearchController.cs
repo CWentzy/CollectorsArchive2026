@@ -349,7 +349,7 @@ namespace CollectorsArchive.Server.Controllers
             var query = new StringBuilder();
 
             query.Append("WHERE CardPrinting.GameID IN (2) ");
-            if (parameters.Query != string.Empty) { query.Append($"AND CardName LIKE '%{parameters.Query}%"); }
+            if (parameters.Query != string.Empty) { query.Append($"AND CardNameEN LIKE '%{parameters.Query}%' "); }
 
             return query.ToString();
         }
@@ -360,7 +360,14 @@ namespace CollectorsArchive.Server.Controllers
             var query = new StringBuilder();
 
             query.Append("WHERE CardPrinting.GameID IN (1,2) ");    // This is a quick fix
-            if (cardName != string.Empty) { query.Append($"AND CardName LIKE '%{cardName}%' "); }
+            if (cardName != string.Empty) {
+                query.Append("AND " +
+                    "(CASE " +
+                        "WHEN CardPrinting.GameID = 1 THEN YGOCard.CardName " +
+                        "WHEN CardPrinting.GameID = 2 THEN MTGCard.CardNameEN " +
+                    "END) " +
+                    $"LIKE '%{cardName}%' ");
+            }
 
             return query.ToString();
         }
