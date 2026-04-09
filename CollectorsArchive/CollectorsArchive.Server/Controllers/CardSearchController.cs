@@ -173,20 +173,22 @@ namespace CollectorsArchive.Server.Controllers
                 {
                     cards.Add(new CardInformation
                     {
-                        GameID = 1, // YGO
+                        GameID = reader.GetInt32(0),
                         CardID = reader["CardID"].ToString(),
                         CardName = reader["CardName"].ToString()
                     });
 
                     printings.Add(new PrintingInformation
                     {
-                        GameID = 1, // YGO
+                        GameID = reader.GetInt32(0),
+                        CardID = reader["CardID"].ToString(),
                         PrintID = reader.GetInt32(3),
                         CardSetID = reader.GetInt32(4),
+                        CardName = reader["CardName"].ToString(),
                         SetName = reader["SetName"].ToString(),
                         SetCode = reader["SetCode"].ToString(),
                         Rarity = reader["CardRarity"].ToString(),
-                        ReleaseDate = DateTime.MinValue
+                        ReleaseDate = reader["ReleaseDate"] != DBNull.Value ? reader.GetDateTime(8) : DateTime.MinValue
                     });
                 }
             }
@@ -221,16 +223,18 @@ namespace CollectorsArchive.Server.Controllers
                 {
                     cards.Add(new CardInformation
                     {
-                        GameID = 1, // YGO
+                        GameID = reader.GetInt32(0),
                         CardID = reader["CardID"].ToString(),
-                        CardName = reader["CardName"].ToString()
+                        CardName = reader["CardNameEN"].ToString()
                     });
 
                     printings.Add(new PrintingInformation
                     {
-                        GameID = 1, // YGO
+                        GameID = reader.GetInt32(0),
+                        CardID = reader["CardID"].ToString(),
                         PrintID = reader.GetInt32(3),
                         CardSetID = reader.GetInt32(4),
+                        CardName = reader["CardNameEN"].ToString(),
                         SetName = reader["SetName"].ToString(),
                         SetCode = reader["SetCode"].ToString(),
                         Rarity = reader["CardRarity"].ToString(),
