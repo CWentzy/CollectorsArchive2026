@@ -4,11 +4,9 @@ import {
 	Box,
 	Button,
 	Card,
-	Center,
 	Divider,
 	Flex,
 	Group,
-	Loader,
 	LoadingOverlay,
 	Paper,
 	ScrollArea,
@@ -42,10 +40,12 @@ export default function ProfilePage() {
 
 	const location = useLocation()
 	const navigate = useNavigate()
+	//const member = location.state?.member as Member | undefined
+	
 
 	const [cardAndPrints, setCardAndPrints] = useState<CardsAndPrints | null>(null)
 	const [loading, setLoading] = useState(true)
-	const [member, setMember] = useState<Member | null>(location.state?.member)
+	const [member, setMember] = useState<Member | null>(location.state?.member ?? null)
 	const [activeTab, setActiveTab] = useState<Tab>("collection")
 
 	useEffect(() => {
@@ -92,6 +92,29 @@ export default function ProfilePage() {
 		fetchCollection()
 	}, [member])
 
+	// If someone navigates here directly without state, show a fallback
+	if (!member) {
+		return (
+			<Box mih="100vh" w="100%" py="md" px="xl">
+				<Stack gap="md">
+					<Button
+						variant="subtle"
+						color="gray"
+						size="xs"
+						leftSection={<IconChevronLeft size={14} />}
+						onClick={() => navigate("/members")}
+						w="fit-content"
+					>
+						Back to Members
+					</Button>
+					<Text c="dimmed">Member not found.</Text>
+				</Stack>
+			</Box>
+		)
+	}
+	const loggedInUser = JSON.parse(localStorage.getItem("user") || "null")
+	const isOwner = loggedInUser?.userId === member.userId
+
 	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
 
 	return (
@@ -109,10 +132,6 @@ export default function ProfilePage() {
 					Back to Members
 				</Button>
 
-				{!member ? (
-					<Center style={{ height: "50vh" }}>{loading ? <Loader type="dots" /> : <Text>User not found</Text>}</Center>
-				) : (
-					<>
 						<Card shadow="sm" p={{ base: "md", sm: "xl" }} radius="md">
 							<Flex gap={{ base: "md", sm: "lg" }} direction={{ base: "column", sm: "row" }} align="center">
 								{/* Avatar */}
@@ -213,13 +232,14 @@ export default function ProfilePage() {
 							</Paper>
 						)}
 
-						{activeTab === "cardlists" && <CardLists userProfileID={member.userId} />}
-					</>
+				{activeTab === "cardlists" && (
+					<CardLists userProfileID={member.userId} isOwner={isOwner} />
 				)}
 			</Stack>
 		</Box>
 	)
 }
+
 
 /* const GameTypes = ["Yu Gi Oh", "Pokémon", "Magic"]
 
