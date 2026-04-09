@@ -64,10 +64,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 			if (result.mode === "YGO") {
 				setCardAndPrints({ cardsInfo, printsInfo })
 			} else {
-				//Nothing set up for MTG display yet... Auto error and log
-				console.log("MTG response received:", data)
-				setCardAndPrints(null)
-				setErrorMessage("MTG response received. UI mapping not added yet.")
+                setCardAndPrints({ cardsInfo, printsInfo })
 			}
 		} catch (error) {
 			console.error("POST failed, but scan still worked:", error)

@@ -40,7 +40,7 @@
     width: 72%;
     aspect-ratio: 59 / 86;
     transform: translate(-50%, -50%);
-    border: 3px solid #22c55e;
+    border: 3px solid #3FAF8E;
     border-radius: 12px;
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.28);
 }
@@ -82,52 +82,22 @@
     line-height: 1.5;
 }
 
-.sub-roi {
-    position: absolute;
-    border: 2px dashed rgba(255, 255, 255, 0.9);
-    border-radius: 6px;
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.18);
-}
 
-/*.name-roi {
-    left: 3%;
-    top: 2%;
-    width: 84%;
-    height: 11%;
-}
-
-.passcode-roi {
-    left: 3%;
-    top: 94%;
-    width: 17%;
-    height: 3%;
-}
-
-.setcode-roi {
-    left: 70%;
-    top: 70%;
-    width: 24%;
-    height: 3%;
-}*/
-
-
-/* Some hightech animations... probably delete or edit later****************************************************************************** 
 .card-guide {
-  border: 2px solid #00ff88;
-  animation: scanPulse 1.5s infinite;
+    border: 2px solid #3FAF8E;
+    animation: scanPulse 1.5s infinite;
 }
 
 @keyframes scanPulse {
-  0% { box-shadow: 0 0 0px #00ff88; }
-  50% { box-shadow: 0 0 15px #00ff88; }
-  100% { box-shadow: 0 0 0px #00ff88; }
-} 
-DO NOT INCLUDE>>>> GARBAGE LOL  
-*/
+    0% {
+        box-shadow: 0 0 0px #3FAF8E;
+    }
+    50% {
+        box-shadow: 0 0 15px #3FAF8E;
+    }
+    100% {
+        box-shadow: 0 0 0px #3FAF8E;
+    }
+}  
+
 

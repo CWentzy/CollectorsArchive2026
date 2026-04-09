@@ -15,7 +15,6 @@ import {
 } from "./ygoRules";
 
 import {
-    //type NormalizedNameRoi,
     NAME_ROI,
     cleanName,
     isValidName,
@@ -69,27 +68,27 @@ export default function YgoLiveScanner({
     const [goodFrameCount, setGoodFrameCount] = useState(0);
     const goodFrameCountRef = useRef(0);
     const capturedRef = useRef(false);
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    //const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
     // CV processing canvas
     const processedCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [processedImage, setProcessedImage] = useState<string | null>(null);
+    //const [processedImage, setProcessedImage] = useState<string | null>(null);
 
     // State for extracted ROIs
     const [scanStatus, setScanStatus] = useState("Waiting for card...");
     const [passcodeText, setPasscodeText] = useState("");
-    const passcodeCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    //const passcodeCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
     // Canvases for upscaling ROis
-    const passcodeUpscaledCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    //const passcodeUpscaledCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
     //These are for seeing what hte cropped ROIs look like (Jack Remove after....)
-    const [passcodeUpscaledPreviews, setPasscodeUpscaledPreviews] = useState<string[]>([]);
-    const [passcodeProcessedPreviews, setPasscodeProcessedPreviews] = useState<string[]>([]);
+    //const [passcodeUpscaledPreviews, setPasscodeUpscaledPreviews] = useState<string[]>([]);
+    //const [passcodeProcessedPreviews, setPasscodeProcessedPreviews] = useState<string[]>([]);
 
 
-    const [passcodeAttempts, setPasscodeAttempts] = useState<string[]>([]);
-    const [rawPasscodeAttempts, setRawPasscodeAttempts] = useState<string[]>([]);
+    //const [passcodeAttempts, setPasscodeAttempts] = useState<string[]>([]);
+    //const [rawPasscodeAttempts, setRawPasscodeAttempts] = useState<string[]>([]);
 
     //UI for tweaking sharpness threshold, as it can be the deciding factor in many cases, and lighting is usually not the issue.
     const [sharpnessThreshold, setSharpnessThreshold] = useState(30);
@@ -116,11 +115,11 @@ export default function YgoLiveScanner({
         setMaxSharpnessSeen(0);
 
 
-        setCapturedImage(null);
-        setProcessedImage(null);
+        //setCapturedImage(null);
+        //setProcessedImage(null);
         setPasscodeText("");
-        setPasscodeAttempts([]);
-        setRawPasscodeAttempts([]);
+        //setPasscodeAttempts([]);
+        //setRawPasscodeAttempts([]);
         setScanStatus("Waiting for card...");
     };
 
@@ -165,8 +164,8 @@ export default function YgoLiveScanner({
         upscaledPreviewList.push(roiUpscaledCanvas.toDataURL("image/png"));
         processedPreviewList.push(roiProcessedCanvas.toDataURL("image/png"));
 
-        setPasscodeUpscaledPreviews(upscaledPreviewList);
-        setPasscodeProcessedPreviews(processedPreviewList);
+        //setPasscodeUpscaledPreviews(upscaledPreviewList);
+        //setPasscodeProcessedPreviews(processedPreviewList);
 
         setScanStatus("Verifying passcode...");
 
@@ -244,8 +243,8 @@ export default function YgoLiveScanner({
             }
         }
 
-        setRawPasscodeAttempts(rawPasscodeList);
-        setPasscodeAttempts(cleanedPasscodeList);
+        //setRawPasscodeAttempts(rawPasscodeList);
+        //setPasscodeAttempts(cleanedPasscodeList);
 
         let finalValue: string = "";
         if (scanMode == "YGO") {
@@ -492,15 +491,13 @@ export default function YgoLiveScanner({
                 guideHeight
             );
 
-
-            //NEW ADAPTIVE THRESHOLD LOGIC****************************************************
             const avgBrightness = getAverageBrightness(guideFrame.data);
             const sharpnessScore = getSharpnessScore(guideFrame);
 
             setBrightness(avgBrightness);
             setSharpness(sharpnessScore);
 
-            //Used for a wait before setting max sharpness seen (ignore initian grab)
+            //Used for a wait before setting max sharpness seen (ignore initial grab)
             const now = new Date().getTime();
 
             // Wait 2s before learning max
@@ -525,7 +522,6 @@ export default function YgoLiveScanner({
 
             const brightnessGood = avgBrightness >= 70 && avgBrightness <= 190;
             const sharpnessGood = sharpnessScore >= sharpnessThreshold;
-            //END OF NEW ADAPTIVE SHARPNESS THRESHOLD LOGIC****************************************************
 
             if (brightnessGood && sharpnessGood) {
                 goodFrameCountRef.current++;
@@ -567,7 +563,7 @@ export default function YgoLiveScanner({
 
                     if (processedCanvas) {
                         const detection = findCardBoundsInsideGuide(croppedCanvas, processedCanvas);
-                        setProcessedImage(detection.debugImageUrl ?? null);
+                        //setProcessedImage(detection.debugImageUrl ?? null);
 
                         if (detection.quadPoints && detection.quadPoints.length === 4) {
                             const warpedCardCanvas = document.createElement("canvas");
@@ -601,8 +597,8 @@ export default function YgoLiveScanner({
                         }
                     }
 
-                    const captured = finalCanvasForOcr.toDataURL("image/png");
-                    setCapturedImage(captured);
+                    //const captured = finalCanvasForOcr.toDataURL("image/png");
+                    //setCapturedImage(captured);
 
                     runYgoOcr(finalCanvasForOcr).catch((error) => {
                         console.error("OCR failed:", error);
@@ -746,83 +742,87 @@ export default function YgoLiveScanner({
                     : ""}
             </p>
 
-            {capturedImage && (
-                <div style={{ marginTop: 20 }}>
-                    <h3>Captured Frame</h3>
-                    <img
-                        src={capturedImage}
-                        alt="Captured card"
-                        style={{ width: "100%", borderRadius: 12 }}
-                    />
-                </div>
-            )}
 
-            {processedImage && (
-                <div style={{ marginTop: 20 }}>
-                    <h3>OpenCV Processed</h3>
-                    <img
-                        src={processedImage}
-                        alt="OpenCV processed card"
-                        style={{ width: "100%", borderRadius: 12 }}
-                    />
-                </div>
-            )}
+            {/*DEBUG INFO AND IMAGES (REMOVE IN PRODUCTION): User will never see it if left in bc debug is only showed when on scan complete is turned off.*/}
+            {/*They would be able to see the empty headers... So well leave out for demo*/}
+
+            {/*{capturedImage && (*/}
+            {/*    <div style={{ marginTop: 20 }}>*/}
+            {/*        <h3>Captured Frame</h3>*/}
+            {/*        <img*/}
+            {/*            src={capturedImage}*/}
+            {/*            alt="Captured card"*/}
+            {/*            style={{ width: "100%", borderRadius: 12 }}*/}
+            {/*        />*/}
+            {/*    </div>*/}
+            {/*)}*/}
+
+            {/*{processedImage && (*/}
+            {/*    <div style={{ marginTop: 20 }}>*/}
+            {/*        <h3>OpenCV Processed</h3>*/}
+            {/*        <img*/}
+            {/*            src={processedImage}*/}
+            {/*            alt="OpenCV processed card"*/}
+            {/*            style={{ width: "100%", borderRadius: 12 }}*/}
+            {/*        />*/}
+            {/*    </div>*/}
+            {/*)}*/}
 
 
-            <div style={{ marginTop: 20 }}>
-                <h3>OCR Attempts</h3>
+            {/*<div style={{ marginTop: 20 }}>*/}
+            {/*    <h3>OCR Attempts</h3>*/}
 
-                <p className="status-small">Raw Passcode Attempts:</p>
-                {rawPasscodeAttempts.map((value, index) => (
-                    <p key={`raw-pass-${index}`} className="status-small">
-                        {index + 1}. {JSON.stringify(value) || "—"}
-                    </p>
-                ))}
+            {/*    <p className="status-small">Raw Passcode Attempts:</p>*/}
+            {/*    {rawPasscodeAttempts.map((value, index) => (*/}
+            {/*        <p key={`raw-pass-${index}`} className="status-small">*/}
+            {/*            {index + 1}. {JSON.stringify(value) || "—"}*/}
+            {/*        </p>*/}
+            {/*    ))}*/}
 
-                <p className="status-small" style={{ marginTop: 12 }}>Cleaned Passcode Attempts:</p>
-                {passcodeAttempts.map((value, index) => (
-                    <p key={`clean-pass-${index}`} className="status-small">
-                        {index + 1}. {value || "—"}
-                    </p>
-                ))}
+            {/*    <p className="status-small" style={{ marginTop: 12 }}>Cleaned Passcode Attempts:</p>*/}
+            {/*    {passcodeAttempts.map((value, index) => (*/}
+            {/*        <p key={`clean-pass-${index}`} className="status-small">*/}
+            {/*            {index + 1}. {value || "—"}*/}
+            {/*        </p>*/}
+            {/*    ))}*/}
 
-            </div>
+            {/*</div>*/}
 
 
             {/* Also teh div above is from testing what the raw text and cleaned text was providing... will not be needed later */}
             {/* Remove these 6 images after, only used for tweaking processing */}
 
-            <div style={{ marginTop: 24 }}>
-    <h3>Passcode ROI Debug</h3>
+{/*            <div style={{ marginTop: 24 }}>*/}
+{/*    <h3>Passcode ROI Debug</h3>*/}
 
-    {passcodeUpscaledPreviews.map((img, index) => (
-        <div key={`upscaled-${index}`} style={{ marginTop: 16 }}>
-            <p className="status-small">ROI {index + 1} Upscaled</p>
-            <img
-                src={img}
-                alt={`ROI ${index + 1} upscaled`}
-                style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
-            />
-        </div>
-    ))}
+{/*    {passcodeUpscaledPreviews.map((img, index) => (*/}
+{/*        <div key={`upscaled-${index}`} style={{ marginTop: 16 }}>*/}
+{/*            <p className="status-small">ROI {index + 1} Upscaled</p>*/}
+{/*            <img*/}
+{/*                src={img}*/}
+{/*                alt={`ROI ${index + 1} upscaled`}*/}
+{/*                style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}*/}
+{/*            />*/}
+{/*        </div>*/}
+{/*    ))}*/}
 
-    {passcodeProcessedPreviews.map((img, index) => (
-        <div key={`processed-${index}`} style={{ marginTop: 16 }}>
-            <p className="status-small">ROI {index + 1} Processed</p>
-            <img
-                src={img}
-                alt={`ROI ${index + 1} processed`}
-                style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}
-            />
-        </div>
-    ))}
-</div>
+{/*    {passcodeProcessedPreviews.map((img, index) => (*/}
+{/*        <div key={`processed-${index}`} style={{ marginTop: 16 }}>*/}
+{/*            <p className="status-small">ROI {index + 1} Processed</p>*/}
+{/*            <img*/}
+{/*                src={img}*/}
+{/*                alt={`ROI ${index + 1} processed`}*/}
+{/*                style={{ width: "100%", maxWidth: 320, borderRadius: 8 }}*/}
+{/*            />*/}
+{/*        </div>*/}
+{/*    ))}*/}
+{/*</div>*/}
 
             <canvas ref={captureCanvasRef} style={{ display: "none" }} />
             <canvas ref={croppedCanvasRef} style={{ display: "none" }} />
             <canvas ref={processedCanvasRef} style={{ display: "none" }} />
-            <canvas ref={passcodeCanvasRef} style={{ display: "none" }} />
-            <canvas ref={passcodeUpscaledCanvasRef} style={{ display: "none" }} />
+{/*            <canvas ref={passcodeCanvasRef} style={{ display: "none" }} />*/}
+{/*            <canvas ref={passcodeUpscaledCanvasRef} style={{ display: "none" }} />*/}
         </section>
     );
 }
@@ -879,16 +879,6 @@ function upscaleCanvas(
         newHeight
     );
 }
-
-
-
-
-
-
-
-
-
-
 
 
 async function recognizeTextFromCanvasWithWorker(
