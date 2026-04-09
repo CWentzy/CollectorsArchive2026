@@ -91,7 +91,7 @@ namespace CollectorsArchive.Server.Controllers
                                             ManaCost = reader["CardManaCost"]?.ToString() ?? string.Empty,
                                             SuperType = reader["SuperType"]?.ToString() ?? string.Empty,
                                             Type = reader["CardType"]?.ToString() ?? string.Empty,
-                                            SubTypes = reader["SubTypes"]?.ToString() ?? string.Empty,
+                                            SubTypes = reader["SubType"]?.ToString() ?? string.Empty,
                                             Power = reader["PowerValue"]?.ToString() ?? string.Empty,
                                             Toughness = reader["ToughnessValue"]?.ToString() ?? string.Empty,
                                             Loyalty = reader["Loyalty"]?.ToString() ?? string.Empty
