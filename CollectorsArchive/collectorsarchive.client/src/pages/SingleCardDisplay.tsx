@@ -222,9 +222,6 @@ export default function SingleCardDisplay() {
 					{/* Card Image Column */}
 					<Box w={{ base: "100%", md: "auto" }}>
 						<Group align="center" justify="center" w="100%">
-							{/* TODO: Replace with real card image from backend */}
-
-							{/* this will display all cards either ygio or mtg */}
 							<Image
 								src={cardImageUrl}
 								loading="lazy"
