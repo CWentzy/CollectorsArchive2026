@@ -107,11 +107,12 @@ export type TrapSubType = (typeof TrapSubType)[keyof typeof TrapSubType]
 
 // Advanced Filters for Card Search
 export interface YGOFormFilters {
+	superType: SuperType | undefined
 	attributes?: Attribute[]
 	subTypes?: MonsterSubType[] | SpellSubType[] | TrapSubType[]
 	classifications?: Classification[]
-	classificationsOperator?: "and" | "or"
-	excludedClassifications?: Classification[]
+	classificationsOperator?: "AND" | "OR"
+	classificationsExcluded?: Classification[]
 	levelRange?: [number, number]
 	pendulumRange?: [number, number]
 	minATK?: number
@@ -120,8 +121,17 @@ export interface YGOFormFilters {
 	maxDEF?: number
 }
 
+export type YGOMonsterSearchPayload = Omit<YGOFormFilters, "minATK" | "maxATK" | "minDEF" | "maxDEF"> & {
+	attack?: [number, number]
+	defense?: [number, number]
+}
+
+export type YGOSpellTrapSearchPayload = Pick<YGOFormFilters, "superType" | "subTypes">
+
 // Default values for advanced filters
-export const YGOSearchDefaultFilters: YGOFormFilters = {}
+export const YGOSearchDefaultFilters: YGOFormFilters = {
+	superType: undefined,
+}
 
 // Field keys that belong to YGO (used to clear fields when switching game)
 export const YGO_FIELD_KEYS: (keyof YGOFormFilters)[] = [
@@ -129,7 +139,7 @@ export const YGO_FIELD_KEYS: (keyof YGOFormFilters)[] = [
 	"subTypes",
 	"classifications",
 	"classificationsOperator",
-	"excludedClassifications",
+	"classificationsExcluded",
 	"levelRange",
 	"pendulumRange",
 	"minATK",

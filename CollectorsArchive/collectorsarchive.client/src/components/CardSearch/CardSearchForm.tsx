@@ -44,6 +44,13 @@ import {
 	SEARCH_QUERY_MIN_LENGTH,
 	SearchType,
 } from "./schema"
+import {
+	MAX_ATK_DEF,
+	MIN_ATK_DEF,
+	SuperType,
+	type YGOMonsterSearchPayload,
+	type YGOSpellTrapSearchPayload,
+} from "./ygo/schema"
 
 const CARD_SEARCH_ENDPOINT = `${import.meta.env.VITE_SERVER_URL}/api/CardSearch/AdvancedSearchCard`
 const SET_SEARCH_ENDPOINT = `${import.meta.env.VITE_SERVER_URL}/api/CardSearch/AdvancedSearchSet`
@@ -292,6 +299,50 @@ const SearchResult = memo(function SearchResult({ cardsAndPrints }: SearchResult
 	)
 })
 
+function buildFiltersPayload(values: CardSearchFormValues) {
+	const game = values.game
+
+	switch (game) {
+		case Game.ygo: {
+			const superType: SuperType | undefined = values.superType
+
+			// Spell and Trap cards only use subTypes filter
+			if (superType === SuperType.spell || superType === SuperType.trap) {
+				const payload: YGOSpellTrapSearchPayload = {
+					superType,
+					subTypes: values.subTypes,
+				}
+
+				return payload
+			}
+
+			// Monster cards
+			const classificationsOperator = values.classifications?.length
+				? values?.classificationsOperator || "AND"
+				: undefined
+			const attack: [number, number] = [values.minATK || MIN_ATK_DEF, values.maxATK || MAX_ATK_DEF]
+			const defense: [number, number] = [values.minDEF || MIN_ATK_DEF, values.maxDEF || MAX_ATK_DEF]
+
+			const payload: YGOMonsterSearchPayload = {
+				superType,
+				subTypes: values.subTypes,
+				attributes: values.attributes,
+				classifications: values.classifications,
+				classificationsOperator: classificationsOperator,
+				classificationsExcluded: values.classificationsExcluded,
+				levelRange: values.levelRange,
+				pendulumRange: values.pendulumRange,
+				attack,
+				defense,
+			}
+
+			return payload
+		}
+		default:
+			return {}
+	}
+}
+
 export default function CardSearchForm() {
 	const theme = useMantineTheme()
 	const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`)
@@ -307,6 +358,12 @@ export default function CardSearchForm() {
 		transformValues: (values) => ({
 			...values,
 			query: values.query?.trim().replace(/\s{2,}/g, " ") || "", // trim, and limit consecutive spaces to 1
+
+			// avoid sending empty arrays
+			attributes: values.attributes?.length ? values.attributes : undefined,
+			subTypes: values.subTypes?.length ? values.subTypes : undefined,
+			classifications: values.classifications?.length ? values.classifications : undefined,
+			classificationsExcluded: values.classificationsExcluded?.length ? values.classificationsExcluded : undefined,
 		}),
 		validate: {
 			query: (value) => {
@@ -339,7 +396,7 @@ export default function CardSearchForm() {
 				GameID: GameToID(values.game as Game) || 0, // send 0 for "all" since API expects that
 				Query: values.query,
 				SearchType: values.searchType,
-				AdvancedFilters: {}, // TODO: include advanced filters in the request body
+				AdvancedFilters: buildFiltersPayload(values),
 			})
 
 			const endpoint = values.searchType === SearchType.card ? CARD_SEARCH_ENDPOINT : SET_SEARCH_ENDPOINT

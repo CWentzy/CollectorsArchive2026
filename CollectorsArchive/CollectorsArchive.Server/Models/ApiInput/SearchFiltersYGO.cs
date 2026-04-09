@@ -14,15 +14,12 @@ namespace CollectorsArchive.Server.Models.ApiInput
         public string? superTypes { get; set; }
         public string[]? subTypes { get; set; }
         public string[]? attributes { get; set; }
+
         public string? classificationOperator { get; set; }
         public string[]? classifications { get; set; }
         public string[]? classificationsExcluded { get; set; }
-        public int[]? levelRange { get; set; }
-        public int? minAtk { get; set; }
-        public int? maxAtk { get; set; }
-        public int? minDef { get; set; }
-        public int? maxDef { get; set; }
 
+        public int[]? levelRange { get; set; }
         public int[]? attack { get; set; }
         public int[]? defense { get; set; }
     }
