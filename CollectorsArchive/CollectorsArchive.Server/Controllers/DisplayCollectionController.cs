@@ -60,6 +60,7 @@ namespace CollectorsArchive.Server.Controllers
                         collectionPrintings.Add(new PrintingInformation
                         {
                             GameID = reader.GetInt32("GameID"),
+                            CardID = reader["CardID"].ToString(),
                             PrintID = reader.GetInt32("PrintID"),
                             CardSetID = reader.GetInt32("CardSetID"),
                             SetCode = reader["SetCode"]?.ToString() ?? string.Empty,

@@ -12,9 +12,12 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 	return (
 		<Stack w="100%">
 			{uniqueCards?.length && prints?.length ? (
+				// For each card (unique)
 				uniqueCards.map((card) => {
+					// Find all prints of that card by matching cardID
 					const cardPrints = prints.filter((print) => print.cardID === card.cardID)
 
+					// If there are multiple prints for the same card, show them in an accordion
 					if (cardPrints.length > 1) {
 						return (
 							<Accordion key={card.cardID} variant="separated" radius="md">
@@ -40,6 +43,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 							</Accordion>
 						)
 					} else {
+						// If there's only one print, show it without accordion
 						return (
 							<PrintYGO
 								key={card.cardID}
