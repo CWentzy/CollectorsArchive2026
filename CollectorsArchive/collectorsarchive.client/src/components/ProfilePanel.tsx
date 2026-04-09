@@ -123,16 +123,21 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 				const data = await res.json()
 				setListsCount(data.length)
 			} catch (err) {
-				console.error(err)
+				console.error("Failed to fetch list count:", err)
+				setListsCount(0)
 			}
 		}
+
 		fetchListsCount()
-	}, [member])
+	}, [profile, member, user])
 
 	// Fetch collection whenever the panel opens or username changes
 	useEffect(() => {
-		const nameToUse = member?.userName ?? user?.userName
-		if (!nameToUse) return
+		// check the user who logged in
+		const nameToUse = member?.userName ?? profile?.userName ?? user?.userName
+
+		// is the user is not found dont call api and just return
+		if (!nameToUse || nameToUse === "User") return
 
 		const loadCollection = async () => {
 			try {
@@ -144,15 +149,17 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 				if (!collectionResponse.ok) throw new Error()
 
 				const col = await collectionResponse.json()
+
+				// then here update the cards state with the collection data we get from the api
 				setCards(col.collection ?? [])
 			} catch (err) {
-				console.error("Failed to fetch collection:", err)
+				console.error("Collection fetch error:", err)
 				setCards([])
 			}
 		}
 
 		loadCollection()
-	}, [member, user])
+	}, [member, profile, user])
 
 	const handleOpenEdit = () => {
 		form.setValues({
