@@ -274,7 +274,10 @@ namespace CollectorsArchive.Server.Controllers
                          "FROM CardPrinting " +
                             "JOIN CardSet ON CardPrinting.CardSetID = CardSet.CardSetID " +
                             "LEFT JOIN YGOCard ON CardPrinting.CardID = YGOCard.CardID " +
-                            "LEFT JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID ");
+                            "LEFT JOIN MTGCard ON CardPrinting.CardID = MTGCard.CardID " +
+                            "JOIN CardSuperType ON YGOCard.SuperType = CardSuperType.SuperTypeID " +
+                            "JOIN CardSubType ON YGOCard.SubType = CardSubType.SubTypeID " +
+                            "LEFT JOIN MonsterAttribute ON YGOCard.Attribute = MonsterAttribute.AttributeID ");
 
             // Add Game Specific Clauses
             switch (parameters.GameID)
@@ -306,7 +309,7 @@ namespace CollectorsArchive.Server.Controllers
             query.Append("WHERE CardPrinting.GameID IN (1) ");
             if (parameters.Query != string.Empty) { query.Append($"AND CardName LIKE '%{parameters.Query}%' "); }
 
-            if (filters.superTypes != null) { query.Append($"AND CardSuperType.SuperTypeName = '{filters.superTypes}' "); }
+            if (filters.superType != null) { query.Append($"AND CardSuperType.SuperTypeName = '{filters.superType.ToUpper()}' "); }
 
             if (filters.subTypes != null)
             {
@@ -318,7 +321,7 @@ namespace CollectorsArchive.Server.Controllers
 
             if (filters.attributes != null)
             {
-                query.Append("AND MonsterAttribute.AttributeNameEN IN (");
+                query.Append("AND MonsterAttribute.AttributeName IN (");
                 foreach (var attribute in filters.attributes) { query.Append($"'{attribute}',"); }
                 query.Remove(query.Length - 1, 1);
                 query.Append(") ");
@@ -326,7 +329,7 @@ namespace CollectorsArchive.Server.Controllers
 
             // Determine if the classification search is an AND/OR type search
             string conjunction = string.Empty;
-            if (filters.classificationOperator != null) { conjunction = filters.classificationOperator; }
+            if (filters.classificationsOperator != null) { conjunction = filters.classificationsOperator; }
 
             if (filters.classifications != null)
             {
@@ -335,7 +338,7 @@ namespace CollectorsArchive.Server.Controllers
                 { 
                     query.Append($"Classifications LIKE '%{classification}%' {conjunction} ");
                 }
-                query.Remove(query.Length - conjunction.Length + 1, conjunction.Length + 1);
+                query.Remove(query.Length - (conjunction.Length + 1), conjunction.Length);
                 query.Append(") ");
             }
             if (filters.classificationsExcluded != null)
@@ -343,16 +346,17 @@ namespace CollectorsArchive.Server.Controllers
                 query.Append("AND (");
                 foreach (var excluded in filters.classificationsExcluded)
                 {
-                    query.Append($"Classifications LIKE '%{excluded}%' AND ");
+                    query.Append($"Classifications NOT LIKE '%{excluded}%' AND ");
                 }
                 query.Remove(query.Length - 4, 4);
                 query.Append(") ");
             }
 
-            if (filters.levelRange != null) { query.Append($"AND CardLevel BETWEEN {filters.levelRange[0]} AND {filters.levelRange[1]}"); }
+            if (filters.levelRange != null) { query.Append($"AND CardLevel BETWEEN {filters.levelRange[0]} AND {filters.levelRange[1]} "); }
+            if (filters.pendulumRange != null) { query.Append($"AND PendulumScale BETWEEN {filters.pendulumRange[0]} AND {filters.pendulumRange[1]} "); }
 
-            if (filters.attack != null) { query.Append($"AND AttackValue BETWEEN {filters.attack[0]} AND {filters.attack[1]}"); }
-            if (filters.defense != null) { query.Append($"AND DefenseValue BETWEEN {filters.defense[0]} AND {filters.defense[1]}"); }
+            if (filters.attack != null) { query.Append($"AND AttackValue BETWEEN {filters.attack[0]} AND {filters.attack[1]} "); }
+            if (filters.defense != null) { query.Append($"AND DefenseValue BETWEEN {filters.defense[0]} AND {filters.defense[1]} "); }
 
             return query.ToString();
         }
