@@ -222,17 +222,17 @@ export default function SingleCardDisplay() {
 					<Box w={{ base: "100%", md: "auto" }}>
 						<Group align="center" justify="center" w="100%">
 							{/* TODO: Replace with real card image from backend */}
-							{gameID === GameID.ygo && (
-								<Image
-									src={cardImageUrl}
-									loading="lazy"
-									fallbackSrc={`/assets/images/card_placeholder_${GameIDToGame[gameID]}.jpg`}
-									alt={cardInfo?.cardName ?? "Card Image"}
-									fit="contain"
-									h={{ base: 320, md: 520 }}
-									mah={{ base: 320, md: 520 }}
-								/>
-							)}
+
+							{/* this will display all cards either ygio or mtg */}
+							<Image
+								src={cardImageUrl}
+								loading="lazy"
+								fallbackSrc={`/assets/images/card_placeholder_${GameIDToGame[gameID]}.jpg`}
+								alt={cardInfo?.cardName ?? "Card Image"}
+								fit="contain"
+								h={{ base: 320, md: 520 }}
+								mah={{ base: 320, md: 520 }}
+							/>
 						</Group>
 					</Box>
 
