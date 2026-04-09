@@ -359,8 +359,8 @@ export default function CardSearchForm() {
 
 			const data = await response.json()
 
-			const cardsInfo = data.cards || []
-			const printsInfo = data.printings || []
+			const cardsInfo = data.cardsInfo || []
+			const printsInfo = data.printsInfo || []
 
 			setCardAndPrints({ cardsInfo, printsInfo })
 			setSearchResultKey((prev) => prev + 1)

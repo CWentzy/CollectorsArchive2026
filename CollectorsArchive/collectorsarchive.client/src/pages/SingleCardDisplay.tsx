@@ -195,8 +195,8 @@ export default function SingleCardDisplay() {
 
 			const data = await response.json()
 
-			const printsInfo = data.printings
-			const cardsInfo = data.card
+			const printsInfo = data.printsInfo
+			const cardsInfo = data.cardsInfo
 
 			setCardAndPrints({ cardsInfo, printsInfo })
 
@@ -208,7 +208,7 @@ export default function SingleCardDisplay() {
 
 	const cardInfo = cardAndPrints?.cardsInfo as CardInformation | undefined // single card
 	const printsInfo = cardAndPrints?.printsInfo as PrintingInformation[] | undefined // multiple prints
-	const cardImageUrl = cardInfo?.cardID ? getCardImageUrl(cardInfo.gameID, cardInfo?.cardID) : null
+	const cardImageUrl = cardInfo?.cardID ? getCardImageUrl(cardInfo.gameID, cardInfo?.cardID, cardInfo?.cardName) : null
 
 	return (
 		<Box py="xl">

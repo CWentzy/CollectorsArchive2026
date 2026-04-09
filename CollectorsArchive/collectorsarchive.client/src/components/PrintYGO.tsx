@@ -16,7 +16,7 @@ export default function PrintYGO({ printInfo, cardInfo, withCardLink = true }: P
 	const cardName = cardInfo?.cardName || printInfo.cardName || "Unknown Card"
 
 	const releaseDate = printInfo.releaseDate ? new Date(printInfo.releaseDate).toLocaleDateString() : "Unknown"
-	const cardImageUrl = cardId ? getCardImageUrl(gameId, cardId) : null
+	const cardImageUrl = cardId ? getCardImageUrl(gameId, cardId, cardName) : null
 
 	return (
 		<MantineCard key={printInfo.printID} padding="md" withBorder>

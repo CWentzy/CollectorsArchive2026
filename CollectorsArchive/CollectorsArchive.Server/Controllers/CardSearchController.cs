@@ -42,15 +42,15 @@ namespace CollectorsArchive.Server.Controllers
         // ----------------------------------- POST REQUESTS ----------------------------------- //
 
         /// <summary>
-        /// Searches for all card printings found within a given set
+        /// Searches for all card printsInfo found within a given set
         /// </summary>
         /// <param name="parameters">Search parameters provided by the user</param>
         /// <returns>Card List</returns>
         [HttpPost("AdvancedSearchSet")]
         public SearchOutputResult AdvancedSearchBySet([FromBody] AdvancedSearch parameters)
         {
-            List<CardInformation> cards = [];
-            List<PrintingInformation> printings = [];
+            List<CardInformation> cardsInfo = [];
+            List<PrintingInformation> printsInfo = [];
 
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ErmiyasDB")))
             {
@@ -68,16 +68,16 @@ namespace CollectorsArchive.Server.Controllers
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    cards.Add(new CardInformation
+                    cardsInfo.Add(new CardInformation
                     {
-                        GameID = parameters.GameID,
+                        GameID = reader.GetInt32(0),
                         CardID = reader["CardID"].ToString(),
                         CardName = reader["CardName"].ToString()
                     });
 
-                    printings.Add(new PrintingInformation
+                    printsInfo.Add(new PrintingInformation
                     {
-                        GameID = parameters.GameID,
+                        GameID = reader.GetInt32(0),
                         CardID = reader["CardID"].ToString(),
                         PrintID = reader.GetInt32(3),
                         CardSetID = reader.GetInt32(4),
@@ -92,8 +92,8 @@ namespace CollectorsArchive.Server.Controllers
 
             return new SearchOutputResult
             {
-                Cards = cards,
-                Printings = printings
+                CardsInfo = cardsInfo,
+                PrintsInfo = printsInfo
             };
         }
 
@@ -107,7 +107,8 @@ namespace CollectorsArchive.Server.Controllers
         [HttpPost("AdvancedSearchCard")]
         public SearchOutputResult AdvancedSearchByCard([FromBody] AdvancedSearch parameters)
         {
-            List<CardInformation> cards = [];
+            List<CardInformation> cardsInfo = [];
+            List<PrintingInformation> printsInfo = [];
 
             SqlCommand cmd = new SqlCommand();
 
@@ -120,18 +121,32 @@ namespace CollectorsArchive.Server.Controllers
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    cards.Add(new CardInformation
+                    cardsInfo.Add(new CardInformation
                     {
-                        GameID = parameters.GameID,
-                        CardID = reader.GetString(1),
-                        CardName = reader.GetString(2)
+                        GameID = reader.GetInt32(0),
+                        CardID = reader["CardID"].ToString(),
+                        CardName = reader["CardName"].ToString()
+                    });
+
+                    printsInfo.Add(new PrintingInformation
+                    {
+                        GameID = reader.GetInt32(0),
+                        CardID = reader["CardID"].ToString(),
+                        PrintID = reader.GetInt32(3),
+                        CardSetID = reader.GetInt32(4),
+                        CardName = reader["CardName"].ToString(),
+                        SetName = reader["SetName"].ToString(),
+                        SetCode = reader["SetCode"].ToString(),
+                        Rarity = reader["CardRarity"].ToString(),
+                        ReleaseDate = reader["ReleaseDate"] != DBNull.Value ? reader.GetDateTime(8) : DateTime.MinValue
                     });
                 }
             }
 
             return new SearchOutputResult
             {
-                Cards = cards
+                CardsInfo = cardsInfo,
+                PrintsInfo = printsInfo,
             };
         }
 
@@ -178,8 +193,8 @@ namespace CollectorsArchive.Server.Controllers
 
             return new SearchOutputResult
             {
-                Cards = cards,
-                Printings = printings
+                CardsInfo = cards,
+                PrintsInfo = printings
             };
         }
 
@@ -226,8 +241,8 @@ namespace CollectorsArchive.Server.Controllers
 
             return new SearchOutputResult
             {
-                Cards = cards,
-                Printings = printings
+                CardsInfo = cards,
+                PrintsInfo = printings
             };
         }
 
@@ -349,7 +364,7 @@ namespace CollectorsArchive.Server.Controllers
             var query = new StringBuilder();
 
             query.Append("WHERE CardPrinting.GameID IN (2) ");
-            if (parameters.Query != string.Empty) { query.Append($"AND CardName LIKE '%{parameters.Query}%"); }
+            if (parameters.Query != string.Empty) { query.Append($"AND CardNameEN LIKE '%{parameters.Query}%' "); }
 
             return query.ToString();
         }
@@ -360,7 +375,14 @@ namespace CollectorsArchive.Server.Controllers
             var query = new StringBuilder();
 
             query.Append("WHERE CardPrinting.GameID IN (1,2) ");    // This is a quick fix
-            if (cardName != string.Empty) { query.Append($"AND CardName LIKE '%{cardName}%' "); }
+            if (cardName != string.Empty) {
+                query.Append("AND " +
+                    "(CASE " +
+                        "WHEN CardPrinting.GameID = 1 THEN YGOCard.CardName " +
+                        "WHEN CardPrinting.GameID = 2 THEN MTGCard.CardNameEN " +
+                    "END) " +
+                    $"LIKE '%{cardName}%' ");
+            }
 
             return query.ToString();
         }

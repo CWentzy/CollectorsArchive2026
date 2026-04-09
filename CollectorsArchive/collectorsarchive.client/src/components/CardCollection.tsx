@@ -43,7 +43,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 						return (
 							<PrintYGO
 								key={card.cardID}
-								printInfo={prints.find((print) => print.cardID === card.cardID) as PrintingInformation}
+								printInfo={prints.find((print) => print.cardID === card.cardID) || ({} as PrintingInformation)}
 								cardInfo={card}
 							/>
 						)

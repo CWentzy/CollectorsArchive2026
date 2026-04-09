@@ -97,7 +97,7 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 		try {
 			const res = await fetch(`${GET_LIST_CARDS_URL}?userListID=${userListID}`)
 			const data = await res.json()
-			setListCards({ cardsInfo: data.cards, printsInfo: data.printings })
+			setListCards({ cardsInfo: data.cardsInfo, printsInfo: data.printsInfo })
 		} catch (err) {
 			console.error("Failed to fetch list cards:", err)
 		} finally {
