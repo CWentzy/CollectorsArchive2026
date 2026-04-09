@@ -148,7 +148,7 @@ export default function HomePage() {
 				)}
 				{activeTab === "cardlists" && (
 					<Box w="100%">
-						<CardLists />
+						<CardLists isOwner={true} />
 					</Box>
 				)}
 			</Stack>
