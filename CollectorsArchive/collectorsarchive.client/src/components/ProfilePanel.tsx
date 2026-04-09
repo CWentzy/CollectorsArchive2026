@@ -22,7 +22,7 @@ import { useDisclosure, useHover } from "@mantine/hooks"
 import { IconCards, IconEdit, IconLayoutList, IconLogout, IconMoon, IconSun } from "@tabler/icons-react"
 import { XIcon } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { formatDate } from "../utils"
 
 const GET_USER_PROFILE = `${import.meta.env.VITE_SERVER_URL}/api/UserProfile`
@@ -40,6 +40,7 @@ export type UserProfile = {
 	photoUrl: string | null
 	joinDate: string
 }
+
 type Member = {
 	userId: number
 	bio: string | null
@@ -47,10 +48,10 @@ type Member = {
 	photoUrl: string | null
 	joinDate: string | null
 }
-const location = useLocation()
 
 export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 	const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "null"), [])
+	const location = useLocation()
 
 	const [profile, setProfile] = useState<UserProfile | null>(null)
 	const [loading, setLoading] = useState(false)
@@ -58,9 +59,9 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 
 	const [cards, setCards] = useState<{ cardID: string; cardName: string }[]>([])
 	const [listsCount, setListsCount] = useState<number | null>(null)
-	const [member, setMember] = useState<Member | null>(location.state?.member ?? null)
 	const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 	const { hovered, ref } = useHover()
+	const member: Member | null = location.state?.member ?? null
 
 	// Refs to track which userID/userName we've fetched profile/collection for to prevent unnecessary re-fetches
 	const fetchedProfileForUserRef = useRef<number | null>(null)
@@ -116,7 +117,9 @@ export function ProfilePanel({ opened, onClose }: ProfilePanelProps) {
 		if (!member?.userId) return
 		const fetchListsCount = async () => {
 			try {
-				const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${member.userId}`)
+				const res = await fetch(
+					`${import.meta.env.VITE_SERVER_URL}/api/UserList/GetUserLists?userProfileID=${member.userId}`
+				)
 				const data = await res.json()
 				setListsCount(data.length)
 			} catch (err) {
