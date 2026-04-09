@@ -17,12 +17,11 @@ import {
 import { CopyCheckIcon, CopyIcon, ShieldHalfIcon, SwordsIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Game, GameID } from "../components/CardSearch/schema"
-import PrintYGO from "../components/PrintYGO"
+import { Game, GameID, GameIDToGame } from "../components/CardSearch/schema"
+import Printing from "../components/Printing"
 import type { CardInformation, CardsAndPrints, MTGCard, PrintingInformation, YGOCard } from "../types/api"
 import { getCardImageUrl } from "../utils"
 
-const ygoCardImageUrl = "/assets/images/card_placeholder_ygo.jpg"
 const SingleCardDisplayYGO = `${import.meta.env.VITE_SERVER_URL}/api/SingleCardDisplayYGOes/SingleCardDisplayYGO`
 
 function CardAttributesYGO({ attributes }: { attributes: YGOCard }) {
@@ -227,7 +226,7 @@ export default function SingleCardDisplay() {
 								<Image
 									src={cardImageUrl}
 									loading="lazy"
-									fallbackSrc={ygoCardImageUrl}
+									fallbackSrc={`/assets/images/card_placeholder_${GameIDToGame[gameID]}.jpg`}
 									alt={cardInfo?.cardName ?? "Card Image"}
 									fit="contain"
 									h={{ base: 320, md: 520 }}
@@ -306,7 +305,7 @@ export default function SingleCardDisplay() {
 					<Stack gap="xs">
 						{printsInfo?.length ? (
 							printsInfo.map((print) => (
-								<PrintYGO key={print.printID} printInfo={print} cardInfo={cardInfo} withCardLink={false} />
+								<Printing key={print.printID} printInfo={print} cardInfo={cardInfo} withCardLink={false} />
 							))
 						) : (
 							<Text c="dimmed" size="sm">

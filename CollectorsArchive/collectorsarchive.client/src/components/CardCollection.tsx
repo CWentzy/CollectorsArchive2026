@@ -1,6 +1,6 @@
 import { Accordion, Badge, Group, Stack, Text } from "@mantine/core"
 import type { CardInformation, CardsAndPrints, PrintingInformation } from "../types/api"
-import PrintYGO from "./PrintYGO"
+import Printing from "./Printing"
 
 export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: CardsAndPrints | null }) {
 	const cards = cardsAndPrints?.cardsInfo as CardInformation[] | undefined
@@ -35,7 +35,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 											{prints
 												.filter((print) => print.cardID === card.cardID)
 												.map((print) => (
-													<PrintYGO key={print.printID} printInfo={print} cardInfo={card} />
+													<Printing key={print.printID} printInfo={print} cardInfo={card} />
 												))}
 										</Stack>
 									</Accordion.Panel>
@@ -45,7 +45,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 					} else {
 						// If there's only one print, show it without accordion
 						return (
-							<PrintYGO
+							<Printing
 								key={card.cardID}
 								printInfo={prints.find((print) => print.cardID === card.cardID) || ({} as PrintingInformation)}
 								cardInfo={card}
@@ -59,7 +59,7 @@ export default function CardCollection({ cardsAndPrints }: { cardsAndPrints: Car
 				</Text>
 			) : (
 				uniqueCards.map((card) => (
-					<PrintYGO
+					<Printing
 						key={card.cardID}
 						printInfo={prints?.find((print) => print.cardID === card.cardID) || ({} as PrintingInformation)}
 						cardInfo={card}

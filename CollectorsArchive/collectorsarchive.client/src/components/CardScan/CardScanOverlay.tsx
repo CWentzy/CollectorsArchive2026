@@ -1,7 +1,7 @@
 import { Button, Group, Stack, Text } from "@mantine/core"
 import { useState } from "react"
 import type { CardInformation, CardsAndPrints, PrintingInformation } from "../../types/api"
-import PrintYGO from "../PrintYGO"
+import Printing from "../Printing"
 import YgoScanner from "./YgoScanner"
 
 type ScanMode = "YGO" | "MTG"
@@ -117,7 +117,7 @@ export default function CardScanOverlay({ onClose }: CardScanOverlayProps) {
 					{printsInfo?.length && (
 						<Stack gap="md">
 							{printsInfo.map((print) => (
-								<PrintYGO key={print.printID} printInfo={print} cardInfo={cardInfo} />
+								<Printing key={print.printID} printInfo={print} cardInfo={cardInfo} />
 							))}
 						</Stack>
 					)}
