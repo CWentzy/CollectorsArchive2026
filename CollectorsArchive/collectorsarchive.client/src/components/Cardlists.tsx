@@ -9,12 +9,13 @@ import {
 	Modal,
 	ScrollArea,
 	Stack,
+	Select,
 	Text,
 	TextInput,
 	Title,
 	UnstyledButton,
 } from "@mantine/core"
-import { useDisclosure } from "@mantine/hooks"
+import { useDisclosure, useMediaQuery } from "@mantine/hooks"
 import { IconEdit, IconPlus, IconTrash } from "@tabler/icons-react"
 import { useEffect, useState } from "react"
 import type { CardsAndPrints } from "../types/api"
@@ -45,6 +46,7 @@ interface CardListsProps {
 export default function CardLists({ userProfileID: propUserProfileID, isOwner = false }: CardListsProps) {
 	const user = JSON.parse(localStorage.getItem("user") || "null")
 	const userProfileID = propUserProfileID ?? user?.userId
+	const isMobile = useMediaQuery("(max-width:780px)")
 
 	const [lists, setLists] = useState<UserList[]>([])
 	const [selectedList, setSelectedList] = useState<UserList | null>(null)
@@ -70,7 +72,6 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 	async function fetchLists() {
 		setLoadingLists(true)
 		try {
-			// TODO: confirm query param name matches your controller
 			const res = await fetch(`${GET_USER_LISTS_URL}?userProfileID=${userProfileID}`)
 			const data: UserList[] = await res.json()
 			setLists(data)
@@ -167,6 +168,30 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 			setActionLoading(false)
 		}
 	}
+	const listActionButtons = isOwner && selectedList && (
+		<Group gap="xs">
+			<Button
+				size="xs"
+				variant="light"
+				leftSection={<IconEdit size={13} />}
+				onClick={() => {
+					setRenameValue(selectedList.userListName)
+					openRename()
+				}}
+			>
+				Edit Name
+			</Button>
+			<Button
+				size="xs"
+				variant="light"
+				color="red"
+				leftSection={<IconTrash size={13} />}
+				onClick={openDelete}
+			>
+				Delete
+			</Button>
+		</Group>
+	)
 
 	// ─────────────────────────────────────────────────────────────────────────
 	return (
@@ -236,124 +261,174 @@ export default function CardLists({ userProfileID: propUserProfileID, isOwner = 
 
 			{/* ── Main Card ── */}
 			<Card withBorder radius="md" p={0}>
-				<Group align="stretch" gap={0} wrap="nowrap">
+				{isMobile ? (
+					<Stack gap={0}>
 
-					{/* ── Left Panel: List Sidebar ── */}
-					<Box w={220} style={{ borderRight: "1px solid var(--mantine-color-dark-4)", flexShrink: 0 }}>
-						<Group justify="space-between" px="md" py="sm">
-							<Text size="sm" fw={600} tt="uppercase" c="dimmed">
-								All Lists
-							</Text>
+						<Group px="md" py="sm" gap="xs" wrap="nowrap">
+							{loadingLists ? (
+								<Loader size="sm" />
+							) : (
+								<Select
+									style={{ flex: 1 }}
+									placeholder="Select a list"
+									data={lists.map((l) => ({ value: String(l.userListID), label: l.userListName }))}
+									value={selectedList ? String(selectedList.userListID) : null}
+									onChange={(val) => {
+										const found = lists.find((l) => String(l.userListID) === val)
+										if (found) setSelectedList(found)
+									}}
+								/>
+							)}
 							{isOwner && (
-								<ActionIcon
-									variant="subtle"
-									color="spell-green"
-									size="sm"
-									onClick={openCreate}
-									title="Create new list"
-								>
-									<IconPlus size={14} />
+								<ActionIcon variant="subtle" color="spell-green" size="lg" onClick={openCreate} title="Create new list"> {/* ADDED: create button next to dropdown, size="lg" for easier tap target */}
+									<IconPlus size={16} />
 								</ActionIcon>
 							)}
 						</Group>
 
 						<Divider />
 
-						<ScrollArea h={500} px="xs" py="xs">
-							{loadingLists ? (
-								<Group justify="center" pt="md">
-									<Loader size="sm" />
-								</Group>
-							) : lists.length === 0 ? (
-								<Text size="xs" c="dimmed" px="xs" pt="sm">
-									No lists yet. Click + to create one.
-								</Text>
-							) : (
-								<Stack gap={4} pt={4}>
-									{lists.map((list) => {
-										const isSelected = selectedList?.userListID === list.userListID
-										return (
-											<UnstyledButton
-												key={list.userListID}
-												onClick={() => setSelectedList(list)}
-												px="sm"
-												py={6}
-												style={{
-													borderRadius: "var(--mantine-radius-sm)",
-													backgroundColor: isSelected
-														? "var(--mantine-color-spell-green-9)"
-														: "transparent",
-													transition: "background-color 100ms ease",
-												}}
-											>
-												<Text size="sm" fw={isSelected ? 600 : 400} c={isSelected ? "spell-green" : undefined}>
-													{list.userListName}
-												</Text>
-											</UnstyledButton>
-										)
-									})}
-								</Stack>
-							)}
-						</ScrollArea>
-					</Box>
-
-					{/* ── Right Panel: Cards in Selected List ── */}
-					<Box style={{ flex: 1, minWidth: 0 }}>
-						{selectedList ? (
-							<Stack gap={0} h="100%">
-								{/* Header */}
-								<Group justify="space-between" px="lg" py="sm">
-									<Title order={5}>{selectedList.userListName}</Title>
-									{isOwner && (
-									<Group gap="xs">
-										<Button
-											size="xs"
-											variant="light"
-											leftSection={<IconEdit size={13} />}
-											onClick={() => {
-												setRenameValue(selectedList.userListName)
-												openRename()
-											}}
-										>
-											Edit Name
-										</Button>
-										<Button
-											size="xs"
-											variant="light"
-											color="red"
-											leftSection={<IconTrash size={13} />}
-											onClick={openDelete}
-										>
-											Delete List
-										</Button>
-										</Group>
-									)}
-								</Group>
-
-								<Divider />
-
-								{/* Cards */}
-								<ScrollArea h={500} px="lg" py="md">
-									{loadingCards ? (
-										<Group justify="center" pt="xl">
-											<Loader size="sm" />
-										</Group>
-									) : (
-										<CardCollection cardsAndPrints={listCards} />
-									)}
-								</ScrollArea>
-							</Stack>
-						) : (
-							<Group justify="center" align="center" h={540}>
-								<Text c="dimmed" size="sm">
-									{lists.length === 0
-										? "Create a list to get started."
-										: "Select a list to view its cards."}
-								</Text>
+						{selectedList && (
+							<Group justify="space-between" px="md" py="xs">
+								<Text size="sm" fw={600}>{selectedList.userListName}</Text>
+								{listActionButtons}
 							</Group>
 						)}
-					</Box>
-				</Group>
+
+						{selectedList && <Divider />}
+
+						<ScrollArea h={500} px="md" py="md">
+							{loadingCards ? (
+								<Group justify="center" pt="xl"><Loader size="sm" /></Group>
+							) : selectedList ? (
+								<CardCollection cardsAndPrints={listCards} />
+							) : (
+								<Text c="dimmed" size="sm" ta="center" pt="xl">
+									{lists.length === 0 ? "Create a list to get started." : "Select a list to view its cards."}
+								</Text>
+							)}
+						</ScrollArea>
+					</Stack>
+				) : (
+					<Group align="stretch" gap={0} wrap="nowrap">
+
+						{/* ── Left Panel: List Sidebar ── */}
+						<Box w={220} style={{ borderRight: "1px solid var(--mantine-color-dark-4)", flexShrink: 0 }}>
+							<Group justify="space-between" px="md" py="sm">
+								<Text size="sm" fw={600} tt="uppercase" c="dimmed">
+									All Lists
+								</Text>
+								{isOwner && (
+									<ActionIcon
+										variant="subtle"
+										color="spell-green"
+										size="sm"
+										onClick={openCreate}
+										title="Create new list"
+									>
+										<IconPlus size={14} />
+									</ActionIcon>
+								)}
+							</Group>
+
+							<Divider />
+
+							<ScrollArea h={500} px="xs" py="xs">
+								{loadingLists ? (
+									<Group justify="center" pt="md">
+										<Loader size="sm" />
+									</Group>
+								) : lists.length === 0 ? (
+									<Text size="xs" c="dimmed" px="xs" pt="sm">
+										No lists yet. Click + to create one.
+									</Text>
+								) : (
+									<Stack gap={4} pt={4}>
+										{lists.map((list) => {
+											const isSelected = selectedList?.userListID === list.userListID
+											return (
+												<UnstyledButton
+													key={list.userListID}
+													onClick={() => setSelectedList(list)}
+													px="sm"
+													py={6}
+													style={{
+														borderRadius: "var(--mantine-radius-sm)",
+														backgroundColor: isSelected
+															? "var(--mantine-color-spell-green-9)"
+															: "transparent",
+														transition: "background-color 100ms ease",
+													}}
+												>
+													<Text size="sm" fw={isSelected ? 600 : 400} c={isSelected ? "spell-green" : undefined}>
+														{list.userListName}
+													</Text>
+												</UnstyledButton>
+											)
+										})}
+									</Stack>
+								)}
+							</ScrollArea>
+						</Box>
+
+						{/* ── Right Panel: Cards in Selected List ── */}
+						<Box style={{ flex: 1, minWidth: 0 }}>
+							{selectedList ? (
+								<Stack gap={0} h="100%">
+									{/* Header */}
+									<Group justify="space-between" px="lg" py="sm">
+										<Title order={5}>{selectedList.userListName}</Title>
+										{isOwner && (
+											<Group gap="xs">
+												<Button
+													size="xs"
+													variant="light"
+													leftSection={<IconEdit size={13} />}
+													onClick={() => {
+														setRenameValue(selectedList.userListName)
+														openRename()
+													}}
+												>
+													Edit Name
+												</Button>
+												<Button
+													size="xs"
+													variant="light"
+													color="red"
+													leftSection={<IconTrash size={13} />}
+													onClick={openDelete}
+												>
+													Delete List
+												</Button>
+											</Group>
+										)}
+									</Group>
+
+									<Divider />
+
+									{/* Cards */}
+									<ScrollArea h={500} px="lg" py="md">
+										{loadingCards ? (
+											<Group justify="center" pt="xl">
+												<Loader size="sm" />
+											</Group>
+										) : (
+											<CardCollection cardsAndPrints={listCards} />
+										)}
+									</ScrollArea>
+								</Stack>
+							) : (
+								<Group justify="center" align="center" h={540}>
+									<Text c="dimmed" size="sm">
+										{lists.length === 0
+											? "Create a list to get started."
+											: "Select a list to view its cards."}
+									</Text>
+								</Group>
+							)}
+						</Box>
+					</Group>
+				)}
 			</Card>
 		</>
 	)
