@@ -6,7 +6,7 @@
  * 									gets too big.
  */
 
-import type { GameID } from "./components/CardSearch/schema"
+import { GameID } from "./components/CardSearch/schema"
 
 const CARD_IMAGE_BASE_URLS: Record<GameID, string> = {
 	1: import.meta.env.VITE_CARD_IMAGE_URL_YGO,
@@ -14,13 +14,14 @@ const CARD_IMAGE_BASE_URLS: Record<GameID, string> = {
 	3: import.meta.env.VITE_CARD_IMAGE_URL_POKEMON,
 }
 
-export function getCardImageUrl(gameID: GameID, cardID: string): string {
-	const unpaddedCardID = cardID.replace(/^0+/, "") // Remove zeroes from the start of the cardID
+export function getCardImageUrl(gameID: GameID, cardID: string, cardName: string): string {
 	const baseUrl = CARD_IMAGE_BASE_URLS[gameID]
-
 	if (!baseUrl) return ""
 
-	return `${baseUrl}/${unpaddedCardID}.jpg`
+	const unpaddedCardID = cardID.replace(/^0+/, "") // Remove zeroes from the start of the cardID
+	const cardIDOrName = gameID === GameID.ygo ? unpaddedCardID : cardName
+
+	return `${baseUrl}/${cardIDOrName}.jpg`
 }
 
 export const formatDate = (dateStr: string | null) => {

@@ -11,7 +11,7 @@ namespace CollectorsArchive.Server.Models.CardSearch
 {
     public class SearchOutputResult
     {
-        public required List<CardInformation> Cards { get; set; }
-        public List<PrintingInformation> Printings { get; set; } = [];
+        public required List<CardInformation> CardsInfo { get; set; }
+        public List<PrintingInformation> PrintsInfo { get; set; } = [];
     }
 }
