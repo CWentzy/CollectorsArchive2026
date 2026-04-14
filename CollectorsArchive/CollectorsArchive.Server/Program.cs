@@ -9,8 +9,6 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// this is my local host name and pc name urs might be different if u go through an issue (FROM ERMI)
-// UPDATED FOR DEPLOYMENT: allow ONLY the Azure backend domain
 builder.Services.AddHostFiltering(options =>
 {
     options.AllowedHosts = new[]
@@ -35,7 +33,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("https://stalwart-eclair-4e4f65.netlify.app/")
+        policy.WithOrigins("https://stalwart-eclair-4e4f65.netlify.app")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();
@@ -44,7 +42,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// GOOGLE POPUP ISSUE for the cor headerr 
 app.Use(async (context, next) =>
 {
     context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
@@ -52,7 +49,6 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// ENABLE SWAGGER IN PRODUCTION
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -67,5 +63,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// this is where the application starts listening for incoming HTTP requests
 app.Run();
