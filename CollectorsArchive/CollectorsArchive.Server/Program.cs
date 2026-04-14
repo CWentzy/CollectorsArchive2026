@@ -15,7 +15,7 @@ builder.Services.AddHostFiltering(options =>
 {
     options.AllowedHosts = new[]
     {
-        "collectorsarchiveserver.azurewebsites.net"
+        "collectorsarchive2026.onrender.com"
     };
 });
 
@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("https://ashy-coast-05051250f.6.azurestaticapps.net")
+        policy.WithOrigins("https://stalwart-eclair-4e4f65.netlify.app/")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();
