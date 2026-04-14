@@ -3,14 +3,21 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-	  <GenerateOpenApiDocuments>false</GenerateOpenApiDocuments>
-	  <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
-	  <ExcludeOpenApiDocuments>true</ExcludeOpenApiDocuments>
 
+    <GenerateOpenApiDocuments>false</GenerateOpenApiDocuments>
+    <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
+    <ExcludeOpenApiDocuments>true</ExcludeOpenApiDocuments>
 
-	  <SpaRoot>..\collectorsarchive.client</SpaRoot>
+    <!-- Explicit assembly name -->
+    <AssemblyName>CollectorsArchive.Server</AssemblyName>
+
+    <!-- Commented out SPA (frontend) settings for deployment -->
+    <!--
+    <SpaRoot>..\collectorsarchive.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:5173/</SpaProxyServerUrl>
+    -->
+
     <UserSecretsId>6a3cfd68-abc2-4d76-9ecf-a51c20304a1e</UserSecretsId>
   </PropertyGroup>
 
@@ -29,10 +36,13 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
   </ItemGroup>
 
+  <!-- Commented out frontend project reference -->
+  <!--
   <ItemGroup>
     <ProjectReference Include="..\collectorsarchive.client\collectorsarchive.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
+  -->
 
 </Project>
