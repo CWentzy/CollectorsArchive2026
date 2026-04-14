@@ -52,12 +52,22 @@ app.Use(async (context, next) =>
 app.UseSwagger();
 app.UseSwaggerUI();
 
+//app.UseHttpsRedirection();
+//app.UseHostFiltering();
+
+//app.UseRouting();
+
+//app.UseCors("AllowAll");
+
+//app.UseAuthorization();
+
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
+
 app.UseHostFiltering();
 
 app.UseRouting();
-
-app.UseCors("AllowAll");
 
 app.UseAuthorization();
 
