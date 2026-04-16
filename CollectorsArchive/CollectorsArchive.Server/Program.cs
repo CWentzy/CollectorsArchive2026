@@ -9,15 +9,6 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHostFiltering(options =>
-{
-    options.AllowedHosts = new[]
-    {
-        "collectorsarchive2026.onrender.com",
-        "stalwart-eclair-4e4f65.netlify.app"
-    };
-});
-
 builder.Services.Configure<CollectorArchiveEmailSettings>(
     builder.Configuration.GetSection("CollectorArchiveEmailSettings"));
 
@@ -42,8 +33,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-app.UseHostFiltering();
 
 app.UseHttpsRedirection();
 
