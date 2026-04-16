@@ -13,7 +13,8 @@ builder.Services.AddHostFiltering(options =>
 {
     options.AllowedHosts = new[]
     {
-        "collectorsarchive2026.onrender.com"
+        "collectorsarchive2026.onrender.com",
+        "stalwart-eclair-4e4f65.netlify.app"
     };
 });
 
@@ -31,41 +32,22 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins("https://stalwart-eclair-4e4f65.netlify.app")
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
 var app = builder.Build();
 
-app.Use(async (context, next) =>
-{
-    context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups";
-    context.Response.Headers["Cross-Origin-Embedder-Policy"] = "unsafe-none";
-    await next();
-});
-
-app.UseSwagger();
-app.UseSwaggerUI();
-
-//app.UseHttpsRedirection();
-//app.UseHostFiltering();
-
-//app.UseRouting();
-
-//app.UseCors("AllowAll");
-
-//app.UseAuthorization();
+app.UseHostFiltering();
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
-
-app.UseHostFiltering();
+app.UseCors("AllowFrontend");
 
 app.UseRouting();
 
