@@ -34,11 +34,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+app.UseRouting();
 
 app.UseCors("AllowFrontend");
 
-app.UseRouting();
+app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
