@@ -23,7 +23,8 @@ namespace CollectorsArchive.Server.Models.ApiOutput
         public required string Rarity { get; set; }
         public required DateTime ReleaseDate { get; set; }
 
-        // Information about a specific user
+        // Information about a specific user 
+        // this is just for git action to re build the new deployed version of the website url 
         public int? UserID { get; set; }
         public int? Quantity { get; set; }
     }
